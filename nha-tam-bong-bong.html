@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nhà Tắm Bong Bóng Cho Thú Cưng</title>
+    <!-- Tailwind CSS for modern, responsive layouts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for friendly rounded text -->
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Comfortaa', cursive, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #fdf2f8 100%);
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        /* Custom animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+        .animate-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes bubble {
+            0% { transform: translateY(120%) scale(0.5); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(-20vh) scale(1.3); opacity: 0; }
+        }
+        .bubble-particle {
+            position: absolute;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(147, 197, 253, 0.4) 60%, rgba(236, 72, 153, 0.3) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        @keyframes splash {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(50px) scale(0.5); opacity: 0; }
+        }
+        .water-drop {
+            position: absolute;
+            background: #60a5fa;
+            border-radius: 50% 0 50% 50%;
+            transform: rotate(-45deg);
+            pointer-events: none;
+            z-index: 30;
+            animation: splash 0.6s linear forwards;
+        }
+
+        /* Custom scrollbar-free */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col justify-between items-center p-3 sm:p-6 select-none">
+
+    <!-- Sound System & Core Variables -->
+    <script>
+        let audioCtx = null;
+
+        // Initialize Audio Context safely to prevent any browser blocks
+        function initAudio() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            } catch (err) {
+                console.log("Web Audio API not supported or blocked by browser policies.");
+            }
+        }
+
+        // Fun procedurally generated synthesised sound effects
+        function playSynthSound(type) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'pop') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(1600, now + 0.08);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'shower') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(200 + Math.random() * 300, now);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'brush') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.linearRampToValueAtTime(150, now + 0.1);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                    osc.start(now);
+                    osc.stop(now + 0.12);
+                } else if (type === 'hehe') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(350, now);
+                    osc.frequency.exponentialRampToValueAtTime(550, now + 0.1);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+
+                    setTimeout(() => {
+                        try {
+                            const osc2 = audioCtx.createOscillator();
+                            const gain2 = audioCtx.createGain();
+                            osc2.connect(gain2);
+                            gain2.connect(audioCtx.destination);
+                            osc2.type = 'sine';
+                            osc2.frequency.setValueAtTime(450, audioCtx.currentTime);
+                            osc2.frequency.exponentialRampToValueAtTime(700, audioCtx.currentTime + 0.12);
+                            gain2.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                            gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                            osc2.start();
+                            osc2.stop(audioCtx.currentTime + 0.12);
+                        } catch (e) {}
+                    }, 100);
+                } else if (type === 'success') {
+                    const scale = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    scale.forEach((freq, idx) => {
+                        setTimeout(() => {
+                            try {
+                                const o = audioCtx.createOscillator();
+                                const g = audioCtx.createGain();
+                                o.connect(g);
+                                g.connect(audioCtx.destination);
+                                o.type = 'triangle';
+                                o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                                g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                                g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                                o.start();
+                                o.stop(audioCtx.currentTime + 0.3);
+                            } catch (e) {}
+                        }, idx * 100);
+                    });
+                } else if (type === 'fail') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (err) {
+                console.warn("Could not play sound: ", err);
+            }
+        }
+    </script>
+
+    <!-- Top Bar with Level Info or Back buttons -->
+    <div class="w-full max-w-lg flex justify-between items-center z-10 py-1">
+        <button onclick="resetGame()" class="bg-white hover:bg-pink-50 text-pink-500 font-bold px-4 py-2 rounded-full border-2 border-pink-200 shadow-md transition-transform active:scale-95 text-sm flex items-center gap-1">
+            🏠 Chọn lại bé
+        </button>
+        <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold px-3 py-1 bg-pink-100 text-pink-600 rounded-full border border-pink-200">
+                ⭐ Bé Khéo Tay
+            </span>
+        </div>
+    </div>
+
+    <!-- MAIN GAME AREA -->
+    <div id="main-card" class="w-full max-w-lg flex-1 bg-white rounded-3xl shadow-xl border-4 border-pink-100 flex flex-col justify-between overflow-hidden relative my-2">
+        
+        <!-- STEP INDICATOR -->
+        <div class="px-4 pt-3 flex justify-between items-center gap-1 text-center w-full bg-pink-50 border-b border-pink-100 py-2">
+            <div id="step-dots" class="flex justify-center gap-2 w-full">
+                <!-- Will be dynamically filled -->
+            </div>
+        </div>
+
+        <!-- CHALLENGE BANNER / SPEECH BUBBLE -->
+        <div class="px-4 py-2 z-10">
+            <div id="speech-bubble" class="bg-pink-100 text-pink-700 border-2 border-pink-300 rounded-2xl px-4 py-3 text-center font-bold text-sm sm:text-base shadow-sm relative transition-all duration-300 transform scale-100">
+                <span id="challenge-text">Chọn một bạn nhỏ dễ thương để đi tắm nào!</span>
+                <!-- Speech bubble point -->
+                <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-pink-100 border-r-2 border-b-2 border-pink-300 rotate-45"></div>
+            </div>
+        </div>
+
+        <!-- THE BATHING STAGE -->
+        <div id="stage-area" class="flex-1 w-full flex flex-col items-center justify-center relative p-4 min-h-[250px]">
+            
+            <!-- Floating Bubble Generator background -->
+            <div id="bubble-bg-container" class="absolute inset-0 pointer-events-none overflow-hidden rounded-b-2xl"></div>
+
+            <!-- Pet Interactive Container -->
+            <div id="pet-container" class="relative z-20 flex flex-col items-center justify-center cursor-pointer transition-transform duration-300 animate-float">
+                
+                <!-- Dirty Spots (For Step 1) -->
+                <div id="dirt-spots" class="absolute inset-0 pointer-events-none z-30 hidden">
+                    <!-- Dirt spots absolute positioning -->
+                    <div id="dirt-1" class="absolute w-8 h-8 bg-amber-800/80 rounded-full blur-[2px] border border-amber-900/30 flex items-center justify-center text-xs opacity-90 transition-all duration-300" style="top: 25%; left: 20%; transform: rotate(15deg);">🤎</div>
+                    <div id="dirt-2" class="absolute w-10 h-10 bg-amber-800/80 rounded-full blur-[2px] border border-amber-900/30 flex items-center justify-center text-sm opacity-90 transition-all duration-300" style="bottom: 30%; right: 15%; transform: rotate(-25deg);">🤎</div>
+                    <div id="dirt-3" class="absolute w-7 h-7 bg-amber-700/80 rounded-full blur-[2px] border border-amber-900/30 flex items-center justify-center text-xs opacity-90 transition-all duration-300" style="top: 35%; right: 25%; transform: rotate(40deg);">🤎</div>
+                </div>
+
+                <!-- Soap foam visual effect (For Step 2) -->
+                <div id="soap-foam" class="absolute inset-0 pointer-events-none z-30 opacity-0 transition-opacity duration-300 flex flex-wrap justify-center items-center content-center gap-1 p-2">
+                    <div class="w-6 h-6 bg-white rounded-full shadow-inner opacity-90"></div>
+                    <div class="w-8 h-8 bg-white rounded-full shadow-inner opacity-90 -mt-2"></div>
+                    <div class="w-5 h-5 bg-white rounded-full shadow-inner opacity-90"></div>
+                    <div class="w-7 h-7 bg-white rounded-full shadow-inner opacity-90 -ml-2"></div>
+                </div>
+
+                <!-- Wet water gloss layer (For Step 3) -->
+                <div id="water-gloss" class="absolute inset-0 pointer-events-none z-20 opacity-0 transition-opacity duration-300 bg-sky-300/30 rounded-full mix-blend-color-burn"></div>
+
+                <!-- Accessories Container (For Step 5) -->
+                <div id="pet-accessory" class="absolute -top-3 left-1/2 -translate-x-1/2 text-4xl sm:text-5xl z-40 drop-shadow-md hidden transition-all transform scale-0 duration-300">
+                    🎀
+                </div>
+
+                <!-- Main Pet Character Display -->
+                <div id="pet-character" class="text-8xl sm:text-9xl filter drop-shadow-lg transition-transform duration-300 active:scale-95 select-none">
+                    ❓
+                </div>
+
+            </div>
+
+            <!-- THE TUB -->
+            <div id="bathtub" class="absolute bottom-4 w-[85%] h-24 bg-gradient-to-b from-sky-100 to-sky-200 border-4 border-sky-300 rounded-[40px] shadow-lg flex justify-between items-start px-8 pt-2 z-10 opacity-0 transition-all duration-500 transform translate-y-10">
+                <!-- Tub Rim Sparkles -->
+                <div class="text-sky-400 text-sm animate-bounce">✨</div>
+                <div class="text-sky-400 text-xs animate-bounce delay-100">✨</div>
+                <!-- Little rubber duck floating in tub -->
+                <div id="rubber-duck" class="text-2xl cursor-pointer hover:scale-110 active:rotate-12 transition-transform" onclick="playSynthSound('hehe')">🦆</div>
+            </div>
+
+            <!-- WATER DRIPS AND PARTICLE CANVAS (For interactive shower) -->
+            <div id="effect-canvas" class="absolute inset-0 z-40 pointer-events-none"></div>
+
+        </div>
+
+        <!-- ACTION PANEL / TOWEL SHELF / ACCESSORY BOX -->
+        <div class="w-full bg-slate-50 border-t-2 border-pink-100 p-4 z-20">
+            
+            <!-- Screen 1: Character Selector -->
+            <div id="panel-select-pet" class="w-full flex flex-col items-center gap-4">
+                <div class="grid grid-cols-2 gap-4 w-full max-w-sm">
+                    <button onclick="pickPet('🐶', 'Bạn Cún đáng yêu')" class="group flex flex-col items-center bg-white border-4 border-pink-100 hover:border-pink-300 rounded-3xl p-4 transition-all hover:scale-105 active:scale-95 shadow-md">
+                        <span class="text-6xl group-hover:animate-bounce">🐶</span>
+                        <span class="mt-2 font-bold text-pink-600 text-sm">Bạn Cún Con</span>
+                    </button>
+                    <button onclick="pickPet('🐱', 'Bạn Mèo tinh nghịch')" class="group flex flex-col items-center bg-white border-4 border-pink-100 hover:border-pink-300 rounded-3xl p-4 transition-all hover:scale-105 active:scale-95 shadow-md">
+                        <span class="text-6xl group-hover:animate-bounce">🐱</span>
+                        <span class="mt-2 font-bold text-pink-600 text-sm">Bạn Mèo Con</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Screen 2: Mini-Challenge Tool Interface -->
+            <div id="panel-gameplay" class="w-full hidden flex-col items-center gap-4">
+                
+                <!-- Brush Progress Bar (Only visible during brushing step) -->
+                <div id="brush-progress-wrapper" class="w-full max-w-xs bg-pink-100 border-2 border-pink-200 h-6 rounded-full overflow-hidden hidden relative">
+                    <div id="brush-progress-bar" class="w-0 h-full bg-gradient-to-r from-pink-400 to-pink-500 rounded-full transition-all duration-100"></div>
+                    <span class="absolute inset-0 flex items-center justify-center text-xs font-bold text-pink-700 font-sans">Đã chải lông: <span id="progress-percent">0</span>%</span>
+                </div>
+
+                <!-- Towel Selection Challenge -->
+                <div id="towel-selection" class="w-full max-w-xs hidden flex-col items-center gap-2">
+                    <div class="grid grid-cols-3 gap-3 w-full">
+                        <button onclick="selectTowel('pink')" class="h-14 bg-pink-400 border-4 border-white hover:border-pink-200 rounded-2xl shadow-md transition-all active:scale-95 flex items-center justify-center text-white font-bold text-xs">
+                            Hồng
+                        </button>
+                        <button onclick="selectTowel('purple')" class="h-14 bg-purple-500 border-4 border-white hover:border-purple-200 rounded-2xl shadow-md transition-all active:scale-95 flex items-center justify-center text-white font-bold text-xs ring-4 ring-purple-100">
+                            Tím 💜
+                        </button>
+                        <button onclick="selectTowel('blue')" class="h-14 bg-sky-400 border-4 border-white hover:border-sky-200 rounded-2xl shadow-md transition-all active:scale-95 flex items-center justify-center text-white font-bold text-xs">
+                            Xanh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Accessories Selection Gallery -->
+                <div id="accessory-selection" class="w-full max-w-sm hidden flex-col items-center gap-2">
+                    <div class="grid grid-cols-4 gap-2 w-full">
+                        <button onclick="applyAccessory('🎀')" class="p-3 bg-white hover:bg-pink-50 border-2 border-pink-200 rounded-2xl shadow-sm hover:scale-105 active:scale-95 text-3xl transition-transform">🎀</button>
+                        <button onclick="applyAccessory('👑')" class="p-3 bg-white hover:bg-pink-50 border-2 border-pink-200 rounded-2xl shadow-sm hover:scale-105 active:scale-95 text-3xl transition-transform">👑</button>
+                        <button onclick="applyAccessory('🕶️')" class="p-3 bg-white hover:bg-pink-50 border-2 border-pink-200 rounded-2xl shadow-sm hover:scale-105 active:scale-95 text-3xl transition-transform">🕶️</button>
+                        <button onclick="applyAccessory('🎩')" class="p-3 bg-white hover:bg-pink-50 border-2 border-pink-200 rounded-2xl shadow-sm hover:scale-105 active:scale-95 text-3xl transition-transform">🎩</button>
+                    </div>
+                </div>
+
+                <!-- Interactive Main Tool Slider & Action buttons -->
+                <div class="flex items-center justify-center gap-4 w-full">
+                    <!-- Tool Indicator Button -->
+                    <button id="active-tool-btn" class="w-20 h-20 bg-gradient-to-b from-yellow-300 to-yellow-400 border-4 border-yellow-200 rounded-3xl flex flex-col justify-center items-center shadow-lg transform scale-100 transition-all duration-300 relative select-none">
+                        <span id="active-tool-emoji" class="text-4xl animate-bounce">🚿</span>
+                        <span id="active-tool-name" class="text-[10px] font-bold text-yellow-800 mt-1">Vòi Sen</span>
+                        <!-- Ripple ring -->
+                        <span class="absolute inset-0 rounded-3xl border-4 border-yellow-100 animate-ping opacity-25"></span>
+                    </button>
+
+                    <!-- Large Hint / Assist Action Button for Easy Kids Interaction -->
+                    <button id="assist-action-btn" class="flex-1 max-w-xs h-16 bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-500 hover:to-emerald-600 border-b-4 border-emerald-700 text-white rounded-2xl font-bold text-lg shadow-md transition-all active:translate-y-1 active:border-b-0 flex items-center justify-center gap-2">
+                        <span>Chạm thú cưng! 👇</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Screen 3: Photo & Celebration Finish -->
+            <div id="panel-finished" class="w-full hidden flex-col items-center gap-3">
+                <button onclick="savePhoto()" class="w-full max-w-xs py-4 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 border-b-4 border-amber-700 text-white font-bold text-lg rounded-2xl shadow-md transition-all active:translate-y-1 active:border-b-0 flex items-center justify-center gap-2">
+                    📸 Chụp Ảnh Lưu Niệm
+                </button>
+                <button onclick="resetGame()" class="w-full max-w-xs py-3 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 border-b-4 border-pink-700 text-white font-bold text-sm rounded-2xl shadow-md transition-all active:translate-y-1 active:border-b-0 flex items-center justify-center gap-2">
+                    🔄 Cho bé tắm lại
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- AUDIO TOGGLE FLOATER -->
+    <div class="text-slate-400 text-xs text-center flex items-center gap-1 font-semibold select-none">
+        🔊 Trò chơi có phát âm thanh bong bóng pop pop và nước chảy cực vui tai!
+    </div>
+
+    <!-- CUSTOM SWEET NOTIFICATION / MODAL DIALOG -->
+    <div id="info-modal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div id="info-modal-content" class="bg-white border-4 border-pink-200 rounded-[32px] p-6 max-w-sm w-full flex flex-col items-center text-center shadow-2xl transform scale-90 transition-transform duration-300">
+            <span id="modal-emoji" class="text-6xl mb-2 animate-bounce">🎉</span>
+            <h3 id="modal-title" class="text-xl font-bold text-pink-600 mb-2 font-Comfortaa">Thông báo</h3>
+            <p id="modal-text" class="text-sm text-slate-600 mb-6 font-semibold leading-relaxed">Nội dung thông điệp của bé!</p>
+            <button id="modal-close-btn" onclick="closeModal()" class="w-full py-3 bg-gradient-to-r from-pink-400 to-pink-500 hover:from-pink-500 hover:to-pink-600 border-b-4 border-pink-700 text-white font-bold rounded-2xl shadow-md active:translate-y-1 active:border-b-0">
+                Đồng Ý ✨
+            </button>
+        </div>
+    </div>
+
+    <!-- FLASH LAYER FOR PHOTO TAKING -->
+    <div id="flash-effect" class="fixed inset-0 bg-white z-50 pointer-events-none opacity-0 transition-opacity duration-150"></div>
+
+    <!-- Core Game Controller Script -->
+    <script>
+        const PET_EMOJIS = {
+            '🐶': { normal: '🐶', happy: '🐕', bubble: '🧼🐶🧼', wet: '🐶', clean: '🐩' },
+            '🐱': { normal: '🐱', happy: '🐈', bubble: '🧼🐱🧼', wet: '🐱', clean: '🐈' }
+        };
+
+        const STEPS = [
+            { icon: '🚿', desc: 'Xịt nước' },
+            { icon: '🧼', desc: 'Xà phòng' },
+            { icon: '🪮', desc: 'Chải lông' },
+            { icon: '🛁', desc: 'Lau khô' },
+            { icon: '🎀', desc: 'Trang trí' }
+        ];
+
+        let gameStatus = 'SELECTING'; // SELECTING, GAMEPLAY, FINISHED
+        let activeStep = 0; // 0 to 4
+        let selectedPet = '🐶';
+        let petName = '';
+        let dirtCleaned = 0;
+        let soapBubblesCreated = 0;
+        let brushPercentage = 0;
+        let selectedAccessory = '🎀';
+        let lastMoveTime = 0;
+
+        // Initialize Step Dots indicators
+        function buildStepIndicators() {
+            const dotsContainer = document.getElementById('step-dots');
+            dotsContainer.innerHTML = '';
+            STEPS.forEach((step, index) => {
+                const dot = document.createElement('div');
+                dot.className = `flex-1 py-1 px-2 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center gap-1 ${
+                    index === activeStep 
+                    ? 'bg-pink-500 text-white shadow-md scale-105' 
+                    : index < activeStep 
+                        ? 'bg-emerald-100 text-emerald-600' 
+                        : 'bg-pink-100/40 text-pink-300'
+                }`;
+                dot.innerHTML = `<span>${step.icon}</span><span class="hidden sm:inline">${step.desc}</span>`;
+                dotsContainer.appendChild(dot);
+            });
+        }
+
+        // Display beautiful helper modal to make it kids-friendly
+        function showKidsModal(emoji, title, text, onConfirm = null) {
+            document.getElementById('modal-emoji').innerText = emoji;
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            
+            const modal = document.getElementById('info-modal');
+            const content = document.getElementById('info-modal-content');
+            
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-90');
+            
+            // Override confirm behavior
+            window.activeModalAction = onConfirm;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('info-modal');
+            const content = document.getElementById('info-modal-content');
+            
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.add('scale-90');
+
+            if (window.activeModalAction) {
+                window.activeModalAction();
+                window.activeModalAction = null;
+            }
+        }
+
+        // Initialize state variables on reset
+        function resetGame() {
+            gameStatus = 'SELECTING';
+            activeStep = 0;
+            selectedPet = '🐶';
+            dirtCleaned = 0;
+            soapBubblesCreated = 0;
+            brushPercentage = 0;
+            
+            // Clean up UI element classes
+            document.getElementById('dirt-spots').classList.add('hidden');
+            document.getElementById('soap-foam').classList.add('opacity-0');
+            document.getElementById('water-gloss').classList.add('opacity-0');
+            document.getElementById('pet-accessory').classList.add('hidden');
+            document.getElementById('pet-accessory').classList.remove('scale-100');
+            
+            // Show correct panel
+            document.getElementById('panel-select-pet').classList.remove('hidden');
+            document.getElementById('panel-gameplay').classList.add('hidden');
+            document.getElementById('panel-finished').classList.add('hidden');
+            
+            // Reset character image back
+            document.getElementById('pet-character').innerText = '❓';
+            document.getElementById('pet-character').className = 'text-8xl sm:text-9xl filter drop-shadow-lg transition-transform duration-300';
+            
+            // Hide bathtub
+            const bathtub = document.getElementById('bathtub');
+            bathtub.classList.add('opacity-0', 'translate-y-10');
+
+            // Speech text
+            document.getElementById('challenge-text').innerText = 'Chọn một bạn nhỏ dễ thương để đi tắm nào!';
+            buildStepIndicators();
+        }
+
+        // Pick character at start screen
+        function pickPet(emoji, name) {
+            selectedPet = emoji;
+            petName = name;
+            gameStatus = 'GAMEPLAY'; // Crucial FIX: Activate the play state!
+            playSynthSound('hehe');
+            
+            // Transition screen
+            document.getElementById('panel-select-pet').classList.add('hidden');
+            document.getElementById('panel-gameplay').classList.remove('hidden');
+            
+            // Setup pet visualization
+            document.getElementById('pet-character').innerText = selectedPet;
+            
+            // Slide bathtub up smoothly
+            const bathtub = document.getElementById('bathtub');
+            bathtub.classList.remove('opacity-0', 'translate-y-10');
+            bathtub.classList.add('opacity-100', 'translate-y-0');
+
+            // Load Stage 1
+            loadStep(0);
+        }
+
+        // Load gameplay configuration based on active step index
+        function loadStep(stepIndex) {
+            activeStep = stepIndex;
+            buildStepIndicators();
+            initAudio();
+
+            // Reset step specific parameters
+            const toolBtn = document.getElementById('active-tool-btn');
+            const toolEmoji = document.getElementById('active-tool-emoji');
+            const toolName = document.getElementById('active-tool-name');
+            const assistBtn = document.getElementById('assist-action-btn');
+
+            // Hide specialized helpers initially
+            document.getElementById('brush-progress-wrapper').classList.add('hidden');
+            document.getElementById('towel-selection').classList.add('hidden');
+            document.getElementById('accessory-selection').classList.add('hidden');
+
+            switch(stepIndex) {
+                case 0: // Spray Water
+                    toolEmoji.innerText = '🚿';
+                    toolName.innerText = 'Vòi Sen';
+                    toolBtn.className = "w-20 h-20 bg-gradient-to-b from-blue-300 to-blue-400 border-4 border-blue-200 rounded-3xl flex flex-col justify-center items-center shadow-lg transform scale-100 transition-all duration-300 relative select-none";
+                    document.getElementById('challenge-text').innerText = `Rửa sạch 3 vết bẩn trên bạn nhỏ nhé!`;
+                    
+                    // Show dirt spots
+                    document.getElementById('dirt-spots').classList.remove('hidden');
+                    document.getElementById('dirt-1').style.opacity = '1';
+                    document.getElementById('dirt-2').style.opacity = '1';
+                    document.getElementById('dirt-3').style.opacity = '1';
+                    dirtCleaned = 0;
+
+                    assistBtn.innerHTML = "<span>Xịt nước! 🚿</span>";
+                    break;
+
+                case 1: // Soap Up
+                    toolEmoji.innerText = '🧼';
+                    toolName.innerText = 'Xà Phòng';
+                    toolBtn.className = "w-20 h-20 bg-gradient-to-b from-pink-300 to-pink-400 border-4 border-pink-200 rounded-3xl flex flex-col justify-center items-center shadow-lg transform scale-100 transition-all duration-300 relative select-none";
+                    document.getElementById('challenge-text').innerText = `Nhấn thật nhiều lần tạo bọt bong bóng nào!`;
+                    
+                    soapBubblesCreated = 0;
+                    assistBtn.innerHTML = "<span>Xoa xà phòng! 🧼</span>";
+                    break;
+
+                case 2: // Comb (With drag support)
+                    toolEmoji.innerText = '🪮';
+                    toolName.innerText = 'Lược Chải';
+                    toolBtn.className = "w-20 h-20 bg-gradient-to-b from-purple-300 to-purple-400 border-4 border-purple-200 rounded-3xl flex flex-col justify-center items-center shadow-lg transform scale-100 transition-all duration-300 relative select-none";
+                    document.getElementById('challenge-text').innerText = `Vuốt lên mình bạn nhỏ hoặc nhấn nút dưới để chải lông nhé!`;
+                    
+                    document.getElementById('brush-progress-wrapper').classList.remove('hidden');
+                    updateBrushProgress(0);
+                    
+                    assistBtn.innerHTML = "<span>Chải lông! 🪮</span>";
+                    break;
+
+                case 3: // Drying Towel
+                    toolEmoji.innerText = '🛁';
+                    toolName.innerText = 'Lau khô';
+                    toolBtn.className = "w-20 h-20 bg-gradient-to-b from-sky-300 to-sky-400 border-4 border-sky-200 rounded-3xl flex flex-col justify-center items-center shadow-lg transform scale-100 transition-all duration-300 relative select-none";
+                    document.getElementById('challenge-text').innerText = `Hãy chọn chiếc khăn màu TÍM 💜 để lau khô nhé!`;
+                    
+                    document.getElementById('towel-selection').classList.remove('hidden');
+                    
+                    assistBtn.innerHTML = "<span>Chạm khăn bên dưới! 👇</span>";
+                    break;
+
+                case 4: // Accessories
+                    toolEmoji.innerText = '🎀';
+                    toolName.innerText = 'Nơ điệu';
+                    toolBtn.className = "w-20 h-20 bg-gradient-to-b from-amber-300 to-amber-400 border-4 border-amber-200 rounded-3xl flex flex-col justify-center items-center shadow-lg transform scale-100 transition-all duration-300 relative select-none";
+                    document.getElementById('challenge-text').innerText = `Chọn chiếc nơ, vương miện hoặc phụ kiện yêu thích nào!`;
+                    
+                    document.getElementById('accessory-selection').classList.remove('hidden');
+                    
+                    assistBtn.innerHTML = "<span>Đội nơ xinh! 🎀</span>";
+                    break;
+            }
+        }
+
+        // Generates water particles for step 0
+        function triggerWaterSplash() {
+            const canvas = document.getElementById('effect-canvas');
+            playSynthSound('shower');
+
+            for (let i = 0; i < 8; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'water-drop';
+                
+                // Random dynamic spread around the pet
+                const xOffset = (Math.random() - 0.5) * 160;
+                const yOffset = (Math.random() - 0.5) * 60;
+                const size = 12 + Math.random() * 12;
+                drop.style.width = `${size}px`;
+                drop.style.height = `${size}px`;
+                drop.style.top = `calc(40% + ${yOffset}px)`;
+                drop.style.left = `calc(50% + ${xOffset}px)`;
+                
+                canvas.appendChild(drop);
+                setTimeout(() => drop.remove(), 600);
+            }
+        }
+
+        // Spawn bubbles during step 2
+        function spawnFloatingBubble() {
+            const container = document.getElementById('bubble-bg-container');
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble-particle';
+            
+            const size = 15 + Math.random() * 30;
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+            bubble.style.left = `${Math.random() * 90}%`;
+            bubble.style.animation = `bubble ${2 + Math.random() * 2}s linear forwards`;
+            
+            // Kids click to pop bubble too!
+            bubble.style.pointerEvents = 'auto';
+            bubble.onclick = (e) => {
+                e.stopPropagation();
+                playSynthSound('pop');
+                bubble.remove();
+            };
+
+            container.appendChild(bubble);
+            setTimeout(() => bubble.remove(), 4000);
+        }
+
+        // Core interaction triggered when tapping pet area or main touch screen button
+        function handlePetInteraction() {
+            if (gameStatus !== 'GAMEPLAY') return;
+
+            initAudio();
+
+            if (activeStep === 0) {
+                // WATER STEP
+                triggerWaterSplash();
+                
+                // Partially clean dirt
+                if (dirtCleaned < 3) {
+                    const dirtIds = ['dirt-1', 'dirt-2', 'dirt-3'];
+                    const dirtToClean = document.getElementById(dirtIds[dirtCleaned]);
+                    if (dirtToClean && dirtToClean.style.opacity !== '0') {
+                        dirtToClean.style.opacity = '0';
+                        dirtCleaned++;
+                        playSynthSound('hehe');
+                        
+                        // Cute wiggle pet on clean
+                        triggerPetBounce();
+
+                        if (dirtCleaned === 3) {
+                            setTimeout(() => {
+                                playSynthSound('success');
+                                showKidsModal('🚿', 'Sạch Bong Thôi!', 'Đã xịt nước sạch bong hết bùn rồi! Bé siêu quá!', () => {
+                                    loadStep(1);
+                                });
+                            }, 500);
+                        }
+                    }
+                }
+            } else if (activeStep === 1) {
+                // SOAP STEP
+                playSynthSound('pop');
+                soapBubblesCreated++;
+                
+                // Generate several bubbles
+                for (let i = 0; i < 3; i++) {
+                    spawnFloatingBubble();
+                }
+
+                // Show foam layout progressively
+                const foam = document.getElementById('soap-foam');
+                foam.classList.remove('opacity-0');
+                foam.style.opacity = Math.min(1, soapBubblesCreated / 10);
+
+                triggerPetBounce();
+
+                if (soapBubblesCreated >= 12) {
+                    playSynthSound('success');
+                    showKidsModal('🧼', 'Thơm Phưng Phức!', 'Thú cưng được tắm đầy bọt xà phòng rồi! Hãy cùng chải lông xù nhé!', () => {
+                        loadStep(2);
+                    });
+                }
+            } else if (activeStep === 2) {
+                // BRUSH STEP
+                if (brushPercentage < 100) {
+                    playSynthSound('brush');
+                    brushPercentage += 10;
+                    if (brushPercentage > 100) brushPercentage = 100;
+                    updateBrushProgress(brushPercentage);
+
+                    triggerPetBounce();
+
+                    if (brushPercentage >= 100) {
+                        playSynthSound('success');
+                        setTimeout(() => {
+                            showKidsModal('🪮', 'Lông Óng Mượt!', 'Bạn nhỏ được chải mượt rồi! Bây giờ cùng lau khô người nhé!', () => {
+                                loadStep(3);
+                            });
+                        }, 500);
+                    }
+                }
+            } else if (activeStep === 3) {
+                // TOWEL STEP - Must choose colored towel, clicking pet gives prompt
+                document.getElementById('challenge-text').classList.add('scale-105');
+                setTimeout(() => document.getElementById('challenge-text').classList.remove('scale-105'), 300);
+            } else if (activeStep === 4) {
+                // ACCESSORY STEP - Click pet toggles accessory state
+                applyAccessory('🎀');
+            }
+        }
+
+        // Swipe & Stroke Listener for Brushing on Desktop/Tablet
+        function handlePetSwipe() {
+            if (gameStatus !== 'GAMEPLAY' || activeStep !== 2) return;
+            const now = Date.now();
+            if (now - lastMoveTime > 120) { // Throttle swiping events slightly
+                handlePetInteraction();
+                lastMoveTime = now;
+            }
+        }
+
+        // Bounce Pet animation
+        function triggerPetBounce() {
+            const petContainer = document.getElementById('pet-container');
+            petContainer.classList.add('scale-110', 'rotate-3');
+            setTimeout(() => {
+                petContainer.classList.remove('scale-110', 'rotate-3');
+            }, 300);
+        }
+
+        // Brush progress handler
+        function updateBrushProgress(val) {
+            document.getElementById('brush-progress-bar').style.width = `${val}%`;
+            document.getElementById('progress-percent').innerText = val;
+        }
+
+        // Step 4: Towel Selection Challenge Handler
+        function selectTowel(color) {
+            initAudio();
+            if (color === 'purple') {
+                playSynthSound('hehe');
+                
+                // Clear all soaps, foam, bubbles
+                document.getElementById('soap-foam').classList.add('opacity-0');
+                document.getElementById('bubble-bg-container').innerHTML = '';
+                
+                // Set gloss clean state
+                document.getElementById('water-gloss').classList.remove('opacity-0');
+
+                showKidsModal('💜', 'Chính Xác!', 'Chiếc khăn màu tím siêu êm ái đã lau khô và làm bông lông thú cưng của bé rồi!', () => {
+                    loadStep(4);
+                });
+            } else {
+                playSynthSound('fail');
+                showKidsModal('😢', 'Ồ, Chưa Đúng Rồi!', 'Đây không phải khăn màu tím. Bé hãy quan sát và chọn lại màu tím nhé!');
+            }
+        }
+
+        // Step 5: Decorative Accessory Choice
+        function applyAccessory(emoji) {
+            initAudio();
+            selectedAccessory = emoji;
+            const accessoryElem = document.getElementById('pet-accessory');
+            
+            accessoryElem.innerText = emoji;
+            accessoryElem.classList.remove('hidden');
+            
+            // Pop up scale animation
+            setTimeout(() => {
+                accessoryElem.classList.add('scale-100');
+                playSynthSound('hehe');
+            }, 50);
+
+            // Give kid a completion badge modal
+            setTimeout(() => {
+                playSynthSound('success');
+                showKidsModal('💖', 'Thật Xinh Đẹp!', 'Ôi! Thú cưng trông vô cùng lộng lẫy và đáng yêu rồi đó! Bé hãy chụp ảnh nha!', () => {
+                    finishGame();
+                });
+            }, 1000);
+        }
+
+        // Wrap up pet care and activate celebration
+        function finishGame() {
+            gameStatus = 'FINISHED';
+            
+            // Enable finish state panels
+            document.getElementById('panel-gameplay').classList.add('hidden');
+            document.getElementById('panel-finished').classList.remove('hidden');
+            
+            // Change text display
+            document.getElementById('challenge-text').innerHTML = `🎉 BÉ ĐÃ HOÀN THÀNH!<br>Hãy bấm Chụp ảnh lưu niệm cho bé cưng nào!`;
+
+            // Spark continuous bubble drops
+            for (let i = 0; i < 20; i++) {
+                setTimeout(spawnFloatingBubble, i * 200);
+            }
+        }
+
+        // Take screen snap representation
+        function savePhoto() {
+            initAudio();
+            playSynthSound('hehe');
+            
+            // Activate screen flash effect
+            const flash = document.getElementById('flash-effect');
+            flash.classList.remove('opacity-0');
+            setTimeout(() => {
+                flash.classList.add('opacity-100');
+                setTimeout(() => {
+                    flash.classList.remove('opacity-100');
+                    flash.classList.add('opacity-0');
+                }, 100);
+            }, 50);
+
+            // Inform toddler
+            setTimeout(() => {
+                showKidsModal('📸', 'Tách! Chụp Ảnh Xong!', 'Bức ảnh siêu dễ thương đã được lưu lại trong nhật ký tắm rửa của bé! Đáng yêu quá đi!');
+            }, 400);
+        }
+
+        // Event Listeners for tap interactions
+        document.getElementById('pet-container').addEventListener('mousedown', (e) => {
+            handlePetInteraction();
+        });
+
+        document.getElementById('pet-container').addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevent double triggering
+            handlePetInteraction();
+        });
+
+        // Mouse and touch dragging/moving to stroke pet (Brushing step)
+        document.getElementById('pet-container').addEventListener('mousemove', (e) => {
+            handlePetSwipe();
+        });
+
+        document.getElementById('pet-container').addEventListener('touchmove', (e) => {
+            handlePetSwipe();
+        });
+
+        document.getElementById('assist-action-btn').addEventListener('click', () => {
+            handlePetInteraction();
+        });
+
+        // Initialize state of game
+        window.onload = function() {
+            resetGame();
+        };
+    </script>
+</body>
+</html>

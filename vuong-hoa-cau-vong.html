@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vườn Hoa Cầu Vồng - Siêu Cấp Đáng Yêu Cho Bé</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Nunito (Chữ bo tròn cực kỳ hợp cho bé) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Tone.js for Sound Effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            transition: background 1.5s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Light/Sunny/Rainy backgrounds */
+        .weather-sunny {
+            background: linear-gradient(135deg, #FFF5F5 0%, #FFFDF0 50%, #E8F9FF 100%);
+        }
+        .weather-rainy {
+            background: linear-gradient(135deg, #D4E2D4 0%, #BAC9B8 50%, #A3B899 100%);
+        }
+        .weather-night {
+            background: linear-gradient(135deg, #1A1B35 0%, #22244E 50%, #2D325A 100%);
+            color: #E2E8F0;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+        @keyframes butterfly-flight {
+            0%, 100% { transform: translate(0, 0) scaleX(1); }
+            25% { transform: translate(60px, -40px) scaleX(-1); }
+            50% { transform: translate(120px, 10px) scaleX(1); }
+            75% { transform: translate(50px, 50px) scaleX(-1); }
+        }
+        @keyframes sun-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes pulse-gently {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(8deg); }
+        }
+        @keyframes rain-fall {
+            0% { transform: translateY(-20px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+        @keyframes firefly-blink {
+            0%, 100% { transform: scale(0.6); opacity: 0.2; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-butterfly-1 { animation: butterfly-flight 14s ease-in-out infinite; }
+        .animate-butterfly-2 { animation: butterfly-flight 18s ease-in-out infinite reverse; }
+        .animate-sun { animation: sun-spin 25s linear infinite; }
+        .animate-pulse-gently { animation: pulse-gently 2s ease-in-out infinite; }
+        .animate-wiggle { animation: wiggle 0.6s ease-in-out infinite; }
+
+        /* Rain effect elements */
+        .raindrop {
+            position: absolute;
+            color: #A5D8FF;
+            font-size: 1.5rem;
+            pointer-events: none;
+            animation: rain-fall 1.5s linear infinite;
+        }
+
+        /* Firefly elements */
+        .firefly {
+            position: absolute;
+            background: radial-gradient(circle, #FFF9A6 0%, rgba(255, 249, 166, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: firefly-blink 2s ease-in-out infinite;
+        }
+
+        /* Custom scrollbar-free */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 md:p-6 relative overflow-hidden select-none weather-sunny">
+
+    <!-- Weather Rain Overlay Layer -->
+    <div id="rain-layer" class="fixed inset-0 pointer-events-none hidden z-20"></div>
+    <!-- Weather Fireflies Overlay Layer -->
+    <div id="fireflies-layer" class="fixed inset-0 pointer-events-none hidden z-20"></div>
+
+    <!-- Decorative Floating Elements -->
+    <div id="sun-container" class="absolute top-10 left-10 w-20 h-20 opacity-80 pointer-events-none animate-sun transition-all duration-1000">
+        <!-- Smiling Sun -->
+        <svg viewBox="0 0 100 100" class="w-full h-full">
+            <circle cx="50" cy="50" r="30" fill="#FFE17D" />
+            <g stroke="#FFE17D" stroke-width="8" stroke-linecap="round">
+                <line x1="50" y1="10" x2="50" y2="2" />
+                <line x1="50" y1="90" x2="50" y2="98" />
+                <line x1="10" y1="50" x2="2" y2="50" />
+                <line x1="90" y1="50" x2="98" y2="50" />
+                <line x1="22" y1="22" x2="16" y2="16" />
+                <line x1="78" y1="78" x2="84" y2="84" />
+                <line x1="22" y1="78" x2="16" y2="84" />
+                <line x1="78" y1="22" x2="84" y2="16" />
+            </g>
+            <circle cx="43" cy="46" r="3" fill="#3D3D3D" />
+            <circle cx="57" cy="46" r="3" fill="#3D3D3D" />
+            <path d="M 40 58 Q 50 68 60 58" stroke="#3D3D3D" stroke-width="3" stroke-linecap="round" fill="none" />
+        </svg>
+    </div>
+
+    <!-- Butterflies and Bees -->
+    <div class="absolute top-1/4 left-1/4 w-12 h-12 pointer-events-none animate-butterfly-1 opacity-90 text-4xl">🦋</div>
+    <div class="absolute top-1/3 right-1/4 w-10 h-10 pointer-events-none animate-butterfly-2 opacity-80 text-4xl">🦋</div>
+    <div class="absolute bottom-1/3 left-10 w-8 h-8 pointer-events-none animate-butterfly-1 opacity-75 text-3xl">🐝</div>
+
+    <!-- Start Screen Overlay -->
+    <div id="welcome-screen" class="fixed inset-0 bg-pink-100 bg-opacity-95 z-50 flex flex-col items-center justify-center p-4 transition-all duration-500">
+        <div class="max-w-md w-full text-center bg-white p-8 rounded-3xl shadow-2xl border-4 border-pink-200 animate-float text-gray-800">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-pink-500 mb-2 drop-shadow-md">🌸 Vườn Hoa 🌸</h1>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-yellow-400 mb-4 drop-shadow-md">Cầu Vồng Siêu Cấp</h1>
+            
+            <p class="text-gray-600 text-base md:text-lg mb-6 font-semibold">
+                Nâng cấp mới: Bé hãy gom sao đổi sticker dán trang trí vườn 🌈, cho thú cưng ăn 🥕 và thử nghiệm thời tiết kỳ diệu nha!
+            </p>
+            
+            <div class="flex justify-center space-x-4 mb-6 text-5xl">
+                <span class="animate-bounce" style="animation-delay: 0.1s">🐰</span>
+                <span class="animate-bounce" style="animation-delay: 0.3s">🐱</span>
+                <span class="animate-bounce" style="animation-delay: 0.5s">🐝</span>
+                <span class="animate-bounce" style="animation-delay: 0.7s">🌈</span>
+            </div>
+
+            <button onclick="startGame()" class="w-full bg-gradient-to-r from-pink-400 via-yellow-300 to-emerald-400 text-white font-black text-2xl py-5 px-8 rounded-full shadow-lg transform hover:scale-105 active:scale-95 transition-all border-4 border-white">
+                BẮT ĐẦU CHƠI NHÉ! 🎉
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="w-full max-w-4xl flex flex-wrap items-center justify-between p-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl shadow-sm border border-pink-100 dark:border-slate-700 mb-3 z-10">
+        <div class="flex items-center space-x-3">
+            <div class="text-4xl">🏡</div>
+            <div>
+                <h2 class="text-xl md:text-2xl font-black text-pink-500 leading-none">Vườn Hoa Thần Kỳ</h2>
+                <span class="text-xs font-bold text-emerald-500">Mưa Nắng - Nuôi Thú - Sưu Tập Dán Tranh</span>
+            </div>
+        </div>
+        
+        <!-- Score, Stars and Weather Toggles -->
+        <div class="flex items-center space-x-2 mt-2 md:mt-0">
+            <!-- Bouquet count -->
+            <div class="bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-200 px-3 py-1 rounded-full flex items-center space-x-1">
+                <span class="text-lg">💐</span>
+                <span id="bouquet-count" class="font-extrabold text-sm text-yellow-700 dark:text-yellow-300">0</span>
+            </div>
+            <!-- Golden Star currency -->
+            <div class="bg-amber-100 dark:bg-amber-900/40 border border-amber-300 px-3 py-1 rounded-full flex items-center space-x-1 animate-pulse-gently">
+                <span class="text-lg">⭐</span>
+                <span id="star-count" class="font-extrabold text-sm text-amber-700 dark:text-amber-300">5</span>
+            </div>
+            
+            <!-- Weather Control Switches -->
+            <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-full border border-slate-200 dark:border-slate-700">
+                <button onclick="changeWeather('sunny')" id="btn-weather-sunny" class="p-1.5 rounded-full bg-white dark:bg-slate-600 shadow-sm transition-all" title="Trời nắng">☀️</button>
+                <button onclick="changeWeather('rainy')" id="btn-weather-rainy" class="p-1.5 rounded-full hover:bg-white dark:hover:bg-slate-600 transition-all" title="Trời mưa">🌧️</button>
+                <button onclick="changeWeather('night')" id="btn-weather-night" class="p-1.5 rounded-full hover:bg-white dark:hover:bg-slate-600 transition-all" title="Ban đêm">🌙</button>
+            </div>
+
+            <!-- Sound Toggle -->
+            <button onclick="toggleMusic()" class="p-2 bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-300 rounded-full font-bold text-sm hover:bg-pink-200 transition-colors">
+                <span id="sound-icon">🔊</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Challenge & Guide Animal Area -->
+    <section class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-4 gap-3 mb-3 z-10">
+        <!-- Speech Bubble and Guide Pet -->
+        <div class="md:col-span-3 bg-white/90 dark:bg-slate-800/95 p-4 rounded-2xl shadow-md border-2 border-pink-100 dark:border-pink-950 flex items-center space-x-4">
+            <div class="relative">
+                <div id="guide-pet" class="text-5xl md:text-6xl animate-wiggle select-none cursor-pointer" onclick="clickPetBody()">🐱</div>
+                <!-- Cute Hungry Alert Bubble -->
+                <div id="pet-hunger-bubble" class="absolute -top-3 -right-3 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black animate-bounce hidden">ĐÓI 🥩</div>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-pink-400 font-extrabold uppercase tracking-wide" id="pet-name">Mèo Hồng Bông</span>
+                    <span id="pet-mood" class="text-xs bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full font-bold">Vui Vẻ 🥰</span>
+                </div>
+                <div id="speech-bubble" class="text-base font-bold text-gray-700 dark:text-gray-200 mt-1 leading-snug">
+                    Bé ơi! Trồng giúp tớ 3 bông hoa màu hồng nhé! 🐱🌸
+                </div>
+            </div>
+        </div>
+
+        <!-- Task/Mission Indicator Card -->
+        <div class="bg-emerald-50 dark:bg-emerald-950/40 p-4 rounded-2xl shadow-md border-2 border-emerald-100 dark:border-emerald-900 flex flex-col justify-center">
+            <div class="text-xs text-emerald-500 font-extrabold uppercase">Nhiệm Vụ Của Bé</div>
+            <div id="mission-desc" class="text-sm font-extrabold text-emerald-800 dark:text-emerald-300 mt-1 leading-tight">
+                🌸 Trồng 3 hoa hồng: <span id="mission-progress" class="text-pink-500">0/3</span>
+            </div>
+            <!-- Visual Help Alert -->
+            <div id="hint-alert" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-2 flex items-center space-x-1 animate-pulse-gently">
+                <span>💡 Click xẻng 🥄 đào đất nhé!</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- The Garden Area (Main 4 Pots) -->
+    <main class="w-full max-w-4xl grid grid-cols-2 md:grid-cols-4 gap-4 my-1 z-10">
+        <!-- Pot 0 -->
+        <div onclick="clickPot(0)" id="pot-0" class="bg-white/60 dark:bg-slate-800/40 hover:bg-white/80 dark:hover:bg-slate-800/60 border-4 border-dashed border-pink-200 dark:border-pink-900/60 rounded-3xl p-3 flex flex-col items-center justify-between cursor-pointer transform hover:scale-105 active:scale-95 transition-all relative overflow-hidden h-48 md:h-56 shadow-inner">
+            <div class="absolute top-2 right-2 text-xl animate-bounce hidden" id="thirsty-icon-0">💧</div>
+            <div class="text-center w-full flex-1 flex items-center justify-center text-5xl md:text-6xl" id="plant-stage-0">🕳️</div>
+            <div class="w-full bg-amber-800 text-white font-bold text-[10px] md:text-xs py-1 rounded-full text-center mt-2" id="pot-label-0">Chưa đào đất</div>
+            <div class="absolute bottom-1 right-2 text-[10px] text-gray-500 font-bold" id="pot-color-hint-0"></div>
+        </div>
+
+        <!-- Pot 1 -->
+        <div onclick="clickPot(1)" id="pot-1" class="bg-white/60 dark:bg-slate-800/40 hover:bg-white/80 dark:hover:bg-slate-800/60 border-4 border-dashed border-pink-200 dark:border-pink-900/60 rounded-3xl p-3 flex flex-col items-center justify-between cursor-pointer transform hover:scale-105 active:scale-95 transition-all relative overflow-hidden h-48 md:h-56 shadow-inner">
+            <div class="absolute top-2 right-2 text-xl animate-bounce hidden" id="thirsty-icon-1">💧</div>
+            <div class="text-center w-full flex-1 flex items-center justify-center text-5xl md:text-6xl" id="plant-stage-1">🕳️</div>
+            <div class="w-full bg-amber-800 text-white font-bold text-[10px] md:text-xs py-1 rounded-full text-center mt-2" id="pot-label-1">Chưa đào đất</div>
+            <div class="absolute bottom-1 right-2 text-[10px] text-gray-500 font-bold" id="pot-color-hint-1"></div>
+        </div>
+
+        <!-- Pot 2 -->
+        <div onclick="clickPot(2)" id="pot-2" class="bg-white/60 dark:bg-slate-800/40 hover:bg-white/80 dark:hover:bg-slate-800/60 border-4 border-dashed border-pink-200 dark:border-pink-900/60 rounded-3xl p-3 flex flex-col items-center justify-between cursor-pointer transform hover:scale-105 active:scale-95 transition-all relative overflow-hidden h-48 md:h-56 shadow-inner">
+            <div class="absolute top-2 right-2 text-xl animate-bounce hidden" id="thirsty-icon-2">💧</div>
+            <div class="text-center w-full flex-1 flex items-center justify-center text-5xl md:text-6xl" id="plant-stage-2">🕳️</div>
+            <div class="w-full bg-amber-800 text-white font-bold text-[10px] md:text-xs py-1 rounded-full text-center mt-2" id="pot-label-2">Chưa đào đất</div>
+            <div class="absolute bottom-1 right-2 text-[10px] text-gray-500 font-bold" id="pot-color-hint-2"></div>
+        </div>
+
+        <!-- Pot 3 -->
+        <div onclick="clickPot(3)" id="pot-3" class="bg-white/60 dark:bg-slate-800/40 hover:bg-white/80 dark:hover:bg-slate-800/60 border-4 border-dashed border-pink-200 dark:border-pink-900/60 rounded-3xl p-3 flex flex-col items-center justify-between cursor-pointer transform hover:scale-105 active:scale-95 transition-all relative overflow-hidden h-48 md:h-56 shadow-inner">
+            <div class="absolute top-2 right-2 text-xl animate-bounce hidden" id="thirsty-icon-3">💧</div>
+            <div class="text-center w-full flex-1 flex items-center justify-center text-5xl md:text-6xl" id="plant-stage-3">🕳️</div>
+            <div class="w-full bg-amber-800 text-white font-bold text-[10px] md:text-xs py-1 rounded-full text-center mt-2" id="pot-label-3">Chưa đào đất</div>
+            <div class="absolute bottom-1 right-2 text-[10px] text-gray-500 font-bold" id="pot-color-hint-3"></div>
+        </div>
+    </main>
+
+    <!-- Sticker Garden Decoration Playground -->
+    <section class="w-full max-w-4xl bg-white/70 dark:bg-slate-800/70 p-3 rounded-2xl border border-dashed border-emerald-400 mt-3 z-10">
+        <div class="flex items-center justify-between mb-1.5">
+            <span class="text-xs font-black text-emerald-600 dark:text-emerald-400">🎨 SÂN CHƠI STICKER (Click vào thảm cỏ để dán)</span>
+            <button onclick="clearStickers()" class="text-[10px] bg-red-100 hover:bg-red-200 dark:bg-red-950 text-red-600 dark:text-red-300 font-bold px-2 py-0.5 rounded-md">Xóa hết dán nhãn 🧹</button>
+        </div>
+        
+        <!-- Decoration Canvas-like Board -->
+        <div id="sticker-board" onclick="placeStickerOnBoard(event)" class="relative h-44 md:h-52 bg-gradient-to-b from-green-200 to-emerald-400 dark:from-emerald-950 dark:to-green-900 rounded-2xl border-2 border-emerald-300 overflow-hidden cursor-crosshair shadow-inner">
+            <div class="absolute bottom-2 left-4 text-xs opacity-50 dark:opacity-30 text-emerald-950 font-bold">Thảm cỏ của bé... 🐾</div>
+            
+            <!-- Default background cute tree/pond static elements using emoji -->
+            <div class="absolute bottom-2 right-12 text-5xl opacity-40">🌳</div>
+            <div class="absolute bottom-6 left-1/3 text-4xl opacity-30">🌻</div>
+            
+            <!-- Placed Stickers will render here dynamically -->
+        </div>
+
+        <!-- Sticker Shop Deck -->
+        <div class="grid grid-cols-6 gap-2 mt-2" id="sticker-shop">
+            <!-- Stickers that kids can click to select and paste -->
+            <button onclick="selectSticker('rainbow', 5)" id="shop-rainbow" class="bg-white/90 dark:bg-slate-700/90 border border-slate-200 rounded-xl p-1 text-center transform hover:scale-105 active:scale-95 transition-all text-xs relative">
+                <div class="text-2xl">🌈</div>
+                <div class="text-[9px] font-bold text-amber-500">⭐ 5 Sao</div>
+            </button>
+            <button onclick="selectSticker('snail', 3)" id="shop-snail" class="bg-white/90 dark:bg-slate-700/90 border border-slate-200 rounded-xl p-1 text-center transform hover:scale-105 active:scale-95 transition-all text-xs relative">
+                <div class="text-2xl">🐌</div>
+                <div class="text-[9px] font-bold text-amber-500">⭐ 3 Sao</div>
+            </button>
+            <button onclick="selectSticker('mushroom', 2)" id="shop-mushroom" class="bg-white/90 dark:bg-slate-700/90 border border-slate-200 rounded-xl p-1 text-center transform hover:scale-105 active:scale-95 transition-all text-xs relative">
+                <div class="text-2xl">🍄</div>
+                <div class="text-[9px] font-bold text-amber-500">⭐ 2 Sao</div>
+            </button>
+            <button onclick="selectSticker('puppy', 6)" id="shop-puppy" class="bg-white/90 dark:bg-slate-700/90 border border-slate-200 rounded-xl p-1 text-center transform hover:scale-105 active:scale-95 transition-all text-xs relative">
+                <div class="text-2xl">🐶</div>
+                <div class="text-[9px] font-bold text-amber-500">⭐ 6 Sao</div>
+            </button>
+            <button onclick="selectSticker('fox', 7)" id="shop-fox" class="bg-white/90 dark:bg-slate-700/90 border border-slate-200 rounded-xl p-1 text-center transform hover:scale-105 active:scale-95 transition-all text-xs relative">
+                <div class="text-2xl">🦊</div>
+                <div class="text-[9px] font-bold text-amber-500">⭐ 7 Sao</div>
+            </button>
+            <button onclick="selectSticker('well', 4)" id="shop-well" class="bg-white/90 dark:bg-slate-700/90 border border-slate-200 rounded-xl p-1 text-center transform hover:scale-105 active:scale-95 transition-all text-xs relative">
+                <div class="text-2xl">⛲</div>
+                <div class="text-[9px] font-bold text-amber-500">⭐ 4 Sao</div>
+            </button>
+        </div>
+    </section>
+
+    <!-- Interactive Tools Dock -->
+    <section class="w-full max-w-4xl bg-white/85 dark:bg-slate-900/85 p-3 rounded-3xl shadow-lg border border-pink-100 dark:border-slate-800 flex flex-col items-center space-y-2 z-10 mt-3 mb-2">
+        <div class="text-[11px] font-black text-pink-500 dark:text-pink-400 uppercase tracking-wider flex items-center space-x-1">
+            <span>👇 BÉ CHỌN DỤNG CỤ Ở ĐÂY NHA 👇</span>
+        </div>
+
+        <div class="grid grid-cols-4 md:grid-cols-8 gap-2 w-full">
+            <!-- Tool: Shovel -->
+            <button onclick="selectTool('shovel')" id="tool-shovel" class="relative bg-amber-100 dark:bg-amber-950/40 border-2 border-amber-300 rounded-2xl p-1.5 flex flex-col items-center justify-center transform active:scale-90 transition-all shadow hover:brightness-105">
+                <div class="text-3xl">🥄</div>
+                <span class="text-[10px] font-black text-amber-800 dark:text-amber-300">1. Đào đất</span>
+            </button>
+
+            <!-- Seeds Deck -->
+            <!-- Pink Seed -->
+            <button onclick="selectTool('seed-pink')" id="tool-seed-pink" class="relative bg-pink-100 dark:bg-pink-950/40 border-2 border-pink-300 rounded-2xl p-1.5 flex flex-col items-center justify-center transform active:scale-90 transition-all shadow hover:brightness-105">
+                <div class="text-3xl">🌸🌰</div>
+                <span class="text-[10px] font-black text-pink-800 dark:text-pink-300">Gieo Hồng</span>
+            </button>
+            <!-- Blue Seed -->
+            <button onclick="selectTool('seed-blue')" id="tool-seed-blue" class="relative bg-sky-100 dark:bg-sky-950/40 border-2 border-sky-300 rounded-2xl p-1.5 flex flex-col items-center justify-center transform active:scale-90 transition-all shadow hover:brightness-105">
+                <div class="text-3xl">🪻🌰</div>
+                <span class="text-[10px] font-black text-sky-800 dark:text-sky-300">Gieo Xanh</span>
+            </button>
+            <!-- Yellow Seed -->
+            <button onclick="selectTool('seed-yellow')" id="tool-seed-yellow" class="relative bg-yellow-100 dark:bg-yellow-950/40 border-2 border-yellow-300 rounded-2xl p-1.5 flex flex-col items-center justify-center transform active:scale-90 transition-all shadow hover:brightness-105">
+                <div class="text-3xl">🌼🌰</div>
+                <span class="text-[10px] font-black text-yellow-800 dark:text-yellow-300">Gieo Vàng</span>
+            </button>
+            <!-- Rare Rainbow Seed (Unlocks after some playing) -->
+            <button onclick="selectTool('seed-rainbow')" id="tool-seed-rainbow" class="relative bg-purple-100 dark:bg-purple-950/40 border-2 border-purple-300 rounded-2xl p-1.5 flex flex-col items-center justify-center transform active:scale-90 transition-all shadow hover:brightness-105 hidden">
+                <div class="text-3xl animate-bounce">🌈🌰</div>
+                <span class="text-[10px] font-black text-purple-800 dark:text-purple-300">Cầu Vồng</span>
+            </button>
+
+            <!-- Watering Cans -->
+            <!-- Yellow Can -->
+            <button onclick="selectTool('can-yellow')" id="tool-can-yellow" class="relative bg-yellow-100 dark:bg-yellow-950/40 border-2 border-yellow-400 rounded-2xl p-1.5 flex flex-col items-center justify-center transform active:scale-90 transition-all shadow hover:brightness-105">
+                <div class="text-3xl">💛🚿</div>
+                <span class="text-[10px] font-black text-yellow-800 dark:text-yellow-300">Bình Vàng</span>
+            </button>
+            <!-- Blue Can -->
+            <button onclick="selectTool('can-blue')" id="tool-can-blue" class="relative bg-sky-100 dark:bg-sky-950/40 border-2 border-sky-400 rounded-2xl p-1.5 flex flex-col items-center justify-center transform active:scale-90 transition-all shadow hover:brightness-105">
+                <div class="text-3xl">💙🚿</div>
+                <span class="text-[10px] font-black text-sky-800 dark:text-sky-300">Bình Xanh</span>
+            </button>
+
+            <!-- Pet Treats Food -->
+            <button onclick="selectTool('treats')" id="tool-treats" class="relative bg-red-100 dark:bg-red-950/40 border-2 border-red-300 rounded-2xl p-1.5 flex flex-col items-center justify-center transform active:scale-90 transition-all shadow hover:brightness-105">
+                <div class="text-3xl">🍼🍖</div>
+                <span class="text-[10px] font-black text-red-800 dark:text-red-300">Cho Thú Ăn</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Bouquet Visual Collection Panel -->
+    <footer class="w-full max-w-4xl text-center pb-2 text-[10px] md:text-xs font-bold text-gray-500 flex flex-col items-center">
+        <div id="bouquet-holder" class="flex justify-center flex-wrap gap-1.5 my-1.5 min-h-[30px]">
+            <!-- Dynamic bouquets will go here -->
+        </div>
+        <p class="dark:text-gray-400">Trò chơi thiết kế cho bé nhận biết màu sắc, rèn luyện sự khéo léo và chăm ngoan! 💖</p>
+    </footer>
+
+    <!-- Custom Celebration / Bouquet Wrap Modal -->
+    <div id="celebration-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden transition-all duration-300">
+        <div class="bg-white dark:bg-slate-800 text-gray-800 dark:text-white rounded-3xl p-8 max-w-md w-full text-center border-4 border-yellow-300 animate-float relative">
+            <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 text-7xl">🎉</div>
+            <h3 class="text-3xl font-extrabold text-pink-500 mb-2 mt-4" id="modal-title">BÉ GIỎI QUÁ!</h3>
+            <p class="text-gray-600 dark:text-gray-300 font-bold mb-4" id="modal-desc">Bé đã hoàn thành thử thách xuất sắc rồi!</p>
+            
+            <!-- Large interactive gift item -->
+            <div id="modal-gift" class="text-7xl my-4 animate-pulse-gently">💐⭐</div>
+            <p class="text-amber-500 font-extrabold text-lg mb-6" id="modal-reward">+5 Sao lấp lánh!</p>
+            
+            <button onclick="closeModal()" class="w-full bg-gradient-to-r from-emerald-400 to-green-500 text-white font-black text-xl py-4 rounded-full shadow-md hover:brightness-105 active:scale-95 transition-all">
+                TIẾP TỤC CHƠI NÀO! 🐰
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Game Audio Synth using Tone.js
+        let synth;
+        let isMuted = false;
+
+        function initSynth() {
+            if (!synth) {
+                synth = new Tone.PolySynth(Tone.Synth).toDestination();
+                synth.set({
+                    envelope: {
+                        attack: 0.08,
+                        decay: 0.12,
+                        sustain: 0.4,
+                        release: 0.8
+                    }
+                });
+            }
+        }
+
+        // Play cute bubble/magical sounds
+        function playSound(type) {
+            if (isMuted) return;
+            initSynth();
+            try {
+                if (type === 'pop') {
+                    synth.triggerAttackRelease("C5", "8n");
+                } else if (type === 'dig') {
+                    synth.triggerAttackRelease("G4", "4n");
+                } else if (type === 'seed') {
+                    synth.triggerAttackRelease("E5", "8n");
+                } else if (type === 'water') {
+                    synth.triggerAttackRelease(["C5", "E5", "G5"], "4n");
+                } else if (type === 'bloom') {
+                    synth.triggerAttackRelease(["E5", "G5", "B5", "E6"], "2n");
+                } else if (type === 'bug') {
+                    synth.triggerAttackRelease("A4", "8n");
+                } else if (type === 'success') {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease("C5", "8n", now);
+                    synth.triggerAttackRelease("E5", "8n", now + 0.1);
+                    synth.triggerAttackRelease("G5", "8n", now + 0.2);
+                    synth.triggerAttackRelease("C6", "4n", now + 0.3);
+                } else if (type === 'eat') {
+                    synth.triggerAttackRelease(["D5", "G5"], "8n");
+                } else if (type === 'sticker') {
+                    synth.triggerAttackRelease(["G5", "C6"], "8n");
+                }
+            } catch (e) {
+                console.log("Audio play error: ", e);
+            }
+        }
+
+        function toggleMusic() {
+            isMuted = !isMuted;
+            document.getElementById('sound-icon').innerText = isMuted ? '🔇' : '🔊';
+        }
+
+        // Game State Variables
+        let currentTool = null; // Current selected seed, shovel, can, or treats
+        let activeSticker = null; // Active selected sticker to place
+        let activeStickerCost = 0;
+        let score = 0; // Harvested bouquets
+        let stars = 5; // Start with 5 free stars to test stickers!
+        let currentMission = 0; // Current mini-challenge index
+        let pinkFlowersHarvested = 0; // Track for mission 0
+        let weatherMode = 'sunny'; 
+        let rainbowSeedUnlocked = false;
+
+        // Pots State Model
+        const pots = [
+            { id: 0, state: 'empty', seedColor: null, hasBug: false, isThirsty: false },
+            { id: 1, state: 'empty', seedColor: null, hasBug: false, isThirsty: false },
+            { id: 2, state: 'empty', seedColor: null, hasBug: false, isThirsty: false },
+            { id: 3, state: 'empty', seedColor: null, hasBug: false, isThirsty: false }
+        ];
+
+        // Cute Animal Guides
+        const animals = [
+            { emoji: "🐱", name: "Mèo Hồng Bông", food: "🐟", foodName: "Cá nhỏ" },
+            { emoji: "🐰", name: "Thỏ Tai Dài", food: "🥕", foodName: "Củ cà rốt" },
+            { emoji: "🐝", name: "Út Ong Nhỏ", food: "🍯", foodName: "Mật ong" }
+        ];
+        
+        let activeAnimalIndex = 0;
+        let petHungry = false;
+
+        // Missions List
+        const missions = [
+            {
+                id: 0,
+                desc: "Trồng 3 bông hoa màu hồng cho bạn mèo 🐱",
+                target: 3,
+                guide: "Mèo Hồng Bông 🐱",
+                text: "Bé yêu ơi, hãy chọn xẻng đào đất, gieo hạt màu hồng 🌸 rồi tưới nước cho hoa nở giúp tớ nhé!"
+            },
+            {
+                id: 1,
+                desc: "Tưới nước cho cây nào đang khát nước! 💧",
+                target: 1,
+                guide: "Thỏ Tai Dài 🐰",
+                text: "Ôi có mầm cây đang khát nước 💧 reo lên kia kìa! Bé tưới đúng cây có giọt nước nha!"
+            },
+            {
+                id: 2,
+                desc: "Chọn đúng bình tưới màu vàng để tưới hoa 💛",
+                target: 1,
+                guide: "Út Ong Nhỏ 🐝",
+                text: "Chú ong nhỏ thích bình tưới màu vàng ấm áp 💛. Bé hãy tưới hoa bằng chiếc bình này nhé!"
+            },
+            {
+                id: 3,
+                desc: "Hãy dán 1 sticker bất kỳ lên thảm cỏ 🌈",
+                target: 1,
+                guide: "Mèo Hồng Bông 🐱",
+                text: "Thử thách nghệ thuật! Bé hãy đổi sao lấy sticker bên dưới và bấm dán lên bãi cỏ nha!"
+            }
+        ];
+
+        // Weather Engine
+        function changeWeather(type) {
+            weatherMode = type;
+            const body = document.body;
+            const rainLayer = document.getElementById('rain-layer');
+            const firefliesLayer = document.getElementById('fireflies-layer');
+            const sunContainer = document.getElementById('sun-container');
+
+            // Reset active styles on weather buttons
+            ['sunny', 'rainy', 'night'].forEach(w => {
+                document.getElementById(`btn-weather-${w}`).className = "p-1.5 rounded-full hover:bg-white dark:hover:bg-slate-600 transition-all";
+            });
+            document.getElementById(`btn-weather-${type}`).className = "p-1.5 rounded-full bg-white dark:bg-slate-600 shadow-md transform scale-110 transition-all";
+
+            // Apply weather-specific visual effects
+            if (type === 'sunny') {
+                body.className = "min-h-screen flex flex-col items-center justify-between p-2 md:p-6 relative overflow-hidden select-none weather-sunny";
+                rainLayer.classList.add('hidden');
+                firefliesLayer.classList.add('hidden');
+                sunContainer.style.transform = "scale(1) rotate(0deg)";
+                sunContainer.style.opacity = "0.8";
+                showGuideSpeech("Oa! Trời nắng ấm rực rỡ rồi, hoa sẽ lớn nhanh lắm đây! ☀️");
+            } 
+            else if (type === 'rainy') {
+                body.className = "min-h-screen flex flex-col items-center justify-between p-2 md:p-6 relative overflow-hidden select-none weather-rainy";
+                rainLayer.classList.remove('hidden');
+                firefliesLayer.classList.add('hidden');
+                sunContainer.style.opacity = "0.2";
+                showGuideSpeech("Trời mưa rơi rơi mát mẻ 🌧️! Bạn ếch reo vui và đất sẽ tự ẩm ướt đó bé!");
+                triggerRaindrops();
+                // Rain automatically helps dry/thirsty seeds grow over time
+                autoRainWatering();
+            } 
+            else if (type === 'night') {
+                body.className = "min-h-screen flex flex-col items-center justify-between p-2 md:p-6 relative overflow-hidden select-none weather-night";
+                rainLayer.classList.add('hidden');
+                firefliesLayer.classList.remove('hidden');
+                sunContainer.style.opacity = "0";
+                showGuideSpeech("Màn đêm buông xuống lung linh 🌙. Hãy ngắm những bạn đom đóm lấp lánh bay lượn nhé!");
+                triggerFireflies();
+            }
+            playSound('pop');
+        }
+
+        function triggerRaindrops() {
+            const rainLayer = document.getElementById('rain-layer');
+            rainLayer.innerHTML = '';
+            // Generate simple raindrop emojis
+            for (let i = 0; i < 20; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'raindrop';
+                drop.innerText = '💧';
+                drop.style.left = `${Math.random() * 100}vw`;
+                drop.style.animationDelay = `${Math.random() * 1.5}s`;
+                drop.style.fontSize = `${Math.random() * 10 + 10}px`;
+                rainLayer.appendChild(drop);
+            }
+        }
+
+        function triggerFireflies() {
+            const firefliesLayer = document.getElementById('fireflies-layer');
+            firefliesLayer.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                const fly = document.createElement('div');
+                fly.className = 'firefly';
+                fly.style.width = `${Math.random() * 15 + 8}px`;
+                fly.style.height = fly.style.width;
+                fly.style.left = `${Math.random() * 100}vw`;
+                fly.style.top = `${Math.random() * 100}vh`;
+                fly.style.animationDelay = `${Math.random() * 2}s`;
+                firefliesLayer.appendChild(fly);
+            }
+        }
+
+        function autoRainWatering() {
+            if (weatherMode !== 'rainy') return;
+            // Instantly transition growing stages for plants if it's raining
+            pots.forEach((pot, index) => {
+                if (pot.state === 'seeded') {
+                    setTimeout(() => {
+                        if (weatherMode === 'rainy' && pot.state === 'seeded') {
+                            clickPot(index); // Auto water it via click Simulation
+                        }
+                    }, 4000);
+                }
+            });
+        }
+
+        // Sticker Selection and Purchase
+        function selectSticker(stickerId, cost) {
+            // Unselect tool
+            if (currentTool) {
+                const prevBtn = document.getElementById(`tool-${currentTool}`);
+                if (prevBtn) prevBtn.classList.remove('ring-4', 'ring-pink-500', 'scale-105');
+                currentTool = null;
+            }
+
+            // Remove active style from other stickers
+            const stickerIds = ['rainbow', 'snail', 'mushroom', 'puppy', 'fox', 'well'];
+            stickerIds.forEach(id => {
+                document.getElementById(`shop-${id}`).classList.remove('ring-4', 'ring-emerald-500', 'scale-105');
+            });
+
+            if (stars < cost) {
+                showGuideSpeech(`Ôi! Bé cần có ít nhất ⭐ ${cost} Sao để đổi nhãn dán này nhé. Hãy chăm hoa để gom thêm Sao nha! ⭐`);
+                return;
+            }
+
+            activeSticker = stickerId;
+            activeStickerCost = cost;
+            document.getElementById(`shop-${stickerId}`).classList.add('ring-4', 'ring-emerald-500', 'scale-105');
+            showGuideSpeech(`Bé đã chọn sticker rồi! Giờ hãy chạm vào khu vườn thảm cỏ màu xanh lá ở trên để dán trang trí nhé! 🎨`);
+            playSound('pop');
+        }
+
+        function placeStickerOnBoard(event) {
+            if (!activeSticker) {
+                showGuideSpeech("Bé ơi! Hãy chọn một hình dán dễ thương ở kệ bên dưới trước nha! 👇");
+                return;
+            }
+
+            // Pay stars
+            stars -= activeStickerCost;
+            document.getElementById('star-count').innerText = stars;
+
+            // Get click coordinate relative to board
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = ((event.clientX - rect.left) / rect.width) * 100;
+            const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+            // Match emoji
+            let emoji = '🌈';
+            if (activeSticker === 'snail') emoji = '🐌';
+            if (activeSticker === 'mushroom') emoji = '🍄';
+            if (activeSticker === 'puppy') emoji = '🐶';
+            if (activeSticker === 'fox') emoji = '🦊';
+            if (activeSticker === 'well') emoji = ' Fountain ⛲';
+
+            // Create sticker DOM inside board
+            const stickerEl = document.createElement('div');
+            stickerEl.className = "absolute text-4xl transform -translate-x-1/2 -translate-y-1/2 select-none pointer-events-none hover:scale-110 transition-all animate-float";
+            stickerEl.style.left = `${x}%`;
+            stickerEl.style.top = `${y}%`;
+            stickerEl.innerText = emoji;
+            document.getElementById('sticker-board').appendChild(stickerEl);
+
+            playSound('sticker');
+
+            // Trigger sparkles at placement
+            createSparksOnCoordinate(event.clientX - rect.left, event.clientY - rect.top, '✨');
+
+            // Reset active sticker Selection
+            document.getElementById(`shop-${activeSticker}`).classList.remove('ring-4', 'ring-emerald-500', 'scale-105');
+            activeSticker = null;
+
+            showGuideSpeech("Tuyệt quá! Góc cỏ nhỏ của bé nhìn xinh xắn hơn nhiều rồi đó! 🥰");
+
+            // Check mission completion
+            if (currentMission === 3) {
+                checkMissionProgress(3);
+            }
+        }
+
+        function clearStickers() {
+            document.getElementById('sticker-board').innerHTML = '<div class="absolute bottom-2 left-4 text-xs opacity-50 dark:opacity-30 text-emerald-950 font-bold">Thảm cỏ của bé... 🐾</div><div class="absolute bottom-2 right-12 text-5xl opacity-40">🌳</div><div class="absolute bottom-6 left-1/3 text-4xl opacity-30">🌻</div>';
+            playSound('pop');
+        }
+
+        // Pet interaction and feeding loop
+        function clickPetBody() {
+            playSound('pop');
+            // Animate pet jump
+            const pet = document.getElementById('guide-pet');
+            pet.classList.remove('animate-wiggle');
+            void pet.offsetWidth; // trigger reflow
+            pet.classList.add('animate-bounce');
+            setTimeout(() => {
+                pet.classList.remove('animate-bounce');
+                pet.classList.add('animate-wiggle');
+            }, 1000);
+
+            if (petHungry) {
+                showGuideSpeech(`Oa, tớ đói bụng lắm rồi! Bé chọn công cụ 'Cho Thú Ăn' 🍼🍖 để đút cho tớ nhé!`);
+            } else {
+                showGuideSpeech(`Hì hì, bé thích xoa đầu tớ hả? Chúc bé có một ngày làm vườn thật vui vẻ! 🥰`);
+            }
+        }
+
+        function feedPet() {
+            if (!petHungry) {
+                showGuideSpeech(`Cảm ơn bé, nhưng tớ vẫn đang no căng bụng nè! Hãy để tớ làm việc cùng bé nhé! 🐰`);
+                return;
+            }
+
+            const petObj = animals[activeAnimalIndex];
+            playSound('eat');
+            petHungry = false;
+            document.getElementById('pet-hunger-bubble').classList.add('hidden');
+            document.getElementById('pet-mood').innerText = "Cực Vui 🥳";
+            document.getElementById('pet-mood').className = "text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold";
+
+            stars += 3;
+            document.getElementById('star-count').innerText = stars;
+
+            showGuideSpeech(`Nhoàm nhoàm... 🤤 Món ${petObj.foodName} ngon tuyệt cú mèo! Cảm ơn bé thương yêu nhé! Tặng bé 3 Sao lấp lánh này! ⭐`);
+            createSparksOnPet('💖');
+        }
+
+        function triggerRandomHunger() {
+            if (petHungry) return;
+            petHungry = true;
+            document.getElementById('pet-hunger-bubble').classList.remove('hidden');
+            document.getElementById('pet-mood').innerText = "Đói bụng 😢";
+            document.getElementById('pet-mood').className = "text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold";
+
+            const petObj = animals[activeAnimalIndex];
+            showGuideSpeech(`Òa... Tớ làm việc nãy giờ nên mỏi chân và đói bụng quá! Cho tớ ăn ít ${petObj.foodName} ${petObj.food} đi bé ơi!`);
+        }
+
+        // Start Game Interface
+        function startGame() {
+            document.getElementById('welcome-screen').classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                playSound('success');
+                // Trigger occasional pet hunger intervals
+                setInterval(triggerRandomHunger, 35000);
+            }, 400);
+            updateMissionUI();
+            updateAllPotsUI();
+        }
+
+        // Select Tool Action
+        function selectTool(toolName) {
+            // Unselect sticker
+            if (activeSticker) {
+                document.getElementById(`shop-${activeSticker}`).classList.remove('ring-4', 'ring-emerald-500', 'scale-105');
+                activeSticker = null;
+            }
+
+            // Unhighlight previous tool
+            if (currentTool) {
+                const prevBtn = document.getElementById(`tool-${currentTool}`);
+                if (prevBtn) prevBtn.classList.remove('ring-4', 'ring-pink-500', 'scale-105');
+            }
+
+            currentTool = toolName;
+            
+            // Highlight current tool
+            const currBtn = document.getElementById(`tool-${currentTool}`);
+            if (currBtn) {
+                currBtn.classList.add('ring-4', 'ring-pink-500', 'scale-105');
+            }
+
+            playSound('pop');
+            evaluateHint();
+        }
+
+        // Handle Clicking on a pot
+        function clickPot(potId) {
+            const pot = pots[potId];
+
+            if (currentTool === 'treats') {
+                feedPet();
+                return;
+            }
+
+            if (!currentTool) {
+                showGuideSpeech("Bé ơi, hãy chọn một món đồ ở bên dưới trước nhé! 👉");
+                return;
+            }
+
+            // Step 1: Dig Soil
+            if (pot.state === 'empty') {
+                if (currentTool === 'shovel') {
+                    pot.state = 'dug';
+                    playSound('dig');
+                    createSparks(potId, '🟤');
+                    showGuideSpeech("Đất đã tơi mịn rồi! Giờ hãy chọn hạt giống hoa để gieo nào bé ơi! 🌱");
+                } else {
+                    showGuideSpeech("Bé hãy chọn chiếc xẻng 🥄 để đào tơi đất lên trước nhé!");
+                }
+            }
+            // Step 2: Plant Seed
+            else if (pot.state === 'dug') {
+                if (currentTool.startsWith('seed-')) {
+                    const color = currentTool.split('-')[1];
+                    pot.state = 'seeded';
+                    pot.seedColor = color;
+                    playSound('seed');
+                    createSparks(potId, '✨');
+                    showGuideSpeech("Gieo hạt thành công rồi! Hãy tưới nước để hạt nhỏ nảy mầm nha! 💧");
+                    autoRainWatering();
+                } else {
+                    showGuideSpeech("Bé hãy chọn hạt giống (Hồng, Xanh, Vàng hoặc Cầu vồng) để gieo nha!");
+                }
+            }
+            // Step 3: Water to sprout
+            else if (pot.state === 'seeded') {
+                if (currentTool.startsWith('can-') || weatherMode === 'rainy') {
+                    const canColor = currentTool ? currentTool.split('-')[1] : 'blue';
+                    
+                    // Challenge 3 criteria: must use yellow watering can
+                    if (currentMission === 2 && canColor !== 'yellow' && weatherMode !== 'rainy') {
+                        showGuideSpeech("Bé hãy đổi sang chọn chiếc bình tưới màu vàng 💛 nhé!");
+                        return;
+                    }
+
+                    pot.state = 'sprout';
+                    // Random cute bug appears!
+                    pot.hasBug = Math.random() > 0.3; 
+                    playSound('water');
+                    createSparks(potId, '💧');
+                    
+                    if (pot.hasBug) {
+                        showGuideSpeech("Ôi! Bạn mầm cây đã nhú lên rồi, nhưng có bạn sâu sâu mập ghé thăm kìa! Bé hãy gõ nhẹ vào sâu 🐛 để bạn đi nơi khác chơi nha!");
+                    } else {
+                        pot.state = 'growing';
+                        showGuideSpeech("Cây mầm của bé lớn nhanh quá! Tưới thêm chút nước nữa cho hoa nở rộ nha!");
+                        if (currentMission === 1) {
+                            pot.isThirsty = true; // Set up thirsty plant target
+                        }
+                    }
+
+                    // Complete challenge 2 logic (use yellow can to water)
+                    if (currentMission === 2 && (canColor === 'yellow' || weatherMode === 'rainy')) {
+                        checkMissionProgress(2);
+                    }
+                } else {
+                    showGuideSpeech("Bé hãy chọn bình tưới 🚿 để tắm mát cho hạt mầm nhé!");
+                }
+            }
+            // Step 4: Shoo Cute Bug
+            else if (pot.state === 'sprout') {
+                if (pot.hasBug) {
+                    pot.hasBug = false;
+                    pot.state = 'growing';
+                    playSound('bug');
+                    createSparks(potId, '💖');
+                    
+                    // Assign thirsty state for Mission 1
+                    if (currentMission === 1) {
+                        pot.isThirsty = true;
+                    }
+
+                    showGuideSpeech("Bạn sâu đã đi ngủ rồi! Bé tưới thêm nước để ngóng chờ hoa nở rộ nha! 🚿");
+                } else {
+                    showGuideSpeech("Bé hãy gõ nhẹ lên bạn sâu béo 🐛 để bạn đi chỗ khác nha!");
+                }
+            }
+            // Step 5: Final Watering to Bloom
+            else if (pot.state === 'growing') {
+                if (currentTool.startsWith('can-') || weatherMode === 'rainy') {
+                    // Challenge 1 logic: watering thirsty plant
+                    if (currentMission === 1) {
+                        if (pot.isThirsty) {
+                            pot.isThirsty = false;
+                            checkMissionProgress(1);
+                        } else {
+                            showGuideSpeech("Cây này đủ mát rồi, tưới cây có giọt nước nhấp nháy 💧 kìa bé ơi!");
+                            return;
+                        }
+                    }
+
+                    pot.state = 'bloom';
+                    playSound('bloom');
+                    createSparks(potId, '🌟');
+                    showGuideSpeech("Oa! Bông hoa khổng lồ nở rộ thơm ngát rồi! Bé hãy bấm vào bông hoa để hái cắm giỏ nha! 💐");
+                } else {
+                    showGuideSpeech("Tưới nước thêm một chút nữa bằng bình tưới 🚿 để ngắm hoa nở nào!");
+                }
+            }
+            // Step 6: Harvest Flower
+            else if (pot.state === 'bloom') {
+                harvestFlower(potId);
+            }
+
+            updateAllPotsUI();
+            evaluateHint();
+        }
+
+        // Harvest Bloom
+        function harvestFlower(potId) {
+            const pot = pots[potId];
+            const color = pot.seedColor;
+
+            playSound('success');
+            createSparks(potId, '💐');
+
+            // Track pink flower harvest for mission 0
+            if (color === 'pink' && currentMission === 0) {
+                pinkFlowersHarvested++;
+                checkMissionProgress(0);
+            }
+
+            // Create Visual Flower Bouquet
+            addFlowerToBouquet(color);
+
+            // Reset pot state
+            pot.state = 'empty';
+            pot.seedColor = null;
+            pot.hasBug = false;
+            pot.isThirsty = false;
+
+            score++;
+            stars += 2; // Earn 2 golden stars per harvest!
+            
+            // Unlock Rainbow seed after 3 flowers harvested
+            if (score >= 3 && !rainbowSeedUnlocked) {
+                rainbowSeedUnlocked = true;
+                document.getElementById('tool-seed-rainbow').classList.remove('hidden');
+                showGuideSpeech("🌟 PHẦN THƯỞNG KỲ DIỆU: Bé đã được tặng túi Hạt giống cầu vồng 🌈🌰 kìa!");
+            }
+
+            document.getElementById('bouquet-count').innerText = score;
+            document.getElementById('star-count').innerText = stars;
+
+            showGuideSpeech("Yêu quá! Hoa thơm đã cắm vào giỏ. Bé được nhận 2 Sao may mắn ⭐. Trồng tiếp bông hoa khác nhé!");
+        }
+
+        function addFlowerToBouquet(color) {
+            const holder = document.getElementById('bouquet-holder');
+            let emoji = '🌸';
+            if (color === 'blue') emoji = '🪻';
+            if (color === 'yellow') emoji = '🌼';
+            if (color === 'rainbow') emoji = '🌈';
+
+            const flowerSpan = document.createElement('span');
+            flowerSpan.className = "text-3xl animate-bounce transform hover:scale-120 transition-all cursor-pointer";
+            flowerSpan.innerText = emoji;
+            holder.appendChild(flowerSpan);
+        }
+
+        function showGuideSpeech(msg) {
+            document.getElementById('speech-bubble').innerText = msg;
+        }
+
+        // Dynamic Hint Engine to guide kids step by step
+        function evaluateHint() {
+            let hint = "💡 Hãy chọn một dụng cụ để bắt đầu chăm vườn nào!";
+            
+            const dugCount = pots.filter(p => p.state === 'dug').length;
+            const emptyCount = pots.filter(p => p.state === 'empty').length;
+            const seededCount = pots.filter(p => p.state === 'seeded').length;
+            const sproutCount = pots.filter(p => p.state === 'sprout').length;
+            const growingCount = pots.filter(p => p.state === 'growing').length;
+            const bloomCount = pots.filter(p => p.state === 'bloom').length;
+
+            if (currentMission === 1) {
+                const isAnyThirsty = pots.some(p => p.isThirsty);
+                if (isAnyThirsty) {
+                    hint = "💡 Chọn bình tưới tắm cho bạn cây đang khát nước 💧 nhé!";
+                } else {
+                    hint = "💡 Hãy gieo hạt và chăm cây mầm lớn để cây báo khát nước nhé!";
+                }
+            } else if (currentMission === 2) {
+                hint = "💡 Chọn chiếc bình tưới màu vàng 💛 rồi tưới mầm cây nha!";
+            } else if (currentMission === 3) {
+                hint = "💡 Bấm đổi 1 nhãn dán sticker ở bảng dưới rồi dán lên bãi cỏ nha!";
+            } else {
+                if (emptyCount > 0 && currentTool !== 'shovel') {
+                    hint = "💡 Bé hãy chọn Chiếc xẻng 🥄 để xúc đất tơi lên nhé!";
+                } else if (dugCount > 0 && !currentTool?.startsWith('seed-')) {
+                    hint = "💡 Chọn hạt màu hồng 🌸 hạt xanh 🪻 hoặc vàng 🌼 để gieo hạt nào!";
+                } else if (seededCount > 0 && !currentTool?.startsWith('can-')) {
+                    hint = "💡 Tưới nước bằng bình 🚿 giúp hạt nhỏ nở mầm!";
+                } else if (sproutCount > 0) {
+                    hint = "💡 Chạm nhẹ vào sâu béo 🐛 giúp bảo vệ mầm non nha!";
+                } else if (growingCount > 0 && !currentTool?.startsWith('can-')) {
+                    hint = "💡 Cho mầm cây uống thêm nước 🚿 để nở bông hoa lấp lánh!";
+                } else if (bloomCount > 0) {
+                    hint = "💡 Hái bông hoa xinh đẹp bằng cách bấm vào hoa nha!";
+                }
+            }
+
+            document.getElementById('hint-alert').innerHTML = `<span>${hint}</span>`;
+        }
+
+        // Mission progress controller
+        function checkMissionProgress(missionId) {
+            if (currentMission !== missionId) return;
+
+            const mission = missions[missionId];
+            
+            if (missionId === 0) {
+                document.getElementById('mission-progress').innerText = `${pinkFlowersHarvested}/${mission.target}`;
+                if (pinkFlowersHarvested >= mission.target) {
+                    completeMission();
+                }
+            } else if (missionId === 1 || missionId === 2 || missionId === 3) {
+                completeMission();
+            }
+        }
+
+        function completeMission() {
+            playSound('success');
+            stars += 5; // Reward stars for completing challenges!
+            document.getElementById('star-count').innerText = stars;
+
+            // Show Custom Celebration Overlay
+            const modal = document.getElementById('celebration-modal');
+            const title = document.getElementById('modal-title');
+            const desc = document.getElementById('modal-desc');
+            const gift = document.getElementById('modal-gift');
+
+            if (currentMission === 0) {
+                title.innerText = "MÈO CON CẢM ƠN BÉ! 🐱";
+                desc.innerText = "Bé đã trồng được giỏ hoa màu hồng thơm lừng tặng cho bạn Mèo!";
+                gift.innerText = "🐱💐⭐";
+            } else if (currentMission === 1) {
+                title.innerText = "CÂY KHÔNG CÒN KHÁT NỮA! 🐰";
+                desc.innerText = "Bạn Thỏ Tai Dài reo hò vì bé rất chu đáo chăm mầm nhỏ!";
+                gift.innerText = "🐰🌱⭐";
+            } else if (currentMission === 2) {
+                title.innerText = "CHÚ ONG REO VUI! 🐝";
+                desc.innerText = "Bé nhận diện bình màu vàng 💛 cực kỳ chuẩn luôn!";
+                gift.innerText = "🐝🌻⭐";
+            } else if (currentMission === 3) {
+                title.innerText = "BÉ LÀ HỌA SĨ NHÍ! 🎨";
+                desc.innerText = "Khung cảnh bãi cỏ dán nhãn của bé nhìn tuyệt đẹp!";
+                gift.innerText = "🎨✨⭐";
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('celebration-modal').classList.add('hidden');
+            
+            // Advance mission index
+            currentMission++;
+            if (currentMission >= missions.length) {
+                currentMission = 0;
+                pinkFlowersHarvested = 0;
+            }
+
+            // Switch to next cute guiding animal
+            activeAnimalIndex = (activeAnimalIndex + 1) % animals.length;
+
+            updateMissionUI();
+            updateAllPotsUI();
+            evaluateHint();
+        }
+
+        function updateMissionUI() {
+            const mission = missions[currentMission];
+            
+            // Update Pet Avatar & Text
+            const petAvatar = document.getElementById('guide-pet');
+            const petName = document.getElementById('pet-name');
+            const speech = document.getElementById('speech-bubble');
+
+            const currentAnimal = animals[activeAnimalIndex];
+            petAvatar.innerText = currentAnimal.emoji;
+            petName.innerText = currentAnimal.name;
+            speech.innerText = mission.text;
+
+            // Update Side Mission Panel
+            document.getElementById('mission-desc').innerHTML = `${mission.desc} <span id="mission-progress" class="text-pink-500 font-black"></span>`;
+            if (currentMission === 0) {
+                document.getElementById('mission-progress').innerText = `${pinkFlowersHarvested}/${mission.target}`;
+            } else {
+                document.getElementById('mission-progress').innerText = `🔄 Bé hãy làm nhé!`;
+            }
+        }
+
+        // Render Pots
+        function updateAllPotsUI() {
+            for (let i = 0; i < 4; i++) {
+                const pot = pots[i];
+                const stageEl = document.getElementById(`plant-stage-${i}`);
+                const labelEl = document.getElementById(`pot-label-${i}`);
+                const thirstyEl = document.getElementById(`thirsty-icon-${i}`);
+                const hintEl = document.getElementById(`pot-color-hint-${i}`);
+
+                // Manage thirsty indicator
+                if (pot.isThirsty && currentMission === 1) {
+                    if (thirstyEl) thirstyEl.classList.remove('hidden');
+                } else {
+                    if (thirstyEl) thirstyEl.classList.add('hidden');
+                }
+
+                // Stage rendering
+                if (pot.state === 'empty') {
+                    stageEl.innerText = "🕳️";
+                    labelEl.innerText = "1. Đào đất";
+                    labelEl.className = "w-full bg-amber-800 text-white font-bold text-[10px] md:text-xs py-1 rounded-full text-center mt-2";
+                    hintEl.innerText = "";
+                } 
+                else if (pot.state === 'dug') {
+                    stageEl.innerText = "🟤";
+                    labelEl.innerText = "2. Gieo hạt";
+                    labelEl.className = "w-full bg-yellow-600 text-white font-bold text-[10px] md:text-xs py-1 rounded-full text-center mt-2 animate-bounce";
+                    hintEl.innerText = "";
+                } 
+                else if (pot.state === 'seeded') {
+                    stageEl.innerText = "🌱";
+                    labelEl.innerText = "3. Tưới nước";
+                    labelEl.className = "w-full bg-emerald-500 text-white font-bold text-[10px] md:text-xs py-1 rounded-full text-center mt-2";
+                    let seedLabel = 'Hồng';
+                    if (pot.seedColor === 'blue') seedLabel = 'Xanh';
+                    if (pot.seedColor === 'yellow') seedLabel = 'Vàng';
+                    if (pot.seedColor === 'rainbow') seedLabel = 'Cầu Vồng 🌈';
+                    hintEl.innerText = `Hạt: ${seedLabel}`;
+                } 
+                else if (pot.state === 'sprout') {
+                    if (pot.hasBug) {
+                        stageEl.innerText = "🐛🌿";
+                        labelEl.innerText = "Có bạn sâu béo!";
+                        labelEl.className = "w-full bg-red-400 text-white font-bold text-[10px] md:text-xs py-1 rounded-full text-center mt-2 animate-wiggle";
+                    } else {
+                        stageEl.innerText = "🌿";
+                        labelEl.innerText = "Cây đang lớn";
+                        labelEl.className = "w-full bg-emerald-600 text-white font-bold text-[10px] md:text-xs py-1 rounded-full text-center mt-2";
+                    }
+                } 
+                else if (pot.state === 'growing') {
+                    stageEl.innerText = "🍃";
+                    labelEl.innerText = "Tưới mầm hoa nở";
+                    labelEl.className = "w-full bg-green-600 text-white font-bold text-[10px] md:text-xs py-1 rounded-full text-center mt-2";
+                } 
+                else if (pot.state === 'bloom') {
+                    let flowerEmoji = "🌸";
+                    if (pot.seedColor === 'blue') flowerEmoji = "🪻";
+                    if (pot.seedColor === 'yellow') flowerEmoji = "🌼";
+                    if (pot.seedColor === 'rainbow') flowerEmoji = "🌈🌺";
+
+                    stageEl.innerText = flowerEmoji;
+                    stageEl.className = "text-center w-full flex-1 flex items-center justify-center text-5xl md:text-6xl animate-bounce";
+                    labelEl.innerText = "Bấm hái hoa nha!";
+                    labelEl.className = "w-full bg-pink-500 text-white font-extrabold text-[10px] md:text-xs py-1 rounded-full text-center mt-2 animate-pulse-gently";
+                }
+            }
+        }
+
+        // Particles generators
+        function createSparks(potId, element) {
+            const potDiv = document.getElementById(`pot-${potId}`);
+            for (let i = 0; i < 6; i++) {
+                const particle = document.createElement('div');
+                particle.className = "absolute text-lg pointer-events-none transition-all duration-1000";
+                particle.innerText = element;
+                particle.style.left = `${Math.random() * 80 + 10}%`;
+                particle.style.top = `${Math.random() * 60 + 20}%`;
+                
+                potDiv.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.style.transform = `translateY(-50px) scale(1.6)`;
+                    particle.style.opacity = '0';
+                }, 50);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 1000);
+            }
+        }
+
+        function createSparksOnCoordinate(x, y, element) {
+            const board = document.getElementById('sticker-board');
+            for (let i = 0; i < 5; i++) {
+                const particle = document.createElement('div');
+                particle.className = "absolute text-lg pointer-events-none transition-all duration-1000";
+                particle.innerText = element;
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                
+                board.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.style.transform = `translate(${Math.random() * 40 - 20}px, -40px) scale(1.5)`;
+                    particle.style.opacity = '0';
+                }, 50);
+
+                setTimeout(() => {
+                    particle.remove();
+                }, 1000);
+            }
+        }
+
+        function createSparksOnPet(element) {
+            const petDiv = document.getElementById('guide-pet');
+            for (let i = 0; i < 6; i++) {
+                const p = document.createElement('div');
+                p.className = "absolute text-2xl pointer-events-none transition-all duration-1000 z-30";
+                p.innerText = element;
+                p.style.left = "20px";
+                p.style.top = "10px";
+                petDiv.appendChild(p);
+
+                setTimeout(() => {
+                    p.style.transform = `translate(${Math.random() * 80 - 40}px, -50px) scale(1.4)`;
+                    p.style.opacity = '0';
+                }, 50);
+
+                setTimeout(() => {
+                    p.remove();
+                }, 1000);
+            }
+        }
+
+        // Run setup on load
+        window.onload = function() {
+            evaluateHint();
+        }
+    </script>
+</body>
+</html>

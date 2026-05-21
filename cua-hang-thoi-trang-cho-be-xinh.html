@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cửa Hàng Thời Trang Bé Xinh</title>
+    <style>
+        :root {
+            --pink-light: #FFE5EC;
+            --pink-main: #FFB7B2;
+            --pink-dark: #FF85A1;
+            --yellow: #FFDAC1;
+            --blue: #B5E2FA;
+            --green: #E2F0CB;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--pink-light);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #FF5C8A;
+            text-shadow: 2px 2px white;
+            margin: 5px 0;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        /* Chế độ chơi */
+        .mode-selection {
+            margin-bottom: 10px;
+        }
+        .btn-mode {
+            background-color: white;
+            border: 3px solid var(--pink-dark);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 5px;
+            transition: 0.2s;
+            color: var(--pink-dark);
+        }
+        .btn-mode.active {
+            background-color: var(--pink-dark);
+            color: white;
+        }
+
+        /* Khung Game chính */
+        .game-container {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 25px;
+            padding: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            gap: 15px;
+        }
+
+        /* Cột bên trái: Yêu cầu + Nhân vật */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: var(--blue);
+            border-radius: 20px;
+            padding: 15px;
+            position: relative;
+            min-height: 450px;
+        }
+
+        .quest-box {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 15px;
+            border: 3px dashed var(--pink-dark);
+            width: 100%;
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Khu vực hiển thị búp bê/thú cưng */
+        .stage {
+            width: 200px;
+            height: 300px;
+            position: relative;
+            background: radial-gradient(circle, #fff 40%, transparent 70%);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .character {
+            width: 120px;
+            height: 180px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Vẽ bạn Thỏ bằng CSS */
+        .rabbit {
+            width: 100%;
+            height: 100%;
+            background: #f0f0f0;
+            border-radius: 50% 50% 40% 40%;
+            position: absolute;
+            bottom: 10px;
+            border: 3px solid #ddd;
+        }
+        .rabbit-ear-l, .rabbit-ear-r {
+            position: absolute;
+            top: -50px;
+            width: 30px;
+            height: 70px;
+            background: #f0f0f0;
+            border-radius: 50% 50% 0 0;
+            border: 3px solid #ddd;
+        }
+        .rabbit-ear-l { left: 20px; transform: rotate(-10deg); }
+        .rabbit-ear-r { right: 20px; transform: rotate(10deg); }
+        .rabbit-eye-l, .rabbit-eye-r {
+            position: absolute;
+            top: 40px;
+            width: 12px;
+            height: 12px;
+            background: #333;
+            border-radius: 50%;
+        }
+        .rabbit-eye-l { left: 35px; }
+        .rabbit-eye-r { right: 35px; }
+        .rabbit-nose {
+            position: absolute;
+            top: 55px;
+            left: 55px;
+            width: 10px;
+            height: 8px;
+            background: ffccd5;
+            border-radius: 50%;
+        }
+
+        /* Các lớp quần áo đè lên nhân vật */
+        .slot {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #slot-hat { top: -40px; width: 140px; height: 60px; left: -10px; }
+        #slot-clothes { top: 75px; width: 120px; height: 90px; left: 0px; }
+        #slot-shoes { bottom: -10px; width: 120px; height: 35px; left: 0px; }
+
+        /* Nút kiểm tra */
+        .btn-check {
+            margin-top: auto;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 5px #388E3C;
+        }
+        .btn-check:active {
+            box-shadow: 0 2px #388E3C;
+            transform: translateY(3px);
+        }
+
+        /* Cột bên phải: Tủ đồ */
+        .right-panel {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            background: var(--yellow);
+            border-radius: 20px;
+            padding: 15px;
+        }
+
+        .closet-tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 10px;
+        }
+
+        .tab {
+            background: white;
+            border: 2px solid #b5a496;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .tab.active {
+            background: #b5a496;
+            color: white;
+        }
+
+        .closet-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            overflow-y: auto;
+            height: 350px;
+            padding: 5px;
+        }
+
+        .item-card {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            min-height: 80px;
+            transition: transform 0.2s;
+        }
+        .item-card:hover {
+            transform: scale(1.05);
+            border-color: var(--pink-dark);
+        }
+
+        /* Vẽ các icon quần áo/phụ kiện bằng SVG/CSS đơn giản */
+        .item-icon {
+            width: 60px;
+            height: 60px;
+        }
+
+        /* Màn hình ăn mừng (Sân khấu mini) */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.3s;
+        }
+        .overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .stage-popup {
+            background: linear-gradient(to bottom, #ff9a9e, #fecfef);
+            width: 90%;
+            max-width: 500px;
+            height: 500px;
+            border-radius: 30px;
+            border: 5px solid white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            color: white;
+            text-align: center;
+        }
+        .confetti {
+            font-size: 40px;
+            margin-bottom: 10px;
+            animation: bounce 1s infinite alternate;
+        }
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-10px); }
+        }
+
+        /* Responsive cho điện thoại */
+        @media (max-width: 600px) {
+            .game-container {
+                flex-direction: column;
+            }
+            .closet-content {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🎀 Cửa Hàng Thời Trang Bé Xinh 🎀</h1>
+
+    <!-- Chọn chế độ chơi -->
+    <div class="mode-selection">
+        <button id="mode-quest" class="btn-mode active" onclick="switchMode('quest')">🎯 Thử Thách</button>
+        <button id="mode-free" class="btn-mode" onclick="switchMode('free')">🎨 Sáng Tạo Tự Do</button>
+    </div>
+
+    <!-- Khung chơi game chính -->
+    <div class="game-container">
+        
+        <!-- Bên trái: Bé Thỏ và Đồ đang mặc -->
+        <div class="left-panel">
+            <div id="quest-text" class="quest-box">Đang tải thử thách...</div>
+            
+            <div class="stage">
+                <!-- Nhân vật bé Thỏ -->
+                <div class="character">
+                    <div class="rabbit-ear-l"></div>
+                    <div class="rabbit-ear-r"></div>
+                    <div class="rabbit">
+                        <div class="rabbit-eye-l"></div>
+                        <div class="rabbit-eye-r"></div>
+                        <div class="rabbit-nose"></div>
+                    </div>
+                </div>
+                <!-- Các vị trí mặc đồ -->
+                <div id="slot-hat" class="slot"></div>
+                <div id="slot-clothes" class="slot"></div>
+                <div id="slot-shoes" class="slot"></div>
+            </div>
+
+            <button id="action-btn" class="btn-check" onclick="checkOutfit()">Xong Rồi! ✨</button>
+        </div>
+
+        <!-- Bên phải: Tủ quần áo chia tab -->
+        <div class="right-panel">
+            <div class="closet-tabs">
+                <div id="tab-hat" class="tab active" onclick="filterCloset('hat')">👒 Mũ / Nơ</div>
+                <div id="tab-clothes" class="tab" onclick="filterCloset('clothes')">👗 Áo Váy</div>
+                <div id="tab-shoes" class="tab" onclick="filterCloset('shoes')">👟 Giày Ủng</div>
+            </div>
+            <div id="closet-items" class="closet-content">
+                <!-- Vật phẩm sẽ tự động sinh ra từ JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Pop-up Sân khấu chúc mừng khi làm đúng -->
+    <div id="win-overlay" class="overlay">
+        <div class="stage-popup">
+            <div class="confetti">🎉🌟✨⭐🎉</div>
+            <h2>Bé giỏi quá!</h2>
+            <p id="win-message" style="font-size: 18px;">Bạn Thỏ thích bộ đồ này lắm!</p>
+            <div id="mini-stage-char" style="transform: scale(1.2); margin: 40px 0; position: relative; width: 120px; height: 180px;">
+                <!-- Nhân vật copy sang đây để đứng trên sân khấu -->
+            </div>
+            <button class="btn-check" style="background: #FF5C8A; box-shadow: 0 5px #D1345B;" onclick="nextQuest()">Chơi Tiếp ➔</button>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu các món đồ thời trang (Dùng SVG vẽ trực tiếp cho nét và đẹp)
+        const items = [
+            // Danh mục Mũ / Phụ kiện tóc
+            { id: 'pink-bow', type: 'hat', name: 'Nơ hồng', color: 'pink', tag: 'rain-no', svg: `<svg viewBox="0 0 100 60" width="100%"><path d="M10,30 Q25,10 40,25 Q45,30 50,30 Q55,30 60,25 Q75,10 90,30 Q100,50 80,45 Q50,35 50,30 Q50,35 20,45 Q0,50 10,30 Z" fill="#FF85A1" stroke="#fff" stroke-width="2"/><circle cx="50" cy="30" r="8" fill="#FF5C8A"/></svg>` },
+            { id: 'yellow-hat', type: 'hat', name: 'Mũ vàng', color: 'yellow', tag: 'rain-no', svg: `<svg viewBox="0 0 100 60" width="100%"><path d="M10,40 Q50,0 90,40 Z" fill="#FFE066" stroke="#fff" stroke-width="2"/><ellipse cx="50" cy="42" rx="45" ry="8" fill="#FFD000"/></svg>` },
+            { id: 'rain-hat', type: 'hat', name: 'Mũ che mưa', color: 'blue', tag: 'rain-yes', svg: `<svg viewBox="0 0 100 60" width="100%"><path d="M5,40 C5,10 95,10 95,40 C80,40 70,35 50,40 C30,35 20,40 5,40 Z" fill="#4EA8DE" stroke="#fff" stroke-width="2"/></svg>` },
+            
+            // Danh mục Áo Váy
+            { id: 'yellow-dress', type: 'clothes', name: 'Váy vàng', color: 'yellow', tag: 'rain-no', svg: `<svg viewBox="0 0 100 100" width="100%"><path d="M35,10 L65,10 L75,40 L90,90 L10,90 L25,40 Z" fill="#FFE066" stroke="#fff" stroke-width="2"/><circle cx="50" cy="30" r="5" fill="#ff6b6b"/><circle cx="50" cy="50" r="5" fill="#ff6b6b"/></svg>` },
+            { id: 'pink-dress', type: 'clothes', name: 'Váy hồng', color: 'pink', tag: 'rain-no', svg: `<svg viewBox="0 0 100 100" width="100%"><path d="M35,10 L65,10 L80,50 L95,90 L5,90 L20,50 Z" fill="#FFB7B2" stroke="#fff" stroke-width="2"/><path d="M5,90 Q50,75 95,90" fill="none" stroke="#FF85A1" stroke-width="4"/></svg>` },
+            { id: 'rain-coat', type: 'clothes', name: 'Áo mưa', color: 'blue', tag: 'rain-yes', svg: `<svg viewBox="0 0 100 100" width="100%"><path d="M30,10 L70,10 L85,40 L80,90 L20,90 L15,40 Z" fill="#4EA8DE" stroke="#fff" stroke-width="2"/><rect x="47" y="10" width="6" height="80" fill="#3a86c8"/></svg>` },
+
+            // Danh mục Giày dép
+            { id: 'pink-shoes', type: 'shoes', name: 'Giày hồng', color: 'pink', tag: 'rain-no', svg: `<svg viewBox="0 0 120 40" width="100%"><ellipse cx="25" cy="20" rx="20" ry="12" fill="#FF85A1"/><ellipse cx="95" cy="20" rx="20" ry="12" fill="#FF85A1"/><circle cx="25" cy="15" r="5" fill="white"/><circle cx="95" cy="15" r="5" fill="white"/></svg>` },
+            { id: 'yellow-shoes', type: 'shoes', name: 'Giày vàng mẫu', color: 'yellow', tag: 'sample-target', svg: `<svg viewBox="0 0 120 40" width="100%"><path d="M5,25 Q25,5 45,25 L45,35 L5,35 Z" fill="#FFD000"/><path d="M75,25 Q95,5 115,25 L115,35 L75,35 Z" fill="#FFD000" stroke="#fff"/></svg>` },
+            { id: 'rain-boots', type: 'shoes', name: 'Ủng đi mưa', color: 'blue', tag: 'rain-yes', svg: `<svg viewBox="0 0 120 50" width="100%"><path d="M10,5 L30,5 L30,30 L45,45 L10,45 Z" fill="#4EA8DE"/><path d="M75,5 L95,5 L95,30 L110,45 L75,45 Z" fill="#4EA8DE" stroke="#fff"/></svg>` }
+        ];
+
+        // Danh sách các thử thách câu hỏi
+        const quests = [
+            {
+                text: "🐰 Bạn Thỏ muốn mặc váy màu vàng và đội nơ hồng.",
+                check: (current) => current.clothes === 'yellow-dress' && current.hat === 'pink-bow'
+            },
+            {
+                text: "🌧️ Trời mưa rồi! Hãy chọn áo mưa và ủng đi mưa cho bạn Thỏ nhé.",
+                check: (current) => current.clothes === 'rain-coat' && current.shoes === 'rain-boots'
+            },
+            {
+                text: "👟 Bé hãy chọn cho bạn Thỏ đôi giày màu vàng giống hình mẫu nhé.",
+                check: (current) => current.shoes === 'yellow-shoes'
+            }
+        ];
+
+        let currentQuestIndex = 0;
+        let gameMode = 'quest'; // 'quest' hoặc 'free'
+        
+        // Trạng thái đồ đang mặc hiện tại của Thỏ
+        let currentOutfit = { hat: null, clothes: null, shoes: null };
+
+        // Khởi động game
+        window.onload = function() {
+            switchMode('quest');
+        };
+
+        // Chuyển đổi chế độ chơi
+        function switchMode(mode) {
+            gameMode = mode;
+            document.getElementById('mode-quest').classList.toggle('active', mode === 'quest');
+            document.getElementById('mode-free').classList.toggle('active', mode === 'free');
+            
+            // Xóa sạch đồ đang mặc khi chuyển chế độ
+            clearOutfit();
+
+            if (mode === 'free') {
+                document.getElementById('quest-text').innerText = "✨ Chế độ sáng tạo: Bé tha hồ phối đồ theo ý thích nhé!";
+                document.getElementById('action-btn').innerText = "Trình Diễn ✨";
+            } else {
+                currentQuestIndex = 0;
+                loadQuest();
+                document.getElementById('action-btn').innerText = "Xong Rồi! ✨";
+            }
+            filterCloset('hat'); // Mặc định mở tab mũ trước
+        }
+
+        // Tải câu hỏi
+        function loadQuest() {
+            if(gameMode === 'quest') {
+                document.getElementById('quest-text').innerText = quests[currentQuestIndex].text;
+            }
+        }
+
+        // Hiển thị đồ trong tủ theo Tab
+        function filterCloset(type) {
+            // Đổi active tab
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + type).classList.add('active');
+
+            // Render item
+            const closetItems = document.getElementById('closet-items');
+            closetItems.innerHTML = '';
+
+            const filtered = items.filter(i => i.type === type);
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.onclick = () => wearItem(item);
+                
+                const iconDiv = document.createElement('div');
+                iconDiv.className = 'item-icon';
+                iconDiv.innerHTML = item.svg;
+
+                card.appendChild(iconDiv);
+                closetItems.appendChild(card);
+            });
+        }
+
+        // Bé mặc đồ lên người Thỏ
+        function wearItem(item) {
+            currentOutfit[item.type] = item.id;
+            
+            // Cập nhật giao diện búp bê đồ đang mặc
+            const slot = document.getElementById('slot-' + item.type);
+            slot.innerHTML = item.svg;
+
+            // Hiệu ứng bong bóng nhỏ khi mặc đồ xong
+            slot.style.transform = 'scale(1.1)';
+            setTimeout(() => slot.style.transform = 'scale(1)', 150);
+        }
+
+        // Xóa sạch đồ
+        function clearOutfit() {
+            currentOutfit = { hat: null, clothes: null, shoes: null };
+            document.getElementById('slot-hat').innerHTML = '';
+            document.getElementById('slot-clothes').innerHTML = '';
+            document.getElementById('slot-shoes').innerHTML = '';
+        }
+
+        // Kiểm tra kết quả phối đồ
+        function checkOutfit() {
+            if (gameMode === 'free') {
+                // Chế độ tự do thì luôn cho lên sân khấu
+                showStagePopup("Bộ đồ bé phối đẹp quá! Bạn Thỏ sẵn sàng lên sân khấu rồi!");
+                return;
+            }
+
+            // Chế độ thử thách: kiểm tra logic câu hỏi
+            const currentQuest = quests[currentQuestIndex];
+            const isCorrect = currentQuest.check(currentOutfit);
+
+            if (isCorrect) {
+                showStagePopup("Đúng rồi! Bé giỏi quá, bạn Thỏ rất thích bộ đồ này!");
+            } else {
+                alert("Ồ, chưa đúng rồi! Bé thử nhìn kỹ lại yêu cầu và chọn lại xem sao nhé! ❤️");
+            }
+        }
+
+        // Hiển thị sân khấu mini chúc mừng
+        function showStagePopup(message) {
+            document.getElementById('win-message').innerText = message;
+            
+            // Sao chép nguyên nhân vật đang mặc đồ sang popup sân khấu cho đẹp
+            const charClone = document.querySelector('.character').parentElement.cloneNode(true);
+            // Xóa bỏ khung tròn nền cũ trong bản sao
+            charClone.style.background = 'none';
+            
+            const miniStage = document.getElementById('mini-stage-char');
+            miniStage.innerHTML = '';
+            miniStage.appendChild(charClone);
+
+            document.getElementById('win-overlay').classList.add('active');
+        }
+
+        // Qua màn tiếp theo
+        function nextQuest() {
+            document.getElementById('win-overlay').classList.remove('active');
+            clearOutfit();
+
+            if (gameMode === 'quest') {
+                currentQuestIndex = (currentQuestIndex + 1) % quests.length;
+                loadQuest();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiệm Ăn Cổ Tích Của Bé - Game Nấu Ăn Trực Quan</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Fredoka cho chữ bo tròn siêu dễ thương -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #ffdce8;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        /* Hiệu ứng đổ bóng 3D mềm kiểu hoạt hình */
+        .cute-border-heavy {
+            border: 6px solid #ffb6c1;
+        }
+        
+        .cute-card-shadow {
+            box-shadow: 0 10px 0px #ffb3c6, 0 15px 25px rgba(255, 179, 198, 0.4);
+        }
+        
+        .cute-btn-pink {
+            background: linear-gradient(135deg, #ff8da1, #ff6584);
+            border-bottom: 5px solid #d44362;
+            box-shadow: 0 4px 10px rgba(255, 101, 132, 0.3);
+        }
+        .cute-btn-pink:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #d44362;
+        }
+
+        .cute-btn-green {
+            background: linear-gradient(135deg, #7fe391, #53c869);
+            border-bottom: 5px solid #369a48;
+            box-shadow: 0 4px 10px rgba(83, 200, 105, 0.3);
+        }
+        .cute-btn-green:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #369a48;
+        }
+
+        .cute-btn-blue {
+            background: linear-gradient(135deg, #7fd6f5, #49bce3);
+            border-bottom: 5px solid #288fae;
+            box-shadow: 0 4px 10px rgba(73, 188, 227, 0.3);
+        }
+        .cute-btn-blue:active {
+            transform: translateY(3px);
+            border-bottom: 2px solid #288fae;
+        }
+
+        /* Hoạt ảnh bập bồng dịu nhẹ */
+        @keyframes gentle-float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(2deg); }
+        }
+        .floating {
+            animation: gentle-float 3s ease-in-out infinite;
+        }
+
+        /* Hoạt ảnh bong bóng xà phòng bốc lên */
+        @keyframes bubble-rise {
+            0% { transform: translateY(100%) scale(0.6); opacity: 0; }
+            20% { opacity: 0.9; }
+            90% { opacity: 0.9; }
+            100% { transform: translateY(-140px) scale(1.2); opacity: 0; }
+        }
+        .bubble-active {
+            animation: bubble-rise 1.6s infinite ease-out;
+        }
+
+        /* Hoạt ảnh lắc rung khi nấu nướng */
+        @keyframes cook-shake {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-3px, 2px) rotate(-3deg); }
+            40% { transform: translate(3px, -1px) rotate(3deg); }
+            60% { transform: translate(-2px, -2px) rotate(-1deg); }
+            80% { transform: translate(2px, 2px) rotate(2deg); }
+        }
+        .cooking-vibe {
+            animation: cook-shake 0.15s infinite;
+        }
+
+        /* Hoạt ảnh tiền vàng rơi */
+        @keyframes coin-bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-10px) scale(1.1); }
+        }
+        .coin-active {
+            animation: coin-bounce 1s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 md:p-4 overflow-x-hidden">
+
+    <script>
+        // Khởi tạo Audio Context tích hợp sẵn
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(450, now);
+                    osc.frequency.exponentialRampToValueAtTime(850, now + 0.08);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'coin') {
+                    // Double chime lấp lánh cho tiền vàng
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(659.25, now); // E5
+                    osc.frequency.setValueAtTime(987.77, now + 0.08); // B5
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'fry') {
+                    // Âm thanh rán xèo xèo xào xạc tự chế bằng Noise ngẫu nhiên
+                    const bufferSize = audioCtx.sampleRate * 0.4;
+                    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+                    const noise = audioCtx.createBufferSource();
+                    noise.buffer = buffer;
+                    
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(1200, now);
+                    filter.Q.setValueAtTime(1.0, now);
+
+                    const noiseGain = audioCtx.createGain();
+                    noiseGain.gain.setValueAtTime(0.08, now);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.005, now + 0.4);
+
+                    noise.connect(filter);
+                    filter.connect(noiseGain);
+                    noiseGain.connect(audioCtx.destination);
+                    noise.start(now);
+                } else if (type === 'blend') {
+                    // Tiếng máy xay sinh tố o o o rè rè vui nhộn
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(220, now + 0.3);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'wash') {
+                    // Tiếng xoẹt xoẹt rửa bát
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(200, now);
+                    osc.frequency.exponentialRampToValueAtTime(700, now + 0.15);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'win') {
+                    // Điệp khúc chiến thắng tươi vui
+                    const freqs = [523.25, 659.25, 783.99, 1046.50]; // Đô - Mi - Sol - Đố
+                    freqs.forEach((f, i) => {
+                        const noteOsc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        noteOsc.frequency.setValueAtTime(f, now + i * 0.1);
+                        noteGain.gain.setValueAtTime(0.12, now + i * 0.1);
+                        noteGain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.2);
+                        noteOsc.start(now + i * 0.1);
+                        noteOsc.stop(now + i * 0.1 + 0.25);
+                    });
+                } else if (type === 'fail') {
+                    // Tiếng tạch tạch chọn nhầm
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch (e) {
+                console.log("Audio not supported or interaction needed first:", e);
+            }
+        }
+    </script>
+
+    <!-- Main Board Game -->
+    <div class="w-full max-w-4xl bg-rose-50 rounded-3xl border-8 cute-border-heavy cute-card-shadow overflow-hidden flex flex-col relative min-h-[92vh]">
+        
+        <!-- Header: Tiệm Ăn & Trạng Thái Tiền Vàng -->
+        <header class="bg-gradient-to-r from-pink-300 to-rose-300 p-3 flex justify-between items-center text-white border-b-4 border-pink-400">
+            <div class="flex items-center space-x-2">
+                <span class="text-3xl floating" style="animation-delay: 0.2s">🍳</span>
+                <div>
+                    <h1 class="font-extrabold text-sm md:text-xl tracking-wider text-pink-900 drop-shadow-sm">TIỆM ĂN CỔ TÍCH</h1>
+                    <p class="text-[10px] md:text-xs text-rose-800 font-semibold uppercase tracking-wide">Cooking Fairy Land</p>
+                </div>
+            </div>
+            
+            <!-- Chỉ số Game -->
+            <div class="flex items-center space-x-2 md:space-x-4">
+                <!-- Ngày -->
+                <div class="bg-pink-400 bg-opacity-70 rounded-full px-3 py-1 flex items-center space-x-1 border border-pink-200 text-xs md:text-sm font-bold shadow-inner">
+                    <span>📅 Ngày:</span>
+                    <span id="stats-day" class="text-yellow-300 text-sm md:text-base font-extrabold">1</span>
+                </div>
+                <!-- Vàng thu hoạch -->
+                <div class="bg-gradient-to-r from-yellow-300 to-amber-400 text-yellow-950 rounded-full px-3 py-1 flex items-center space-x-1 border-2 border-yellow-100 font-extrabold shadow-sm text-xs md:text-sm">
+                    <span class="animate-pulse">🪙</span>
+                    <span id="stats-coins" class="text-sm md:text-base">0</span>
+                </div>
+                <!-- Nút âm thanh -->
+                <button onclick="playSound('click')" class="bg-pink-500 hover:bg-pink-600 rounded-full w-8 h-8 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow">
+                    <i class="fa-solid fa-music text-xs"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Screens -->
+        <main class="flex-grow flex flex-col items-center justify-center p-3 md:p-6 relative bg-[radial-gradient(#ffdfeb_1.2px,transparent_1.2px)] [background-size:20px_20px]">
+
+            <!-- SCREEN 1: Welcome (Màn hình khởi đầu) -->
+            <div id="screen-welcome" class="flex flex-col items-center justify-center space-y-6 py-8 w-full text-center">
+                <div class="relative floating">
+                    <span class="text-8xl md:text-9xl">🧁</span>
+                    <span class="absolute -top-3 -right-3 text-4xl">✨</span>
+                    <span class="absolute -bottom-3 -left-3 text-4xl">🍓</span>
+                </div>
+                
+                <div class="space-y-2 max-w-md px-4">
+                    <h2 class="text-3xl md:text-5xl font-extrabold text-pink-500 tracking-wide drop-shadow-md">
+                        TIỆM BẾP CỦA BÉ
+                    </h2>
+                    <p class="text-gray-600 text-sm md:text-base font-medium">
+                        Nấu những món ăn thật ngon ngọt ngào cho các bạn mèo 🐱, thỏ 🐰, gấu 🐻 và kiếm tiền vàng xây dựng cửa hàng xinh đẹp nhé!
+                    </p>
+                </div>
+
+                <div class="flex flex-col space-y-3.5 w-64">
+                    <button onclick="startGame()" class="cute-btn-pink text-white font-extrabold text-xl py-4 px-6 rounded-2xl transition-all duration-150 transform hover:-translate-y-1 active:translate-y-0 pulse-soft">
+                        🍒 MỞ CỬA HÀNG 🍒
+                    </button>
+                    <button onclick="showInstructions()" class="cute-btn-blue text-white font-extrabold text-base py-2.5 px-4 rounded-xl transition-all duration-150">
+                        Cách Chơi 📖
+                    </button>
+                </div>
+
+                <div class="flex space-x-6 pt-4 text-3xl opacity-90">
+                    <span class="floating" style="animation-delay: 0.1s">🐱</span>
+                    <span class="floating" style="animation-delay: 0.4s">🐰</span>
+                    <span class="floating" style="animation-delay: 0.7s">🐻</span>
+                    <span class="floating" style="animation-delay: 1.0s">🦊</span>
+                </div>
+            </div>
+
+            <!-- SCREEN 2: Bàn Phục Vụ & Nhà Bếp Hoạt Động -->
+            <div id="screen-store" class="hidden w-full h-full flex flex-col lg:flex-row gap-4 items-stretch justify-start">
+                
+                <!-- Phân khu TRÁI: Khách hàng chờ món & Bàn giao đồ -->
+                <div class="w-full lg:w-1/3 bg-white bg-opacity-90 rounded-3xl p-4 border-4 border-pink-200 flex flex-col justify-between relative min-h-[260px] lg:min-h-0 shadow-inner">
+                    
+                    <div class="text-center border-b-2 border-dashed border-pink-100 pb-2 mb-2">
+                        <span class="text-xs font-bold text-pink-400 uppercase tracking-widest">Khu Phục Vụ Khách 🍽️</span>
+                    </div>
+
+                    <!-- Bong bóng trò chuyện & Bạn khách thú bông -->
+                    <div id="customer-container" class="flex-grow flex flex-col items-center justify-center space-y-3 py-2 transition-all duration-300">
+                        <!-- Nạp động qua JS -->
+                    </div>
+
+                    <!-- Đĩa chứa đồ chờ đem cho khách ăn -->
+                    <div class="bg-pink-50 rounded-2xl p-3 border-2 border-pink-100 flex flex-col items-center justify-center shadow-sm">
+                        <p class="text-[10px] text-pink-400 font-extrabold uppercase mb-1.5">Bàn Bưng Đồ Cho Khách</p>
+                        
+                        <!-- Điểm thả món ăn để phục vụ -->
+                        <div id="serving-plate" class="w-20 h-20 rounded-full border-4 border-dashed border-pink-300 flex items-center justify-center bg-white cursor-pointer hover:bg-pink-100 transition duration-150" onclick="tryServeDish()">
+                            <span id="serving-item-emoji" class="text-4xl text-gray-300">🍽️</span>
+                        </div>
+                        <p id="serving-status-text" class="text-xs text-gray-400 mt-2 font-bold text-center">Bàn ăn trống trơn</p>
+                    </div>
+                </div>
+
+                <!-- Phân khu PHẢI: Bếp thần kỳ chế biến món ăn -->
+                <div class="w-full lg:w-2/3 bg-white bg-opacity-95 rounded-3xl p-4 md:p-5 border-4 border-pink-200 flex flex-col justify-between shadow-inner">
+                    
+                    <!-- Đầu bếp nhỏ & Thanh tiến trình bước -->
+                    <div class="flex justify-between items-center border-b-2 border-pink-100 pb-2.5 mb-4">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-xl">👩‍🍳</span>
+                            <span id="kitchen-title" class="font-bold text-pink-700 text-xs md:text-sm">Bếp Thần Kỳ: Đang trống trải</span>
+                        </div>
+                        <div id="step-indicator" class="flex space-x-1.5">
+                            <!-- Nút hiển thị bước hiện tại sẽ tạo bằng JS -->
+                        </div>
+                    </div>
+
+                    <!-- Vùng Thao Tác Chế Biến Thay Đổi Linh Hoạt -->
+                    <div id="kitchen-workspace" class="flex-grow flex flex-col items-center justify-center min-h-[320px] bg-pink-50 bg-opacity-50 rounded-2xl p-4 border border-pink-100 relative overflow-hidden">
+                        
+                        <!-- TRẠNG THÁI 0: Đang chờ chọn món từ Menu -->
+                        <div id="kitchen-state-idle" class="flex flex-col items-center justify-center space-y-4 text-center">
+                            <div class="text-7xl floating">📖</div>
+                            <div class="space-y-1">
+                                <h3 class="font-extrabold text-lg text-pink-600">Nhấn nút bên dưới để xem Menu</h3>
+                                <p class="text-xs text-gray-400">Xem bạn thú muốn ăn gì rồi chọn đúng nha!</p>
+                            </div>
+                            <button onclick="openMenuModal()" class="cute-btn-pink text-white font-extrabold py-2.5 px-6 rounded-xl text-sm">
+                                Mở Cuốn Menu 📋
+                            </button>
+                        </div>
+
+                        <!-- TRẠNG THÁI 1: Lựa chọn nguyên liệu từ Tủ Gỗ -->
+                        <div id="kitchen-state-ingredients" class="hidden w-full flex flex-col items-center space-y-3">
+                            <h4 class="font-bold text-center text-pink-700 text-xs md:text-sm">
+                                Chọn đúng <span id="ing-needed-count" class="text-rose-500 font-extrabold text-base">3</span> nguyên liệu cho món <span id="ing-recipe-name" class="underline text-pink-600">Bánh</span>:
+                            </h4>
+                            
+                            <!-- Kệ tủ bếp gỗ -->
+                            <div class="w-full bg-amber-50 p-3 rounded-2xl border-2 border-amber-200 shadow-inner">
+                                <div class="grid grid-cols-4 gap-2" id="ingredients-grid">
+                                    <!-- Các nguyên liệu sẽ được hiển thị ngẫu nhiên -->
+                                </div>
+                            </div>
+
+                            <!-- Thùng đựng nguyên liệu được chọn -->
+                            <div class="flex items-center space-x-2 bg-white px-3 py-2 rounded-xl border border-pink-100 w-full justify-center">
+                                <span class="text-[11px] font-bold text-gray-400 uppercase">Bếp đã có:</span>
+                                <div id="selected-ingredients-list" class="flex space-x-2">
+                                    <!-- Emoji được chọn hiển thị tại đây -->
+                                </div>
+                            </div>
+
+                            <!-- Nút thao tác -->
+                            <div class="flex space-x-3 pt-1">
+                                <button onclick="resetIngredientsSelection()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold text-xs px-3.5 py-2 rounded-lg transition active:scale-95">
+                                    Chọn Lại 🔄
+                                </button>
+                                <button onclick="verifyIngredients()" class="cute-btn-green text-white font-extrabold text-xs px-5 py-2 rounded-lg">
+                                    Chuẩn Bị Xong! 🚀
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TRẠNG THÁI 2: Thao tác nấu nướng trực quan (Rán, Trộn, Nướng lò...) -->
+                        <div id="kitchen-state-cooking" class="hidden w-full flex flex-col items-center space-y-4">
+                            <h4 id="cooking-step-instruction" class="font-bold text-center text-pink-600 text-xs md:text-sm">
+                                Bước 1: Rán thịt thôi bé ơi! Click liên tục vào chảo nào!
+                            </h4>
+                            
+                            <!-- Dụng cụ trực quan -->
+                            <div class="relative w-full max-w-[280px] h-48 bg-white rounded-2xl border-2 border-pink-100 shadow-inner flex flex-col items-center justify-center p-4">
+                                <div id="cooking-interactive-visual" class="relative w-full h-full flex items-center justify-center">
+                                    <!-- Chảo rán / Lò nướng / Máy xay sinh tố sinh động -->
+                                </div>
+                            </div>
+
+                            <!-- Thanh tiến trình nấu -->
+                            <div class="w-full max-w-xs space-y-2">
+                                <div class="w-full bg-pink-100 rounded-full h-4 overflow-hidden border border-pink-200 shadow-inner">
+                                    <div id="cooking-progress-bar" class="bg-gradient-to-r from-pink-400 to-rose-400 h-full transition-all duration-100" style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-center" id="cooking-interaction-btn-container">
+                                    <!-- Nút bấm tương tác đổi theo bước -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TRẠNG THÁI 3: Hoàn thành món / Lắp ráp món đẹp mắt -->
+                        <div id="kitchen-state-assembly" class="hidden w-full flex flex-col items-center space-y-4">
+                            <h4 class="font-extrabold text-center text-pink-600 text-base">Tuyệt đỉnh đầu bếp! Món ăn đã sẵn sàng! ✨</h4>
+                            <div id="assembled-dish-visual" class="text-8xl floating my-2">🍔</div>
+                            <button onclick="moveFinishedDishToServing()" class="cute-btn-green text-white font-extrabold py-3 px-8 rounded-xl text-sm md:text-base">
+                                Đặt Lên Bàn Phục Vụ 👉🍽️
+                            </button>
+                        </div>
+
+                        <!-- TRẠNG THÁI 4: Trạm Rửa Chén Đĩa dơ bẩn của khách -->
+                        <div id="kitchen-state-wash" class="hidden w-full flex flex-col items-center space-y-3">
+                            <div class="text-center">
+                                <h4 class="font-bold text-sky-600 text-sm md:text-base">Chà Rửa Bát Đĩa Thật Sạch! 🧼</h4>
+                                <p class="text-[11px] text-sky-400 font-medium">Nhấp chuột liên tục để kỳ cọ sạch vết dơ thức ăn!</p>
+                            </div>
+
+                            <!-- Chậu rửa nước trong lành -->
+                            <div class="relative w-44 h-44 flex items-center justify-center bg-sky-50 rounded-full border-4 border-sky-200 overflow-hidden shadow-inner" id="sink-container">
+                                <!-- Đĩa dơ -->
+                                <div id="dirty-plate" class="text-7xl transition-all duration-200 relative cursor-pointer" onclick="scrubPlate()">
+                                    🍽️
+                                    <!-- Vệt ố dơ bẩn màu xanh lá -->
+                                    <span id="plate-stain" class="absolute inset-0 flex items-center justify-center text-6xl opacity-70">🤢</span>
+                                </div>
+                                <!-- Bong bóng nổi lên -->
+                                <div class="absolute inset-0 pointer-events-none" id="bubbles-container"></div>
+                            </div>
+
+                            <!-- Tiến độ rửa sạch chén đĩa -->
+                            <div class="w-44">
+                                <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden border">
+                                    <div id="wash-progress" class="bg-sky-400 h-full transition-all" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <button onclick="scrubPlate()" class="cute-btn-blue text-white font-extrabold text-xs py-2 px-5 rounded-lg">
+                                🧼 Chà Xát Đĩa Cạch Cạch
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- Thanh Menu phụ bên dưới -->
+                    <div class="mt-3 pt-3 border-t-2 border-pink-100 flex justify-between items-center">
+                        <button onclick="openMenuModal()" class="bg-pink-400 hover:bg-pink-500 text-white font-extrabold text-xs py-2 px-4 rounded-xl shadow transition flex items-center space-x-1 active:scale-95">
+                            <span>📋 Menu Món Ăn</span>
+                        </button>
+                        
+                        <div class="text-right">
+                            <p class="text-[9px] text-gray-400 font-extrabold uppercase tracking-wider">Mục Tiêu Hôm Nay</p>
+                            <p id="daily-quota-text" class="text-xs font-bold text-pink-500">Đã phục vụ: 0/3</p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- SCREEN 3: Tổng kết cuối ngày đóng cửa hàng -->
+            <div id="screen-end-day" class="hidden w-full max-w-md bg-white rounded-3xl border-4 border-pink-200 p-6 text-center space-y-6 shadow-2xl animate-fade-in">
+                <span class="text-7xl floating inline-block">🌙</span>
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-extrabold text-pink-600 uppercase">Giờ Đóng Cửa Hàng!</h2>
+                    <p class="text-gray-500 text-xs">Hôm nay bé đã làm việc cực kỳ xuất sắc!</p>
+                </div>
+
+                <!-- Đánh giá ngôi sao lấp lánh -->
+                <div class="flex justify-center space-x-2.5 text-3xl text-yellow-400" id="star-rating">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                </div>
+
+                <!-- Bảng thống kê thu hoạch -->
+                <div class="bg-pink-50 bg-opacity-70 rounded-2xl p-4 border border-pink-100 text-left space-y-2.5">
+                    <div class="flex justify-between text-xs md:text-sm font-semibold text-gray-700">
+                        <span>Bạn thú đã được ăn ngon:</span>
+                        <span id="end-served-count" class="font-extrabold text-pink-600">3 bạn</span>
+                    </div>
+                    <div class="flex justify-between text-xs md:text-sm font-semibold text-gray-700">
+                        <span>Số vàng thu hoạch mới:</span>
+                        <span id="end-earned-coins" class="font-extrabold text-yellow-600">🪙 +150</span>
+                    </div>
+                    <div class="flex justify-between text-xs md:text-sm font-extrabold text-gray-800 border-t border-dashed border-pink-200 pt-2.5">
+                        <span>Tổng tủ tiền vàng của bé:</span>
+                        <span id="end-total-coins" class="text-green-600 font-extrabold">🪙 150</span>
+                    </div>
+                </div>
+
+                <button onclick="startNextDay()" class="w-full cute-btn-pink text-white font-extrabold py-3.5 rounded-xl text-base">
+                    Bước Sang Ngày Mới ☀️
+                </button>
+            </div>
+
+        </main>
+
+        <!-- Slogan dễ thương -->
+        <footer class="bg-pink-100 p-2 text-center text-[10px] md:text-xs text-rose-400 font-semibold border-t border-pink-200">
+            Hãy cùng làm giàu tiệm ăn thần tiên của bé nhé! 💕
+        </footer>
+    </div>
+
+    <!-- MODAL 1: Bảng chọn món ăn Menu -->
+    <div id="modal-menu" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl border-8 border-pink-200 max-w-sm w-full p-5 shadow-2xl relative animate-scale-up">
+            <button onclick="closeMenuModal()" class="absolute -top-4 -right-4 w-9 h-9 bg-rose-400 text-white font-bold rounded-full border-2 border-white hover:bg-rose-500 flex items-center justify-center text-lg shadow active:scale-95 transition">
+                &times;
+            </button>
+            
+            <div class="text-center space-y-1 mb-4">
+                <span class="text-4xl">🧁</span>
+                <h3 class="text-lg font-extrabold text-pink-600">MENU MÓN NGON</h3>
+                <p class="text-[10px] text-gray-400">Hãy chế biến đúng món bạn khách đang yêu cầu nhé!</p>
+            </div>
+
+            <!-- Các món có sẵn trong tiệm -->
+            <div class="space-y-3" id="menu-items-container">
+                <!-- Hamburger bò -->
+                <div onclick="selectRecipe('burger')" class="flex items-center space-x-3.5 p-3 bg-rose-50 hover:bg-rose-100 rounded-2xl border-2 border-rose-100 cursor-pointer transition transform hover:scale-[1.02]">
+                    <span class="text-4xl">🍔</span>
+                    <div class="flex-grow text-left">
+                        <h4 class="font-extrabold text-rose-700 text-xs md:text-sm">Bánh Hamburger Bò</h4>
+                        <p class="text-[10px] text-gray-400 font-bold">Nguyên liệu: Bánh mì 🍞, Bò 🥩, Rau 🥬</p>
+                    </div>
+                    <span class="bg-yellow-300 text-yellow-900 font-extrabold text-xs px-2.5 py-1 rounded-full shadow-sm">🪙 50</span>
+                </div>
+
+                <!-- Cupcake kem dâu -->
+                <div onclick="selectRecipe('cupcake')" class="flex items-center space-x-3.5 p-3 bg-purple-50 hover:bg-purple-100 rounded-2xl border-2 border-purple-100 cursor-pointer transition transform hover:scale-[1.02]">
+                    <span class="text-4xl">🧁</span>
+                    <div class="flex-grow text-left">
+                        <h4 class="font-extrabold text-purple-700 text-xs md:text-sm">Cupcake Kem Dâu</h4>
+                        <p class="text-[10px] text-gray-400 font-bold">Nguyên liệu: Trứng 🥚, Bột 🌾, Dâu 🍓</p>
+                    </div>
+                    <span class="bg-yellow-300 text-yellow-900 font-extrabold text-xs px-2.5 py-1 rounded-full shadow-sm">🪙 60</span>
+                </div>
+
+                <!-- Nước ép dâu tươi mát -->
+                <div onclick="selectRecipe('juice')" class="flex items-center space-x-3.5 p-3 bg-pink-50 hover:bg-pink-100 rounded-2xl border-2 border-pink-100 cursor-pointer transition transform hover:scale-[1.02]">
+                    <span class="text-4xl">🍹</span>
+                    <div class="flex-grow text-left">
+                        <h4 class="font-extrabold text-pink-700 text-xs md:text-sm">Nước Ép Dâu Mát Lạnh</h4>
+                        <p class="text-[10px] text-gray-400 font-bold">Nguyên liệu: Quả dâu 🍓, Đường 🍬, Đá 🧊</p>
+                    </div>
+                    <span class="bg-yellow-300 text-yellow-900 font-extrabold text-xs px-2.5 py-1 rounded-full shadow-sm">🪙 40</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Hướng dẫn cách chơi chi tiết -->
+    <div id="modal-instructions" class="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl border-8 border-sky-200 max-w-sm w-full p-5 shadow-2xl relative">
+            <button onclick="closeInstructions()" class="absolute -top-4 -right-4 w-9 h-9 bg-sky-400 text-white font-bold rounded-full border-2 border-white hover:bg-sky-500 flex items-center justify-center text-lg shadow active:scale-95 transition">
+                &times;
+            </button>
+            
+            <div class="text-center space-y-2">
+                <span class="text-4xl">📔</span>
+                <h3 class="text-lg font-extrabold text-sky-600">Cách Nấu Ăn Cho Bé!</h3>
+                <div class="text-left text-xs text-gray-600 space-y-2.5 py-2.5 border-t border-b border-sky-100 my-2">
+                    <p>🍓 <strong>1. Chào Khách:</strong> Đợi bạn thú cưng dễ thương order gọi món thèm ăn.</p>
+                    <p>📋 <strong>2. Chọn Menu:</strong> Click vào quyển Menu, chọn đúng món bạn thú vừa gọi.</p>
+                    <p>🪵 <strong>3. Chọn Nguyên Liệu:</strong> Nhặt đúng các nguyên liệu nằm ngổn ngang trong kệ tủ.</p>
+                    <p>🍳 <strong>4. Chế Biến:</strong> Nhấp click lia lịa để xào rán thịt, xay sinh tố hoặc phủ kem nướng bánh.</p>
+                    <p>🍽️ <strong>5. Phục Vụ:</strong> Kéo đĩa đồ ăn ra bàn giao khách, thu tiền vàng🪙.</p>
+                    <p>🧼 <strong>6. Rửa Sạch Bát:</strong> Chà sạch các vết bẩn bám trên đĩa bằng nước bóng bọt xà phòng.</p>
+                </div>
+                <button onclick="closeInstructions()" class="cute-btn-blue text-white font-extrabold px-6 py-2 rounded-xl text-xs">
+                    Bé Đã Hiểu Ngay! 💕
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Bảng thông báo Alert dễ thương từ Trò Chơi -->
+    <div id="modal-alert" class="fixed inset-0 bg-black bg-opacity-40 z-[60] flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-2xl border-4 border-pink-300 max-w-xs w-full p-4 text-center space-y-4 shadow-2xl animate-scale-up">
+            <span id="alert-icon" class="text-5xl inline-block floating">⭐</span>
+            <p id="alert-message" class="text-gray-700 font-extrabold text-sm">Chào mừng đầu bếp nhỏ!</p>
+            <button onclick="closeAlert()" class="bg-pink-400 hover:bg-pink-500 text-white font-extrabold text-xs py-2 px-6 rounded-lg shadow active:scale-95 transition">
+                Vâng ạ 💕
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Cấu trúc Công Thức nấu ăn
+        const RECIPES = {
+            burger: {
+                name: 'Bánh Hamburger Bò',
+                emoji: '🍔',
+                price: 50,
+                ingredients: ['🥩', '🥬', '🍞'], // Thịt bò, rau xà lách, bánh mì
+                steps: [
+                    { name: 'Rán chín thịt bò', type: 'fry', instruction: 'Rán thịt bò xèo xèo nào! Nhấp click liên tục vào chảo.', target: 100, stepEmoji: '🥩' },
+                    { name: 'Xếp nguyên liệu bánh', type: 'assemble', instruction: 'Ráp bánh mì kẹp thịt bò và rau thật xinh xắn nha.', target: 1, stepEmoji: '🍔' }
+                ]
+            },
+            cupcake: {
+                name: 'Cupcake Kem Dâu',
+                emoji: '🧁',
+                price: 60,
+                ingredients: ['🥚', '🌾', '🍓'], // Trứng gà, bột mì, quả dâu tây
+                steps: [
+                    { name: 'Trộn bột bánh', type: 'blend', instruction: 'Nhấp liên tục vào máy trộn bột trứng mịn màn nào!', target: 100, stepEmoji: '🥣' },
+                    { name: 'Nướng lò cupcake', type: 'fry', instruction: 'Nướng cupcake thơm phưng phức! Click lò thật nóng nào.', target: 100, stepEmoji: '🧁' },
+                    { name: 'Phủ kem hồng', type: 'assemble', instruction: 'Phủ thật nhiều kem dâu hồng ngọt ngào lên bánh!', target: 1, stepEmoji: '🧁' }
+                ]
+            },
+            juice: {
+                name: 'Nước Ép Dâu Mát Lạnh',
+                emoji: '🍹',
+                price: 40,
+                ingredients: ['🍓', '🍬', '🧊'], // Dâu tây, đường ngọt, đá viên
+                steps: [
+                    { name: 'Xay dâu mát lạnh', type: 'blend', instruction: 'Bật máy xay sinh tố chạy tít quay vèo vèo nhé!', target: 100, stepEmoji: '🍹' },
+                    { name: 'Cắm ống mút', type: 'assemble', instruction: 'Cắm thêm chiếc ống mút hình xoắn ốc tuyệt đẹp!', target: 1, stepEmoji: '🍹' }
+                ]
+            }
+        };
+
+        // Kho lưu trữ nguyên liệu ngẫu nhiên trên kệ
+        const INGREDIENT_POOL = [
+            { emoji: '🥩', name: 'Thịt bò' },
+            { emoji: '🥬', name: 'Rau cải' },
+            { emoji: '🍞', name: 'Bánh mì' },
+            { emoji: '🥚', name: 'Trứng gà' },
+            { emoji: '🌾', name: 'Bột mì' },
+            { emoji: '🍓', name: 'Quả dâu' },
+            { emoji: '🍬', name: 'Đường cát' },
+            { emoji: '🧊', name: 'Đá lạnh' },
+            { emoji: '🍅', name: 'Cà chua' },
+            { emoji: '🧀', name: 'Bơ phô mai' },
+            { emoji: '🍋', name: 'Quả chanh' },
+            { emoji: '🍫', name: 'Sô cô la' }
+        ];
+
+        // Các vị khách dễ thương nghé tiệm ăn
+        const CUSTOMERS = [
+            { emoji: '🐰', greet: 'Chào bé yêu! Thỏ thèm ăn [Dish] quá, bé nấu giùm thỏ nha!', enjoy: 'Nhóp nhép... dâu ngon ngọt cực kỳ bé ơi!', finish: 'Thỏ ăn no nê rồi! Cảm ơn bé, gửi tiền cho bé nha!' },
+            { emoji: '🐱', greet: 'Meo meo! Cho mèo con mua một suất [Dish] thơm thơm ngon ngọt nhé!', enjoy: 'Măm măm... đút đĩa mèo con thích mê luôn!', finish: 'Ngon tuyệt đỉnh! Đây là tiền thù lao cho tài năng của bé.' },
+            { emoji: '🐻', greet: 'Gấu mập kính chào! Có thể cho gấu một đĩa [Dish] thật to béo không nào?', enjoy: 'Ngon ngấu nghiến... măm măm mút đĩa béo ngậy!', finish: 'Quá đã thèm! Ngày mai gấu lại ghé tiệm ăn nữa nha!' },
+            { emoji: '🐼', greet: 'Panda dễ mến đây! Tiệm có làm được món [Dish] mát lạnh béo ngậy không nhỉ?', enjoy: 'Ực ực... ngọt lành đã khát sướng bụng lắm á!', finish: 'Xứng đáng điểm 10 tặng bé! Gửi bé tiền vàng lấp lánh nhen!' },
+            { emoji: '🦊', greet: 'Cáo hồng xin chào đầu bếp dễ thương! Thèm món [Dish] của tiệm lâu lắm rồi.', enjoy: 'Ăn ngấu nghiến thơm ngon nức lòng...', finish: 'Cáo hồng gửi bé tiền vàng, bé rửa bát đĩa sạch bóng nhen!' }
+        ];
+
+        // Biến lưu trạng thái chơi game
+        let gameState = {
+            day: 1,
+            coins: 0,
+            earnedToday: 0,
+            servedToday: 0,
+            quota: 3, // Phục vụ đủ 3 bạn thú là xong ngày
+            currentCustomer: null,
+            currentOrder: null, 
+            currentRecipe: null,
+            selectedIngredients: [],
+            currentStepIndex: 0,
+            cookingProgress: 0,
+            servingDish: null,
+            washProgress: 0
+        };
+
+        // Khởi động Trò Chơi
+        function startGame() {
+            playSound('click');
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-store').classList.remove('hidden');
+            document.getElementById('screen-end-day').classList.add('hidden');
+            
+            // Đọc lịch sử lưu trữ
+            const savedCoins = localStorage.getItem('cooking_game_coins');
+            const savedDay = localStorage.getItem('cooking_game_day');
+            if (savedCoins) gameState.coins = parseInt(savedCoins);
+            if (savedDay) gameState.day = parseInt(savedDay);
+
+            updateHeaderStats();
+            setupNewDay();
+        }
+
+        function setupNewDay() {
+            gameState.earnedToday = 0;
+            gameState.servedToday = 0;
+            gameState.servingDish = null;
+            gameState.currentOrder = null;
+            gameState.currentRecipe = null;
+            
+            updateHeaderStats();
+            updateDailyQuotaText();
+            spawnCustomer();
+            showIdleKitchen();
+            resetServingPlate();
+        }
+
+        function updateHeaderStats() {
+            document.getElementById('stats-day').innerText = gameState.day;
+            document.getElementById('stats-coins').innerText = gameState.coins;
+        }
+
+        function updateDailyQuotaText() {
+            document.getElementById('daily-quota-text').innerText = `Đã phục vụ: ${gameState.servedToday}/${gameState.quota}`;
+        }
+
+        // Báo lỗi/Thắng dịu dàng của tiệm ăn bé gái
+        function showAlert(msg, icon = '⭐') {
+            document.getElementById('alert-icon').innerText = icon;
+            document.getElementById('alert-message').innerText = msg;
+            document.getElementById('modal-alert').classList.remove('hidden');
+        }
+        function closeAlert() {
+            playSound('click');
+            document.getElementById('modal-alert').classList.add('hidden');
+        }
+
+        function showInstructions() {
+            playSound('click');
+            document.getElementById('modal-instructions').classList.remove('hidden');
+        }
+        function closeInstructions() {
+            playSound('click');
+            document.getElementById('modal-instructions').classList.add('hidden');
+        }
+
+        function openMenuModal() {
+            playSound('click');
+            if (gameState.currentOrder === null) {
+                showAlert("Đợi một chút bé ơi! Hãy chờ bạn thú cưng đi vào order đặt món trước nhé!", "🐱");
+                return;
+            }
+            document.getElementById('modal-menu').classList.remove('hidden');
+        }
+        function closeMenuModal() {
+            playSound('click');
+            document.getElementById('modal-menu').classList.add('hidden');
+        }
+
+        // Sinh khách hàng mới
+        function spawnCustomer() {
+            const randomCust = CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
+            const dishKeys = Object.keys(RECIPES);
+            const randomDishKey = dishKeys[Math.floor(Math.random() * dishKeys.length)];
+            const dishData = RECIPES[randomDishKey];
+
+            gameState.currentCustomer = randomCust;
+            gameState.currentOrder = randomDishKey;
+            gameState.currentRecipe = dishData;
+
+            // Câu đối thoại chào hỏi sinh động
+            const dialog = randomCust.greet.replace('[Dish]', dishData.name);
+
+            const container = document.getElementById('customer-container');
+            container.innerHTML = `
+                <div class="flex flex-col items-center space-y-2.5 animate-bounce-slow">
+                    <span class="text-7xl floating">${randomCust.emoji}</span>
+                    <div class="bg-pink-100 text-pink-700 px-3.5 py-2 rounded-2xl border-2 border-pink-200 text-xs text-center font-bold max-w-[190px] relative shadow-sm">
+                        <span>"${dialog}"</span>
+                        <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-pink-100"></div>
+                    </div>
+                    
+                    <!-- Bong bóng nhỏ hiển thị đồ uống/món ăn khách thèm -->
+                    <div class="bg-white border-2 border-dashed border-pink-400 rounded-full w-12 h-12 flex items-center justify-center absolute top-2 right-4 shadow animate-pulse">
+                        <span class="text-2xl">${dishData.emoji}</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('kitchen-title').innerText = `Chờ nấu: Món ${dishData.name} cho bạn ${randomCust.emoji}`;
+            showIdleKitchen();
+        }
+
+        function showIdleKitchen() {
+            document.getElementById('kitchen-state-idle').classList.remove('hidden');
+            document.getElementById('kitchen-state-ingredients').classList.add('hidden');
+            document.getElementById('kitchen-state-cooking').classList.add('hidden');
+            document.getElementById('kitchen-state-assembly').classList.add('hidden');
+            document.getElementById('kitchen-state-wash').classList.add('hidden');
+            document.getElementById('step-indicator').innerHTML = '';
+        }
+
+        // Bé chọn công thức nấu
+        function selectRecipe(recipeKey) {
+            closeMenuModal();
+            if (recipeKey !== gameState.currentOrder) {
+                playSound('fail');
+                showAlert(`Ôi, bạn thú cưng của chúng mình đang thèm món ${gameState.currentRecipe.name} ngọt ngào cơ bé ơi!`, "🐰");
+                return;
+            }
+
+            playSound('click');
+            beginPreparingPhase();
+        }
+
+        function beginPreparingPhase() {
+            gameState.selectedIngredients = [];
+            gameState.currentStepIndex = 0;
+            
+            // Vẽ số chấm tiến trình bước
+            const stepDots = document.getElementById('step-indicator');
+            stepDots.innerHTML = '';
+            
+            const totalSteps = 1 + gameState.currentRecipe.steps.length; // 1 nhặt đồ + các bước nấu
+            for (let i = 0; i < totalSteps; i++) {
+                stepDots.innerHTML += `<div class="w-2.5 h-2.5 rounded-full bg-gray-300" id="step-dot-${i}"></div>`;
+            }
+            updateStepDotColor(0);
+
+            // Chuyển sang chọn đồ nấu
+            document.getElementById('kitchen-state-idle').classList.add('hidden');
+            document.getElementById('kitchen-state-ingredients').classList.remove('hidden');
+            
+            document.getElementById('ing-recipe-name').innerText = gameState.currentRecipe.name;
+            document.getElementById('ing-needed-count').innerText = gameState.currentRecipe.ingredients.length;
+
+            renderKitchenCabinet();
+            refreshIngBagUI();
+        }
+
+        function updateStepDotColor(activeIndex) {
+            const dots = document.getElementById('step-indicator').children;
+            for (let i = 0; i < dots.length; i++) {
+                if (i === activeIndex) {
+                    dots[i].className = "w-3 h-3 rounded-full bg-pink-500 scale-110 shadow-sm";
+                } else if (i < activeIndex) {
+                    dots[i].className = "w-2.5 h-2.5 rounded-full bg-green-400";
+                } else {
+                    dots[i].className = "w-2.5 h-2.5 rounded-full bg-gray-300";
+                }
+            }
+        }
+
+        function renderKitchenCabinet() {
+            const grid = document.getElementById('ingredients-grid');
+            grid.innerHTML = '';
+
+            // Đảo vị trí ngẫu nhiên cho bé tinh mắt nhặt đồ tủ bếp
+            const shuffled = [...INGREDIENT_POOL].sort(() => 0.5 - Math.random());
+            
+            shuffled.forEach(item => {
+                const checked = gameState.selectedIngredients.includes(item.emoji);
+                grid.innerHTML += `
+                    <button onclick="clickIngredient('${item.emoji}')" class="p-2 bg-white rounded-xl border-2 ${checked ? 'border-pink-500 bg-pink-50' : 'border-amber-200'} flex flex-col items-center justify-center hover:bg-amber-100 transition shadow-sm active:scale-95">
+                        <span class="text-3xl">${item.emoji}</span>
+                        <span class="text-[9px] font-bold text-gray-500 truncate w-full text-center mt-1">${item.name}</span>
+                    </button>
+                `;
+            });
+        }
+
+        function clickIngredient(emoji) {
+            playSound('click');
+            const pos = gameState.selectedIngredients.indexOf(emoji);
+            if (pos > -1) {
+                gameState.selectedIngredients.splice(pos, 1);
+            } else {
+                if (gameState.selectedIngredients.length >= gameState.currentRecipe.ingredients.length) {
+                    showAlert("A! Thúng đựng đồ đã đầy ắp nguyên liệu rồi bé ơi!", "🍒");
+                    return;
+                }
+                gameState.selectedIngredients.push(emoji);
+            }
+            renderKitchenCabinet();
+            refreshIngBagUI();
+        }
+
+        function resetIngredientsSelection() {
+            playSound('click');
+            gameState.selectedIngredients = [];
+            renderKitchenCabinet();
+            refreshIngBagUI();
+        }
+
+        function refreshIngBagUI() {
+            const bag = document.getElementById('selected-ingredients-list');
+            bag.innerHTML = '';
+            
+            const limit = gameState.currentRecipe.ingredients.length;
+            for (let i = 0; i < limit; i++) {
+                const current = gameState.selectedIngredients[i];
+                bag.innerHTML += `
+                    <div class="w-9 h-9 border-2 ${current ? 'border-pink-300 bg-pink-100' : 'border-dashed border-gray-200'} rounded-lg flex items-center justify-center text-xl bg-white shadow-inner">
+                        ${current || ''}
+                    </div>
+                `;
+            }
+        }
+
+        function verifyIngredients() {
+            const targetList = gameState.currentRecipe.ingredients;
+            const chosenList = gameState.selectedIngredients;
+
+            const isMatching = targetList.every(x => chosenList.includes(x)) && (chosenList.length === targetList.length);
+
+            if (isMatching) {
+                playSound('win');
+                showAlert("Bé siêu giỏi! Đã chuẩn bị đầy đủ nguyên liệu rồi. Cùng nấu nhé!", "✨");
+                startCookingStep(0);
+            } else {
+                playSound('fail');
+                showAlert("Bé nhặt nhầm nguyên liệu rồi! Nhấp vào nút 'Chọn Lại' để nhặt đúng yêu cầu nhen!", "🐰");
+            }
+        }
+
+        // Tiến tới giai đoạn Đun Nấu
+        function startCookingStep(idx) {
+            gameState.currentStepIndex = idx;
+            gameState.cookingProgress = 0;
+            
+            updateStepDotColor(idx + 1);
+
+            document.getElementById('kitchen-state-ingredients').classList.add('hidden');
+            document.getElementById('kitchen-state-cooking').classList.remove('hidden');
+
+            const step = gameState.currentRecipe.steps[idx];
+            document.getElementById('cooking-step-instruction').innerText = `Bước ${idx + 1}: ${step.instruction}`;
+            
+            buildInteractiveCookTool(step);
+            repaintProgressMeter();
+        }
+
+        function buildInteractiveCookTool(step) {
+            const visual = document.getElementById('cooking-interactive-visual');
+            const buttonBox = document.getElementById('cooking-interaction-btn-container');
+            
+            visual.innerHTML = '';
+            buttonBox.innerHTML = '';
+
+            if (step.type === 'fry') {
+                visual.innerHTML = `
+                    <div class="relative flex flex-col items-center">
+                        <div id="fry-device" class="w-32 h-32 bg-gray-800 rounded-full border-4 border-gray-400 relative flex items-center justify-center shadow-lg">
+                            <span id="fry-food" class="text-5xl z-10 transition-transform">${step.stepEmoji}</span>
+                            <!-- Khói mờ xèo xèo -->
+                            <div id="steam-cloud" class="hidden absolute inset-0 rounded-full overflow-hidden">
+                                <span class="absolute text-pink-300 text-xs bubble-active" style="left: 20%">🫧</span>
+                                <span class="absolute text-pink-300 text-xs bubble-active" style="left: 50%; animation-delay: 0.4s">🫧</span>
+                                <span class="absolute text-pink-300 text-xs bubble-active" style="left: 80%; animation-delay: 0.8s">🫧</span>
+                            </div>
+                        </div>
+                        <div class="w-14 h-3 bg-gray-500 rounded-b-lg"></div>
+                    </div>
+                `;
+                buttonBox.innerHTML = `
+                    <button onclick="cookTapAction('fry')" class="cute-btn-pink text-white font-extrabold py-2 px-8 rounded-full text-xs flex items-center space-x-1.5">
+                        <span>🍳 Nhấp Chảo Xèo Xèo</span>
+                    </button>
+                `;
+            } else if (step.type === 'blend') {
+                visual.innerHTML = `
+                    <div class="relative flex flex-col items-center">
+                        <div class="w-14 h-2 bg-pink-400 rounded-t-lg"></div>
+                        <div id="blend-device" class="w-20 h-24 bg-sky-100 bg-opacity-70 rounded-b-lg border-t-2 border-b-4 border-sky-300 flex items-center justify-center relative shadow">
+                            <span id="blend-food" class="text-4xl z-10 transition-transform">${step.stepEmoji}</span>
+                        </div>
+                        <div class="w-24 h-8 bg-pink-300 rounded-t-lg rounded-b-2xl border-b-4 border-pink-400 flex items-center justify-center">
+                            <span class="w-3 h-3 bg-rose-500 rounded-full cursor-pointer animate-ping"></span>
+                        </div>
+                    </div>
+                `;
+                buttonBox.innerHTML = `
+                    <button onclick="cookTapAction('blend')" class="cute-btn-blue text-white font-extrabold py-2 px-8 rounded-full text-xs">
+                        🍹 Nhấn Máy Xoay Tít
+                    </button>
+                `;
+            } else if (step.type === 'assemble') {
+                visual.innerHTML = `
+                    <div class="relative flex flex-col items-center justify-center">
+                        <span class="text-7xl floating">${step.stepEmoji}</span>
+                        <p class="text-[10px] text-pink-500 font-extrabold mt-2 animate-bounce">Đẹp tuyệt cú mèo!</p>
+                    </div>
+                `;
+                buttonBox.innerHTML = `
+                    <button onclick="cookTapAction('assemble')" class="cute-btn-green text-white font-extrabold py-2 px-8 rounded-full text-xs">
+                        🧁 Xếp Đồ & Trang Trí
+                    </button>
+                `;
+            }
+        }
+
+        function repaintProgressMeter() {
+            document.getElementById('cooking-progress-bar').style.width = `${gameState.cookingProgress}%`;
+        }
+
+        function cookTapAction(type) {
+            if (type === 'fry') {
+                playSound('fry');
+                gameState.cookingProgress += 10;
+                // Rung lắc thức ăn xèo xèo
+                const target = document.getElementById('fry-food');
+                const device = document.getElementById('fry-device');
+                device.classList.add('cooking-vibe');
+                target.style.transform = `scale(1.15) rotate(${Math.random() * 30 - 15}deg)`;
+                
+                document.getElementById('steam-cloud').classList.remove('hidden');
+                setTimeout(() => { 
+                    target.style.transform = 'scale(1) rotate(0)'; 
+                    device.classList.remove('cooking-vibe');
+                }, 100);
+            } else if (type === 'blend') {
+                playSound('blend');
+                gameState.cookingProgress += 12;
+                // Xoay tít trong máy xay
+                const target = document.getElementById('blend-food');
+                const device = document.getElementById('blend-device');
+                device.classList.add('cooking-vibe');
+                target.style.transform = `scale(1.1) rotate(${gameState.cookingProgress * 4}deg)`;
+                setTimeout(() => { 
+                    device.classList.remove('cooking-vibe');
+                }, 100);
+            } else if (type === 'assemble') {
+                playSound('win');
+                gameState.cookingProgress = 100;
+            }
+
+            if (gameState.cookingProgress > 100) gameState.cookingProgress = 100;
+            repaintProgressMeter();
+
+            if (gameState.cookingProgress >= 100) {
+                setTimeout(() => {
+                    nextCookingPhase();
+                }, 300);
+            }
+        }
+
+        function nextCookingPhase() {
+            const stepsCount = gameState.currentRecipe.steps.length;
+            if (gameState.currentStepIndex + 1 < stepsCount) {
+                // Đi tiếp bước tiếp theo
+                startCookingStep(gameState.currentStepIndex + 1);
+            } else {
+                // Đã chín và hoàn thiện xong
+                playSound('win');
+                document.getElementById('kitchen-state-cooking').classList.add('hidden');
+                document.getElementById('kitchen-state-assembly').classList.remove('hidden');
+                document.getElementById('assembled-dish-visual').innerText = gameState.currentRecipe.emoji;
+            }
+        }
+
+        // Mang món chín ra dĩa phục vụ khách hàng
+        function moveFinishedDishToServing() {
+            playSound('click');
+            
+            gameState.servingDish = gameState.currentOrder;
+            
+            document.getElementById('serving-item-emoji').innerText = gameState.currentRecipe.emoji;
+            document.getElementById('serving-item-emoji').classList.remove('text-gray-300');
+            document.getElementById('serving-status-text').innerText = `${gameState.currentRecipe.name}`;
+            document.getElementById('serving-status-text').className = "text-xs text-rose-500 font-extrabold mt-2 text-center";
+
+            showIdleKitchen();
+
+            const plate = document.getElementById('serving-plate');
+            plate.classList.add('border-pink-500', 'bg-pink-100', 'floating');
+
+            showAlert(`Món ${gameState.currentRecipe.name} thơm phức đã chín ngon lành! Nhấp vào chiếc đĩa trên bàn để phục vụ bạn thú cưng thôi bé yêu!`, "🦁");
+        }
+
+        function tryServeDish() {
+            if (!gameState.servingDish) {
+                playSound('fail');
+                showAlert("Ôi bàn đang trống! Bé hãy mở quyển Menu gỗ chọn món rồi nấu nướng đã nhen!", "🍳");
+                return;
+            }
+
+            if (gameState.servingDish !== gameState.currentOrder) {
+                playSound('fail');
+                showAlert("Bạn thú không gọi món ăn này đâu bé ơi! Thử chế biến lại xem nhé.", "🐰");
+                return;
+            }
+
+            // Cho thú cưng ăn ngon miệng
+            playSound('win');
+            
+            const plate = document.getElementById('serving-plate');
+            plate.classList.remove('border-pink-500', 'bg-pink-100', 'floating');
+
+            // Cập nhật hoạt cảnh bạn khách nhồm nhoàm nhóp nhép ăn ngon lành
+            const container = document.getElementById('customer-container');
+            container.innerHTML = `
+                <div class="flex flex-col items-center space-y-2.5 animate-bounce">
+                    <span class="text-7xl">😋</span>
+                    <div class="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-2xl border-2 border-yellow-300 text-xs text-center font-bold max-w-[190px] relative shadow-sm">
+                        <span>${gameState.currentCustomer.enjoy}</span>
+                        <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-yellow-100"></div>
+                    </div>
+                </div>
+            `;
+
+            resetServingPlate();
+
+            // Trả tiền vàng sau 2.5 giây khi nhai hết
+            setTimeout(() => {
+                showDropCoinsAndLeavePlate();
+            }, 2500);
+        }
+
+        function resetServingPlate() {
+            gameState.servingDish = null;
+            document.getElementById('serving-item-emoji').innerText = '🍽️';
+            document.getElementById('serving-item-emoji').classList.add('text-gray-300');
+            document.getElementById('serving-status-text').innerText = "Bàn ăn trống trơn";
+            document.getElementById('serving-status-text').className = "text-xs text-gray-400 mt-2 font-bold text-center";
+        }
+
+        function showDropCoinsAndLeavePlate() {
+            const price = gameState.currentRecipe.price;
+            playSound('coin');
+
+            const container = document.getElementById('customer-container');
+            container.innerHTML = `
+                <div class="flex flex-col items-center space-y-2.5">
+                    <span class="text-7xl">${gameState.currentCustomer.emoji}</span>
+                    <div class="bg-green-100 text-green-700 px-4 py-2 rounded-2xl border-2 border-green-300 text-xs text-center font-bold max-w-[190px] relative shadow-sm">
+                        <span>"${gameState.currentCustomer.finish}"</span>
+                        <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-8 border-l-transparent border-r-8 border-r-transparent border-t-8 border-t-green-100"></div>
+                    </div>
+
+                    <!-- Nút nhấp nhận tiền vàng lấp lánh -->
+                    <button id="coin-collect" onclick="claimCoins(${price})" class="bg-gradient-to-r from-yellow-400 to-amber-400 hover:scale-110 active:scale-95 text-yellow-950 font-extrabold text-xs px-4 py-2.5 rounded-full border-b-4 border-amber-600 shadow-lg flex items-center space-x-1.5 coin-active transition">
+                        <span>🪙 Thu Hoạch (+${price} Vàng)</span>
+                    </button>
+                </div>
+            `;
+        }
+
+        function claimCoins(val) {
+            playSound('coin');
+            
+            gameState.coins += val;
+            gameState.earnedToday += val;
+            gameState.servedToday += 1;
+            
+            updateHeaderStats();
+            updateDailyQuotaText();
+            
+            // Lưu dữ liệu chơi
+            localStorage.setItem('cooking_game_coins', gameState.coins);
+
+            const btn = document.getElementById('coin-collect');
+            if (btn) btn.classList.add('hidden');
+
+            // Chuyển sang trạm rửa dọn sạch bẩn
+            setTimeout(() => {
+                enterDishwashStation();
+            }, 600);
+        }
+
+        // Chuyển sang trạm rửa đĩa
+        function enterDishwashStation() {
+            const container = document.getElementById('customer-container');
+            container.innerHTML = `
+                <div class="text-center py-7 text-gray-400 animate-pulse">
+                    <p class="text-xs font-bold">Chờ các bạn thú tiếp theo... 🌸</p>
+                    <span class="text-3xl inline-block mt-2">✨</span>
+                </div>
+            `;
+
+            gameState.washProgress = 0;
+            document.getElementById('kitchen-state-idle').classList.add('hidden');
+            document.getElementById('kitchen-state-wash').classList.remove('hidden');
+            
+            document.getElementById('wash-progress').style.width = '0%';
+            document.getElementById('plate-stain').style.opacity = '0.7';
+            document.getElementById('kitchen-title').innerText = `🧼 Trạm dọn dẹp: Đang rửa đĩa dơ`;
+        }
+
+        function scrubPlate() {
+            playSound('wash');
+            gameState.washProgress += 20;
+            if (gameState.washProgress > 100) gameState.washProgress = 100;
+
+            document.getElementById('wash-progress').style.width = `${gameState.washProgress}%`;
+            
+            // Vệt dơ ố mờ dần
+            const transparency = 0.7 - (gameState.washProgress / 100) * 0.7;
+            document.getElementById('plate-stain').style.opacity = transparency;
+
+            // Bắn bong bóng dễ thương bay lên
+            produceBubbleElement();
+
+            if (gameState.washProgress >= 100) {
+                setTimeout(() => {
+                    doneScrubbingPlate();
+                }, 400);
+            }
+        }
+
+        function produceBubbleElement() {
+            const wrap = document.getElementById('bubbles-container');
+            const bubble = document.createElement('span');
+            bubble.className = 'absolute text-xl pointer-events-none bubble-active';
+            bubble.innerText = '🫧';
+            bubble.style.left = `${Math.random() * 80 + 10}%`;
+            bubble.style.top = `${Math.random() * 80 + 10}%`;
+            wrap.appendChild(bubble);
+
+            setTimeout(() => { bubble.remove(); }, 1600);
+        }
+
+        function doneScrubbingPlate() {
+            playSound('win');
+            showAlert("Đĩa thức ăn đã được rửa dọn sạch bẩn lấp lánh tinh tươm rồi! Bé siêu cẩn thận luôn!", "✨");
+            
+            showIdleKitchen();
+            
+            // Nếu phục vụ hoàn tất hạn ngạch 3 khách trong ngày -> Đóng cửa tiệm ăn
+            if (gameState.servedToday >= gameState.quota) {
+                setTimeout(() => {
+                    closeTheShopGates();
+                }, 1000);
+            } else {
+                // Đón tiếp vị khách bông tiếp theo
+                setTimeout(() => {
+                    spawnCustomer();
+                }, 1000);
+            }
+        }
+
+        // Đóng cửa hàng
+        function closeTheShopGates() {
+            playSound('win');
+            
+            document.getElementById('screen-store').classList.add('hidden');
+            document.getElementById('screen-end-day').classList.remove('hidden');
+
+            document.getElementById('end-served-count').innerText = `${gameState.servedToday} bạn thú cưng`;
+            document.getElementById('end-earned-coins').innerText = `🪙 +${gameState.earnedToday} Vàng`;
+            document.getElementById('end-total-coins').innerText = `🪙 ${gameState.coins} Vàng`;
+
+            // Luôn khuyến khích bé bằng thang 3 ngôi sao lấp lánh nhảy nhót
+            const rating = document.getElementById('star-rating');
+            rating.innerHTML = `
+                <i class="fa-solid fa-star animate-bounce" style="animation-delay: 0s"></i>
+                <i class="fa-solid fa-star animate-bounce" style="animation-delay: 0.15s"></i>
+                <i class="fa-solid fa-star animate-bounce" style="animation-delay: 0.3s"></i>
+            `;
+        }
+
+        function startNextDay() {
+            playSound('click');
+            
+            gameState.day += 1;
+            localStorage.setItem('cooking_game_day', gameState.day);
+
+            document.getElementById('screen-end-day').classList.add('hidden');
+            document.getElementById('screen-store').classList.remove('hidden');
+            
+            setupNewDay();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phòng Khám Thú Cưng Mini - Bác Sĩ Nhí Nhân Ái</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Fredoka for cute, rounded text -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for cute icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle, #fef3c7 0%, #fef08a 100%);
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        /* Smooth bounce animation for active items */
+        .bounce-gentle {
+            animation: bounceGentle 2s infinite ease-in-out;
+        }
+        @keyframes bounceGentle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Pulsing hint for guidance */
+        .pulse-glowing {
+            animation: glowingEffect 1.5s infinite;
+        }
+        @keyframes glowingEffect {
+            0% { box-shadow: 0 0 0 0px rgba(244, 63, 94, 0.7); }
+            100% { box-shadow: 0 0 0 15px rgba(244, 63, 94, 0); }
+        }
+
+        /* Floating sparkles animation */
+        .sparkle-particle {
+            position: absolute;
+            pointer-events: none;
+            animation: floatUp 1.2s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-80px) scale(1.2) rotate(180deg); opacity: 0; }
+        }
+
+        /* Custom scrollbar for horizontal pet selection */
+        .custom-scroll::-webkit-scrollbar {
+            height: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #fef3c7;
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #f59e0b;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-3 md:p-6 text-slate-700">
+
+    <!-- Sound Effects Synth -->
+    <script>
+        // Simple Audio Engine using Web Audio API
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playTone(freq, type, duration) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type || 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.log("Audio contexts need interaction first");
+            }
+        }
+
+        function playSuccessSound() {
+            playTone(523.25, 'triangle', 0.15); // C5
+            setTimeout(() => playTone(659.25, 'triangle', 0.15), 100); // E5
+            setTimeout(() => playTone(783.99, 'triangle', 0.15), 200); // G5
+            setTimeout(() => playTone(1046.50, 'triangle', 0.3), 300); // C6
+        }
+
+        function playClickSound() {
+            playTone(400, 'sine', 0.08);
+        }
+
+        function playWrongSound() {
+            playTone(220, 'sawtooth', 0.25);
+            setTimeout(() => playTone(180, 'sawtooth', 0.25), 100);
+        }
+
+        function playHappySqueak() {
+            playTone(600, 'triangle', 0.1);
+            setTimeout(() => playTone(800, 'triangle', 0.1), 80);
+            setTimeout(() => playTone(1000, 'triangle', 0.15), 160);
+        }
+
+        function playCareActionSound() {
+            playTone(440, 'sine', 0.1);
+            setTimeout(() => playTone(554, 'sine', 0.1), 80);
+        }
+    </script>
+
+    <!-- Floating Top Bar -->
+    <header class="w-full max-w-4xl bg-white/80 backdrop-blur-md rounded-2xl shadow-md p-4 flex flex-wrap items-center justify-between gap-3 border-4 border-amber-300">
+        <div class="flex items-center gap-3">
+            <span class="text-4xl">🩺</span>
+            <div>
+                <h1 class="text-2xl md:text-3xl font-extrabold text-pink-500 tracking-wide">PHÒNG KHÁM THÚ CƯNG</h1>
+                <p class="text-xs md:text-sm text-amber-600 font-medium">Bé làm bác sĩ nhí, gửi ngàn yêu thương!</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <!-- Level / Star Reward Counter -->
+            <div class="bg-amber-100 px-4 py-2 rounded-xl flex items-center gap-2 border-2 border-amber-400">
+                <span class="text-xl">⭐</span>
+                <span id="star-count" class="text-xl font-bold text-amber-600">0</span>
+            </div>
+            
+            <!-- Voice/Sound Control -->
+            <button id="tts-toggle-btn" onclick="toggleVoice()" class="bg-pink-100 hover:bg-pink-200 text-pink-600 p-2.5 rounded-xl border-2 border-pink-300 transition-all flex items-center justify-center" title="Bật/Tắt Giọng đọc">
+                <i id="tts-icon" class="fas fa-volume-up text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN INTERACTIVE BOARD -->
+    <main class="w-full max-w-4xl my-4 bg-white/90 rounded-3xl shadow-xl border-8 border-pink-200 p-4 md:p-6 min-h-[550px] flex flex-col justify-between relative overflow-hidden">
+        
+        <!-- Lobby State Screen -->
+        <div id="lobby-screen" class="flex flex-col items-center justify-center text-center py-8 flex-grow">
+            <div class="relative mb-6">
+                <!-- Mascot Collage -->
+                <div class="flex gap-4 justify-center items-center">
+                    <span class="text-7xl bounce-gentle duration-1000">🐻</span>
+                    <span class="text-8xl bounce-gentle duration-700">🐱</span>
+                    <span class="text-7xl bounce-gentle duration-500">🐦</span>
+                    <span class="text-7xl bounce-gentle duration-900">🐰</span>
+                </div>
+                <div class="absolute -top-4 -right-4 text-4xl animate-pulse">✨</div>
+            </div>
+            
+            <h2 class="text-3xl md:text-4xl font-extrabold text-amber-500 mb-2">Xin chào Bác Sĩ Nhí!</h2>
+            <p class="text-md md:text-lg text-slate-500 max-w-md mb-8">Các bạn thú nhỏ đang xếp hàng chờ khám bệnh kìa. Bé hãy chọn một bạn nhỏ để bắt đầu chăm sóc nhé!</p>
+            
+            <button onclick="startGame()" class="px-8 py-4 bg-gradient-to-r from-pink-400 to-rose-500 hover:from-pink-500 hover:to-rose-600 text-white font-extrabold text-2xl rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all border-b-8 border-rose-700 pulse-glowing">
+                BẮT ĐẦU KHÁM BỆNH! 🩺
+            </button>
+        </div>
+
+        <!-- Gameplay State Screen (Hidden initially) -->
+        <div id="game-screen" class="hidden flex-col justify-between flex-grow gap-4">
+            
+            <!-- Top Patient Indicator / Symptom Bubble -->
+            <div class="bg-sky-50 rounded-2xl p-4 border-2 border-sky-200 flex flex-col md:flex-row items-center gap-4 relative">
+                <div class="bg-white p-2 rounded-full border border-sky-300 shadow-inner">
+                    <span id="patient-mini-avatar" class="text-4xl">🐱</span>
+                </div>
+                <div class="flex-grow text-center md:text-left">
+                    <div class="flex items-center justify-center md:justify-start gap-2">
+                        <h3 id="patient-name" class="font-bold text-xl text-sky-700">Mèo Bông</h3>
+                        <span id="patient-symptom-tag" class="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">Đau chân</span>
+                    </div>
+                    <!-- Bubble Text description of the disease -->
+                    <p id="patient-bubble" class="text-slate-600 text-sm md:text-base mt-1">"Bác sĩ ơi, tớ nghịch ngợm bị xước chân đau quá..."</p>
+                </div>
+                <!-- Loudspeaker to repeat instruction TTS -->
+                <button onclick="speakSymptom()" class="bg-sky-500 hover:bg-sky-600 text-white rounded-full p-2 w-10 h-10 flex items-center justify-center shadow-md hover:scale-105 transition-transform" title="Nghe lại lời bạn thú">
+                    <i class="fas fa-bullhorn"></i>
+                </button>
+            </div>
+
+            <!-- Main Medical Area (Split Screen) -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center flex-grow py-2">
+                
+                <!-- Left Section: Interactive Pet Visualizer (md:span-7) -->
+                <div class="md:col-span-7 bg-amber-50/50 rounded-2xl border-4 border-dashed border-amber-200 h-[300px] flex items-center justify-center relative shadow-inner overflow-hidden">
+                    
+                    <!-- SVG Interactive Pet Container -->
+                    <div id="interactive-pet-viewport" class="w-full h-full flex items-center justify-center relative">
+                        <!-- SVGs will be dynamically loaded here -->
+                    </div>
+
+                    <!-- Glowing interactive zone on the pet to direct the kid's action -->
+                    <div id="target-zone" onclick="applyActiveToolToPet()" class="absolute hidden items-center justify-center cursor-pointer pointer-events-auto transition-transform active:scale-95">
+                        <div class="w-16 h-16 rounded-full bg-rose-400/30 border-4 border-rose-500 border-dashed animate-spin duration-3000 flex items-center justify-center">
+                            <span class="text-2xl animate-ping">📍</span>
+                        </div>
+                    </div>
+
+                    <!-- Small Instruction Popover on the table -->
+                    <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full border border-pink-200 text-xs font-semibold text-pink-600 shadow-sm flex items-center gap-1.5">
+                        <span id="step-task-instruction">Bước 1: Chọn dụng cụ thích hợp</span>
+                    </div>
+                </div>
+
+                <!-- Right Section: Tool Selection Trays (md:span-5) -->
+                <div class="md:col-span-5 flex flex-col gap-4">
+                    <!-- Steps Progress Visualizer -->
+                    <div class="bg-slate-100/80 rounded-2xl p-3 flex justify-between items-center border border-slate-200">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tiến trình khám</div>
+                        <div class="flex gap-2">
+                            <div id="dot-0" class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs bg-pink-500 text-white shadow-sm">1</div>
+                            <div id="dot-1" class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs bg-slate-300 text-slate-600">2</div>
+                            <div id="dot-2" class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs bg-slate-300 text-slate-600">3</div>
+                            <div id="dot-3" class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs bg-slate-300 text-slate-600">4</div>
+                        </div>
+                    </div>
+
+                    <!-- Tools Shelf Tray -->
+                    <div class="bg-amber-100/60 p-4 rounded-2xl border-4 border-amber-200 shadow-sm flex-grow">
+                        <h4 class="text-center font-bold text-amber-700 text-sm mb-3">Tủ thuốc & Dụng cụ 📦</h4>
+                        
+                        <div id="tools-grid" class="grid grid-cols-3 gap-3">
+                            <!-- Tool items will be rendered dynamically here -->
+                        </div>
+                    </div>
+
+                    <!-- Dialogue Hint Helper -->
+                    <div class="bg-rose-50 border-l-4 border-rose-400 p-3 rounded-r-xl">
+                        <p id="helper-text" class="text-xs text-rose-700 font-medium">Bé hãy chọn đúng dụng cụ đang nhấp nháy nhé!</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Patient Carousel Selector (Quick swap) -->
+            <div class="border-t border-slate-100 pt-3">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Đang đợi ở phòng chờ:</p>
+                <div id="patient-carousel" class="flex gap-3 overflow-x-auto pb-1 custom-scroll">
+                    <!-- Small pet badges for clinical selection -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Success/Happy Screen State (Hidden initially) -->
+        <div id="success-screen" class="hidden flex-col items-center justify-center text-center py-6 flex-grow">
+            <!-- Massive glowing sticker container -->
+            <div class="relative w-48 h-48 flex items-center justify-center mb-6">
+                <!-- Floating Hearts -->
+                <div class="absolute inset-0 flex items-center justify-center animate-ping duration-3000">
+                    <span class="text-8xl">💖</span>
+                </div>
+                <div id="success-pet-emoji" class="text-9xl bounce-gentle">🐱</div>
+                <div class="absolute -bottom-2 right-2 text-6xl rotate-12">⭐</div>
+                <div class="absolute top-2 left-2 text-5xl">✨</div>
+            </div>
+
+            <h2 id="success-title" class="text-3xl md:text-4xl font-black text-rose-500 mb-2">Bé thật là giỏi!</h2>
+            <p id="success-desc" class="text-md md:text-lg text-slate-600 max-w-md mb-6">Bạn Mèo Bông đã hết bệnh, tràn ngập năng lượng và vui vẻ trở lại rồi!</p>
+
+            <div class="flex gap-4">
+                <button onclick="backToLobby()" class="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-md rounded-xl shadow transition-all">
+                    Về Phòng Khách 🏠
+                </button>
+                <button onclick="pickAnotherPatient()" class="px-8 py-3 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-lg rounded-xl shadow-md border-b-4 border-teal-700 transform active:scale-95 transition-all">
+                    Khám Cho Thú Khác ➜
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-amber-600 font-medium mt-2">
+        Phòng khám Thú Y Nhí &copy; 2026 • Được thiết kế đầy tình thương dành cho các bé yêu động vật!
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC & STATE MANAGEMENT -->
+    <script>
+        // Database of Patients and Symptoms
+        const patientsData = [
+            {
+                id: 'bear',
+                name: 'Gấu Béo',
+                emoji: '🐻',
+                symptom: 'Đau bụng râm ran',
+                color: '#f59e0b',
+                dialogue: 'Oai oai... Bụng tớ đau quá, chắc tại lúc nãy tớ mải ăn nhiều dưa hấu lạnh rồi...',
+                targetPos: { top: '55%', left: '50%' }, // target overlay coordinate
+                steps: [
+                    {
+                        tool: 'stethoscope',
+                        actionText: 'Khám bằng ống nghe',
+                        instruction: 'Bé hãy chọn Ống Nghe để nghe nhịp tim và bụng của bạn Gấu nhé!',
+                        targetInstruction: 'Nhấn vào chiếc bụng tròn xoe của bạn Gấu béo để khám bệnh.'
+                    },
+                    {
+                        tool: 'warm_bottle',
+                        actionText: 'Chườm nước ấm',
+                        instruction: 'Bạn Gấu đang bị lạnh bụng! Hãy chọn Túi Nước Ấm nhé!',
+                        targetInstruction: 'Đặt túi nước ấm lên bụng để sưởi ấm cho bạn Gấu.'
+                    },
+                    {
+                        tool: 'gummy_vitamin',
+                        actionText: 'Ăn kẹo dẻo Vitamin',
+                        instruction: 'Cho Gấu Béo nhai kẹo dẻo Vitamin ngọt ngào để hết mỏi mệt nào!',
+                        targetInstruction: 'Đút viên kẹo dẻo thơm phức vào miệng bạn Gấu.'
+                    },
+                    {
+                        tool: 'heart_sticker',
+                        actionText: 'Dán sticker yêu thương',
+                        instruction: 'Dán chiếc Sticker Trái Tim đỏ thắm để làm bạn Gấu cười tươi nhé!',
+                        targetInstruction: 'Dán Sticker lên má hoặc ngực của bạn Gấu béo thương yêu.'
+                    }
+                ],
+                // SVG Markup Creator
+                renderSVG: (stepIndex, isHealed) => {
+                    const mouth = isHealed 
+                        ? `<path d="M 45 68 Q 50 78 55 68" stroke="#1e293b" stroke-width="4" fill="#f43f5e" stroke-linecap="round"/>` // Smiling mouth
+                        : `<path d="M 45 72 Q 50 64 55 72" stroke="#1e293b" stroke-width="4" fill="none" stroke-linecap="round"/>`; // Sad/pouty mouth
+                    
+                    const eyes = isHealed
+                        ? `<g stroke="#1e293b" stroke-width="4" stroke-linecap="round" fill="none">
+                             <path d="M 33 50 Q 38 42 43 50"/>
+                             <path d="M 57 50 Q 62 42 67 50"/>
+                           </g>` // Happy eye arches
+                        : `<g stroke="#1e293b" stroke-width="4" stroke-linecap="round" fill="none">
+                             <path d="M 33 46 L 43 54"/>
+                             <path d="M 43 46 L 33 54"/>
+                             <path d="M 57 46 L 67 54"/>
+                             <path d="M 67 46 L 57 54"/>
+                           </g>`; // Crying or painful eyes X X
+
+                    // Warm bottle overlay if applied
+                    const warmBottleOverlay = (stepIndex > 1) 
+                        ? `<g transform="translate(38, 76) scale(0.25)">
+                             <rect width="100" height="80" rx="15" fill="#ef4444"/>
+                             <rect x="35" y="-15" width="30" height="20" rx="5" fill="#facc15"/>
+                             <circle cx="50" cy="40" r="15" fill="white"/>
+                             <path d="M 50 28 L 50 52 M 38 40 L 62 40" stroke="#ef4444" stroke-width="6"/>
+                           </g>`
+                        : '';
+
+                    // Heart sticker overlay
+                    const stickerOverlay = (stepIndex > 3 || isHealed)
+                        ? `<path d="M 22 45 C 18 35, 8 35, 8 45 C 8 55, 22 65, 22 65 C 22 65, 36 55, 36 45 C 36 35, 26 35, 22 45 Z" fill="#ec4899" transform="translate(62, 58) scale(0.4) rotate(15)"/>`
+                        : '';
+
+                    return `
+                    <svg viewBox="0 0 100 120" class="w-full h-full p-2 max-h-[250px] transition-transform duration-500 transform ${isHealed ? 'scale-105' : ''}">
+                        <!-- Ears -->
+                        <circle cx="25" cy="25" r="12" fill="#d97706" stroke="#78350f" stroke-width="3"/>
+                        <circle cx="25" cy="25" r="6" fill="#fef3c7"/>
+                        <circle cx="75" cy="25" r="12" fill="#d97706" stroke="#78350f" stroke-width="3"/>
+                        <circle cx="75" cy="25" r="6" fill="#fef3c7"/>
+                        
+                        <!-- Body -->
+                        <rect x="25" y="70" width="50" height="45" rx="20" fill="#b45309" stroke="#78350f" stroke-width="3"/>
+                        <!-- White tummy -->
+                        <ellipse cx="50" cy="95" rx="18" ry="14" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+                        
+                        <!-- Arms & Legs -->
+                        <circle cx="18" cy="85" r="8" fill="#d97706" stroke="#78350f" stroke-width="2"/>
+                        <circle cx="82" cy="85" r="8" fill="#d97706" stroke="#78350f" stroke-width="2"/>
+                        <circle cx="30" cy="112" r="9" fill="#d97706" stroke="#78350f" stroke-width="2"/>
+                        <circle cx="70" cy="112" r="9" fill="#d97706" stroke="#78350f" stroke-width="2"/>
+
+                        <!-- Head -->
+                        <circle cx="50" cy="55" r="32" fill="#d97706" stroke="#78350f" stroke-width="3"/>
+                        
+                        <!-- Snout -->
+                        <ellipse cx="50" cy="68" rx="12" ry="9" fill="#fef3c7"/>
+                        <polygon points="46,62 54,62 50,67" fill="#1e293b"/>
+                        
+                        <!-- Eyes and Mouth -->
+                        ${eyes}
+                        ${mouth}
+                        
+                        <!-- Overlays based on state -->
+                        ${warmBottleOverlay}
+                        ${stickerOverlay}
+                    </svg>`;
+                }
+            },
+            {
+                id: 'cat',
+                name: 'Mèo Bông',
+                emoji: '🐱',
+                symptom: 'Chân lấm bẩn & xước xát',
+                color: '#60a5fa',
+                dialogue: 'Meo meo... Tớ lỡ đuổi chú bướm bay vào bãi cỏ gai nên vừa dơ vừa rách chân rồi...',
+                targetPos: { top: '85%', left: '72%' },
+                steps: [
+                    {
+                        tool: 'sponge',
+                        actionText: 'Rửa sạch chân bẩn',
+                        instruction: 'Bé hãy chọn Bông Tắm lấp lánh để lau sạch bùn đất cho bạn Mèo nhé!',
+                        targetInstruction: 'Chà nhẹ lên vết bùn nâu ở bàn chân sau của bạn Mèo.'
+                    },
+                    {
+                        tool: 'bandaid',
+                        actionText: 'Dán băng vết thương',
+                        instruction: 'Bây giờ chân đã sạch rồi, bé dán Băng Cá Nhân gấu con vào nhé!',
+                        targetInstruction: 'Dán tấm băng cá nhân xinh xắn đè lên vết trầy xước.'
+                    },
+                    {
+                        tool: 'fish_cookie',
+                        actionText: 'Tặng bánh cá ngon lành',
+                        instruction: 'Để bạn Mèo vui hơn, hãy cho bạn ăn Bánh Cá thơm lừng chứa Vitamin nha!',
+                        targetInstruction: 'Đưa bánh cá thơm ngon đến gần miệng của bạn Mèo.'
+                    },
+                    {
+                        tool: 'heart_sticker',
+                        actionText: 'Dán sticker yêu thương',
+                        instruction: 'Nào! Hãy dán Sticker Trái Tim hạnh phúc để chúc mừng bạn Mèo hết bệnh nhé!',
+                        targetInstruction: 'Dán Sticker lên chiếc nơ xinh xắn ở cổ bạn Mèo.'
+                    }
+                ],
+                renderSVG: (stepIndex, isHealed) => {
+                    const mouth = isHealed
+                        ? `<path d="M 45 68 Q 50 78 55 68 M 50 68 L 50 65" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>`
+                        : `<path d="M 46 72 Q 50 66 54 72 M 50 68 L 50 65" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+                    
+                    const eyes = isHealed
+                        ? `<path d="M 32 50 A 6 6 0 0 1 42 50 M 58 50 A 6 6 0 0 1 68 50" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>`
+                        : `<circle cx="37" cy="50" r="4" fill="#1e293b"/><circle cx="63" cy="50" r="4" fill="#1e293b"/><path d="M 33 43 Q 37 45 41 43 M 59 43 Q 63 45 67 43" stroke="#1e293b" stroke-width="2" fill="none"/>`;
+
+                    // Dirty spots on the right paw
+                    const mudOverlay = (stepIndex === 0)
+                        ? `<path d="M 68 100 Q 72 102 75 97 Q 79 104 74 107 Z" fill="#78350f" opacity="0.8"/>`
+                        : '';
+
+                    // Bandaid overlay
+                    const bandaidOverlay = (stepIndex > 1)
+                        ? `<g transform="translate(63, 98) rotate(15) scale(0.12)">
+                             <rect width="100" height="40" rx="10" fill="#fef08a" stroke="#d97706" stroke-width="3"/>
+                             <rect x="35" y="0" width="30" height="40" fill="#f87171"/>
+                             <circle cx="50" cy="20" r="5" fill="white"/>
+                           </g>`
+                        : '';
+
+                    // Sticker overlay
+                    const stickerOverlay = (stepIndex > 3 || isHealed)
+                        ? `<path d="M 22 45 C 18 35, 8 35, 8 45 C 8 55, 22 65, 22 65 C 22 65, 36 55, 36 45 C 36 35, 26 35, 22 45 Z" fill="#f43f5e" transform="translate(42, 69) scale(0.35)"/>`
+                        : '';
+
+                    return `
+                    <svg viewBox="0 0 100 120" class="w-full h-full p-2 max-h-[250px] transition-transform duration-500 transform ${isHealed ? 'scale-105' : ''}">
+                        <!-- Ears -->
+                        <polygon points="15,15 38,40 18,50" fill="#f3f4f6" stroke="#9ca3af" stroke-width="3"/>
+                        <polygon points="19,21 34,39 22,45" fill="#fecdd3"/>
+                        <polygon points="85,15 62,40 82,50" fill="#f3f4f6" stroke="#9ca3af" stroke-width="3"/>
+                        <polygon points="81,21 66,39 78,45" fill="#fecdd3"/>
+
+                        <!-- Tail -->
+                        <path d="M 80 110 Q 95 110 90 85" stroke="#e5e7eb" stroke-width="8" stroke-linecap="round" fill="none"/>
+                        
+                        <!-- Body -->
+                        <rect x="25" y="70" width="50" height="42" rx="20" fill="#f3f4f6" stroke="#9ca3af" stroke-width="3"/>
+                        
+                        <!-- Paws -->
+                        <circle cx="32" cy="110" r="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                        <circle cx="68" cy="110" r="8" fill="#e5e7eb" stroke="#9ca3af" stroke-width="2"/>
+                        
+                        <!-- Head -->
+                        <ellipse cx="50" cy="55" rx="34" ry="28" fill="#f3f4f6" stroke="#9ca3af" stroke-width="3"/>
+                        
+                        <!-- Blush -->
+                        <circle cx="26" cy="62" r="5" fill="#fda4af" opacity="0.6"/>
+                        <circle cx="74" cy="62" r="5" fill="#fda4af" opacity="0.6"/>
+                        
+                        <!-- Whiskers -->
+                        <line x1="18" y1="58" x2="6" y2="56" stroke="#9ca3af" stroke-width="2"/>
+                        <line x1="18" y1="62" x2="4" y2="63" stroke="#9ca3af" stroke-width="2"/>
+                        <line x1="82" y1="58" x2="94" y2="56" stroke="#9ca3af" stroke-width="2"/>
+                        <line x1="82" y1="62" x2="96" y2="63" stroke="#9ca3af" stroke-width="2"/>
+                        
+                        <!-- Nose (pink triangle) -->
+                        <polygon points="47,60 53,60 50,64" fill="#f43f5e"/>
+                        
+                        ${eyes}
+                        ${mouth}
+                        
+                        <!-- Overlays -->
+                        ${mudOverlay}
+                        ${bandaidOverlay}
+                        ${stickerOverlay}
+                    </svg>`;
+                }
+            },
+            {
+                id: 'bird',
+                name: 'Chim Sẻ',
+                emoji: '🐦',
+                symptom: 'Mỏi mệt ngủ gật',
+                color: '#10b981',
+                dialogue: 'Oáp... Chim én tớ bay mỏi rã cánh và buồn ngủ ríu cả mắt lại rồi, tớ cần một giấc ngủ êm đềm...',
+                targetPos: { top: '35%', left: '42%' },
+                steps: [
+                    {
+                        tool: 'pillow',
+                        actionText: 'Kê gối êm ái',
+                        instruction: 'Bạn Chim bay mỏi cánh nên cần một chiếc Gối Mềm mại đỡ lấy đầu.',
+                        targetInstruction: 'Kê chiếc gối xinh xắn xuống phía sau đầu của bạn Chim sẻ nhỏ.'
+                    },
+                    {
+                        tool: 'blanket',
+                        actionText: 'Đắp chăn ấm áp',
+                        instruction: 'Bé đắp thêm Chăn Ấm để bạn ấy không bị lạnh khi ngủ ngon nhé!',
+                        targetInstruction: 'Đắp chiếc chăn bông màu hồng êm ái phủ lên mình bạn Chim.'
+                    },
+                    {
+                        tool: 'nectar_juice',
+                        actionText: 'Uống nước hoa quả bồi bổ',
+                        instruction: 'Thức dậy nào! Cho bạn uống một ống Nước Hoa Quả giàu Vitamin ngọt mát.',
+                        targetInstruction: 'Đút ống hút nước dâu ngọt lành vào miệng của bạn Chim.'
+                    },
+                    {
+                        tool: 'heart_sticker',
+                        actionText: 'Dán sticker yêu thương',
+                        instruction: 'Đừng quên dán một chiếc Sticker Trái Tim lấp lánh để tặng bạn Chim bé bỏng nhé!',
+                        targetInstruction: 'Nhẹ nhàng dán sticker yêu thương lên ngực áo của bạn Chim.'
+                    }
+                ],
+                renderSVG: (stepIndex, isHealed) => {
+                    const mouth = isHealed
+                        ? `<polygon points="46,54 54,54 50,62" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>` // Closed happy beak
+                        : `<polygon points="45,52 55,52 50,58 M 45,52 L 55,52 50,46" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>`; // Open tired beak (yawning)
+                    
+                    const eyes = isHealed
+                        ? `<g stroke="#1e293b" stroke-width="3" stroke-linecap="round" fill="none">
+                             <path d="M 30 42 Q 35 36 40 42"/>
+                             <path d="M 60 42 Q 65 36 70 42"/>
+                           </g>`
+                        : `<g stroke="#475569" stroke-width="3" stroke-linecap="round" fill="none">
+                             <path d="M 30 40 Q 35 46 40 40"/>
+                             <path d="M 60 40 Q 65 46 70 40"/>
+                           </g>
+                           <text x="75" y="32" font-size="8" fill="#3b82f6" font-family="Arial" class="animate-bounce">Zzz</text>`;
+
+                    // Pillow overlay
+                    const pillowOverlay = (stepIndex > 0)
+                        ? `<g transform="translate(10, 20) scale(0.25)">
+                             <rect width="110" height="90" rx="25" fill="#a7f3d0" stroke="#047857" stroke-width="5"/>
+                             <path d="M 15 20 Q 55 10 95 20" stroke="white" stroke-width="4" fill="none"/>
+                           </g>`
+                        : '';
+
+                    // Blanket overlay
+                    const blanketOverlay = (stepIndex > 1)
+                        ? `<g transform="translate(15, 62) scale(0.7)">
+                             <rect width="100" height="65" rx="15" fill="#fbcfe8" stroke="#db2777" stroke-width="3"/>
+                             <!-- Stitching details -->
+                             <path d="M 10 20 L 90 20 M 10 40 L 90 40" stroke="#f472b6" stroke-width="2" stroke-dasharray="4"/>
+                             <circle cx="30" cy="30" r="5" fill="#f43f5e"/>
+                             <circle cx="70" cy="30" r="5" fill="#f43f5e"/>
+                           </g>`
+                        : '';
+
+                    // Sticker overlay
+                    const stickerOverlay = (stepIndex > 3 || isHealed)
+                        ? `<path d="M 22 45 C 18 35, 8 35, 8 45 C 8 55, 22 65, 22 65 C 22 65, 36 55, 36 45 C 36 35, 26 35, 22 45 Z" fill="#ec4899" transform="translate(20, 72) scale(0.35) rotate(-15)"/>`
+                        : '';
+
+                    return `
+                    <svg viewBox="0 0 100 120" class="w-full h-full p-2 max-h-[250px] transition-transform duration-500 transform ${isHealed ? 'scale-105' : ''}">
+                        <!-- Pillow Behind (Layer order) -->
+                        ${pillowOverlay}
+                        
+                        <!-- Feet -->
+                        <line x1="42" y1="102" x2="42" y2="114" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+                        <line x1="58" y1="102" x2="58" y2="114" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+                        
+                        <!-- Wings background -->
+                        <path d="M 14 75 C -2 60, 5 90, 22 88 Z" fill="#38bdf8" stroke="#0284c7" stroke-width="3"/>
+                        <path d="M 86 75 C 102 60, 95 90, 78 88 Z" fill="#38bdf8" stroke="#0284c7" stroke-width="3"/>
+
+                        <!-- Main Body -->
+                        <circle cx="50" cy="80" r="28" fill="#38bdf8" stroke="#0284c7" stroke-width="3"/>
+                        <!-- White breast -->
+                        <circle cx="50" cy="88" r="16" fill="#fef08a" opacity="0.9"/>
+                        
+                        <!-- Head -->
+                        <circle cx="50" cy="46" r="24" fill="#0ea5e9" stroke="#0284c7" stroke-width="3"/>
+                        <!-- Cheek blushes -->
+                        <circle cx="34" cy="52" r="4" fill="#fda4af" opacity="0.7"/>
+                        <circle cx="66" cy="52" r="4" fill="#fda4af" opacity="0.7"/>
+
+                        <!-- Features -->
+                        ${eyes}
+                        ${mouth}
+                        
+                        <!-- Blanket front & sticker overlays -->
+                        ${blanketOverlay}
+                        ${stickerOverlay}
+                    </svg>`;
+                }
+            },
+            {
+                id: 'bunny',
+                name: 'Thỏ Ngọc',
+                emoji: '🐰',
+                symptom: 'Ngứa tai và dính lá cây',
+                color: '#f43f5e',
+                dialogue: 'Hiu hiu... Tớ tò mò chui vào lùm cây tìm cà rốt nên hai tai dính đầy lá khô sắc nhọn ngứa quá bác sĩ ơi...',
+                targetPos: { top: '15%', left: '50%' },
+                steps: [
+                    {
+                        tool: 'comb',
+                        actionText: 'Gỡ bỏ lá cây và chải tai',
+                        instruction: 'Bé dùng chiếc Lược Chải nhẹ nhàng để phủi sạch các lá cây bám dính nhé!',
+                        targetInstruction: 'Gõ hoặc chà chiếc lược lên lùm lá ở trên tai thỏ xinh xắn.'
+                    },
+                    {
+                        tool: 'soothing_cream',
+                        actionText: 'Thoa kem dịu mát',
+                        instruction: 'Tai thỏ vẫn còn hơi mẩn đỏ. Bé hãy chọn Tuýp Kem Mát bôi cho bạn nhé!',
+                        targetInstruction: 'Xức nhẹ một lớp kem xoa dịu lên hai chiếc tai dài ấm áp.'
+                    },
+                    {
+                        tool: 'carrot',
+                        actionText: 'Mời thỏ ăn cà rốt ngọt',
+                        instruction: 'Giờ thỏ hết ngứa tai rồi! Thưởng cho chú bé củ Cà Rốt siêu to đầy vitamin nhé!',
+                        targetInstruction: 'Đút củ cà rốt đỏ mọng, ngọt ngào cho chú thỏ nhai giòn rụm.'
+                    },
+                    {
+                        tool: 'heart_sticker',
+                        actionText: 'Dán sticker yêu thương',
+                        instruction: 'Chúc mừng bé đã chăm sóc xong! Hãy tặng bạn Thỏ một Sticker Trái Tim hạnh phúc!',
+                        targetInstruction: 'Dán sticker xinh xắn lên phần quai của chiếc áo của chú thỏ.'
+                    }
+                ],
+                renderSVG: (stepIndex, isHealed) => {
+                    const mouth = isHealed
+                        ? `<path d="M 46 72 Q 50 78 54 72 Q 50 78 46 72" stroke="#1e293b" stroke-width="3" fill="#fda4af"/>`
+                        : `<path d="M 47 74 Q 50 68 53 74" stroke="#1e293b" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+                    
+                    const eyes = isHealed
+                        ? `<g stroke="#1e293b" stroke-width="3.5" stroke-linecap="round" fill="none">
+                             <path d="M 32 54 Q 37 46 42 54"/>
+                             <path d="M 58 54 Q 63 46 68 54"/>
+                           </g>`
+                        : `<circle cx="36" cy="54" r="3.5" fill="#1e293b"/>
+                           <circle cx="64" cy="54" r="3.5" fill="#1e293b"/>
+                           <!-- Tear drop -->
+                           <path d="M 34 58 C 34 58 31 64 34 64 C 37 64 34 58 34 58" fill="#38bdf8" class="animate-pulse"/>`;
+
+                    // Dirty/Irritated leaf overlay
+                    const leafOverlay = (stepIndex === 0)
+                        ? `<g transform="translate(40, -4) scale(0.18)">
+                             <!-- Dead Leaves -->
+                             <path d="M 10 30 Q 35 10 50 45 Q 25 65 10 30" fill="#15803d"/>
+                             <path d="M 55 25 Q 80 5 95 40 Q 70 60 55 25" fill="#b45309"/>
+                           </g>`
+                        : '';
+
+                    // Cream healing glow
+                    const creamOverlay = (stepIndex === 1)
+                        ? `<ellipse cx="50" cy="22" rx="14" ry="10" fill="#a7f3d0" opacity="0.6" class="animate-ping"/>`
+                        : '';
+
+                    // Sticker overlay
+                    const stickerOverlay = (stepIndex > 3 || isHealed)
+                        ? `<path d="M 22 45 C 18 35, 8 35, 8 45 C 8 55, 22 65, 22 65 C 22 65, 36 55, 36 45 C 36 35, 26 35, 22 45 Z" fill="#ec4899" transform="translate(38, 88) scale(0.35) rotate(-10)"/>`
+                        : '';
+
+                    return `
+                    <svg viewBox="0 0 100 120" class="w-full h-full p-2 max-h-[250px] transition-transform duration-500 transform ${isHealed ? 'scale-105' : ''}">
+                        <!-- Long Ears -->
+                        <g stroke="#94a3b8" stroke-width="3">
+                            <!-- Left Ear -->
+                            <rect x="30" y="5" width="12" height="42" rx="6" fill="#f8fafc"/>
+                            <rect x="33" y="10" width="6" height="30" rx="3" fill="#fbcfe8"/>
+                            <!-- Right Ear -->
+                            <rect x="58" y="5" width="12" height="42" rx="6" fill="#f8fafc"/>
+                            <rect x="61" y="10" width="6" height="30" rx="3" fill="#fbcfe8"/>
+                        </g>
+
+                        <!-- Body (Shirt) -->
+                        <rect x="25" y="80" width="50" height="36" rx="16" fill="#fdba74" stroke="#d97706" stroke-width="3"/>
+                        <circle cx="50" cy="98" r="5" fill="white"/>
+
+                        <!-- Paws -->
+                        <circle cx="32" cy="114" r="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+                        <circle cx="68" cy="114" r="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+                        
+                        <!-- Head -->
+                        <circle cx="50" cy="62" r="26" fill="#f8fafc" stroke="#94a3b8" stroke-width="3"/>
+                        
+                        <!-- Blush -->
+                        <circle cx="28" cy="66" r="4.5" fill="#fda4af" opacity="0.6"/>
+                        <circle cx="72" cy="66" r="4.5" fill="#fda4af" opacity="0.6"/>
+
+                        <!-- Snout & Nose -->
+                        <ellipse cx="50" cy="70" rx="6" ry="4.5" fill="#e2e8f0"/>
+                        <polygon points="48,67 52,67 50,70" fill="#f43f5e"/>
+
+                        ${eyes}
+                        ${mouth}
+                        
+                        <!-- Overlays -->
+                        ${leafOverlay}
+                        ${creamOverlay}
+                        ${stickerOverlay}
+                    </svg>`;
+                }
+            }
+        ];
+
+        // Icons and configurations of all medical tools
+        const toolsDatabase = {
+            stethoscope: { name: 'Ống Nghe', emoji: '🩺', color: 'bg-teal-100 border-teal-400 hover:bg-teal-200 text-teal-700' },
+            warm_bottle: { name: 'Túi Chườm Ấm', emoji: '🔴', color: 'bg-red-100 border-red-400 hover:bg-red-200 text-red-700' },
+            gummy_vitamin: { name: 'Kẹo Dẻo Vitamin', emoji: '🍬', color: 'bg-amber-100 border-amber-400 hover:bg-amber-200 text-amber-700' },
+            sponge: { name: 'Bông Tắm Mịn', emoji: '🧼', color: 'bg-cyan-100 border-cyan-400 hover:bg-cyan-200 text-cyan-700' },
+            bandaid: { name: 'Băng Cá Nhân', emoji: '🩹', color: 'bg-yellow-100 border-yellow-400 hover:bg-yellow-200 text-yellow-700' },
+            fish_cookie: { name: 'Bánh Cá Dinh Dưỡng', emoji: '🐟', color: 'bg-sky-100 border-sky-400 hover:bg-sky-200 text-sky-700' },
+            pillow: { name: 'Gối Mềm Mại', emoji: '☁️', color: 'bg-emerald-100 border-emerald-400 hover:bg-emerald-200 text-emerald-700' },
+            blanket: { name: 'Chăn Ấm Áp', emoji: '🛌', color: 'bg-pink-100 border-pink-400 hover:bg-pink-200 text-pink-700' },
+            nectar_juice: { name: 'Nước Quả Ngọt', emoji: '🍹', color: 'bg-indigo-100 border-indigo-400 hover:bg-indigo-200 text-indigo-700' },
+            comb: { name: 'Lược Nhỏ Xinh', emoji: '🧹', color: 'bg-indigo-100 border-indigo-400 hover:bg-indigo-200 text-indigo-700' },
+            soothing_cream: { name: 'Kem Dịu Mát', emoji: '🧪', color: 'bg-emerald-100 border-emerald-400 hover:bg-emerald-200 text-emerald-700' },
+            carrot: { name: 'Cà Rốt Ngọt', emoji: '🥕', color: 'bg-orange-100 border-orange-400 hover:bg-orange-200 text-orange-700' },
+            heart_sticker: { name: 'Sticker Trái Tim', emoji: '💖', color: 'bg-rose-100 border-rose-400 hover:bg-rose-200 text-rose-700' }
+        };
+
+        // Global Game States
+        let starsCount = 0;
+        let activePetIndex = 0;
+        let currentStepIndex = 0;
+        let activeToolSelected = null;
+        let ttsEnabled = true;
+
+        // On Window Load
+        window.onload = function() {
+            // Check speech synthesis support
+            if (!('speechSynthesis' in window)) {
+                document.getElementById('tts-toggle-btn').style.display = 'none';
+            }
+            renderLobbySelection();
+        };
+
+        function toggleVoice() {
+            ttsEnabled = !ttsEnabled;
+            const icon = document.getElementById('tts-icon');
+            if (ttsEnabled) {
+                icon.className = 'fas fa-volume-up text-lg';
+                playClickSound();
+            } else {
+                icon.className = 'fas fa-volume-mute text-lg';
+            }
+        }
+
+        // TTS Speech Synthesis helper
+        function speakText(text) {
+            if (!ttsEnabled) return;
+            try {
+                window.speechSynthesis.cancel(); // cancel playing sounds
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'vi-VN';
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            } catch (e) {
+                console.log("Speech Synthesizer Error: ", e);
+            }
+        }
+
+        function startGame() {
+            playClickSound();
+            document.getElementById('lobby-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            document.getElementById('success-screen').classList.add('hidden');
+            
+            activePetIndex = 0;
+            loadPatient(activePetIndex);
+        }
+
+        function loadPatient(index) {
+            activePetIndex = index;
+            currentStepIndex = 0;
+            activeToolSelected = null;
+            
+            const pet = patientsData[activePetIndex];
+            
+            // Set details
+            document.getElementById('patient-name').innerText = pet.name;
+            document.getElementById('patient-symptom-tag').innerText = pet.symptom;
+            document.getElementById('patient-mini-avatar').innerText = pet.emoji;
+            document.getElementById('patient-bubble').innerText = `"${pet.dialogue}"`;
+
+            // Display current state
+            updateStepIndicator();
+            renderInteractivePet();
+            renderToolsShelf();
+            renderPatientCarousel();
+            speakSymptom();
+        }
+
+        function speakSymptom() {
+            const pet = patientsData[activePetIndex];
+            speakText(`Bác sĩ ơi, bạn ${pet.name} đang bị ${pet.symptom}. Bạn ấy thút thít bảo: ${pet.dialogue}`);
+        }
+
+        function renderInteractivePet() {
+            const container = document.getElementById('interactive-pet-viewport');
+            const pet = patientsData[activePetIndex];
+            
+            // Check if current step is fully healed (already completed sticker)
+            const isHealed = (currentStepIndex > 3);
+            
+            // Inject dynamic SVG
+            container.innerHTML = pet.renderSVG(currentStepIndex, isHealed);
+            
+            // Place glowing interactive zone target
+            const targetZone = document.getElementById('target-zone');
+            if (isHealed) {
+                targetZone.classList.add('hidden');
+            } else {
+                targetZone.classList.remove('hidden');
+                targetZone.style.top = pet.targetPos.top;
+                targetZone.style.left = pet.targetPos.left;
+                
+                // Show hint text in footer indicator
+                const currentStepData = pet.steps[currentStepIndex];
+                document.getElementById('step-task-instruction').innerText = currentStepData.targetInstruction;
+            }
+        }
+
+        function renderPatientCarousel() {
+            const container = document.getElementById('patient-carousel');
+            container.innerHTML = '';
+            
+            patientsData.forEach((pet, index) => {
+                const isActive = index === activePetIndex;
+                const card = document.createElement('button');
+                card.onclick = () => { playClickSound(); loadPatient(index); };
+                card.className = `flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all ${
+                    isActive 
+                        ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white border-pink-500 scale-105 shadow' 
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                }`;
+                card.innerHTML = `
+                    <span class="text-2xl">${pet.emoji}</span>
+                    <span class="font-bold text-xs whitespace-nowrap">${pet.name}</span>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderToolsShelf() {
+            const grid = document.getElementById('tools-grid');
+            grid.innerHTML = '';
+            
+            const pet = patientsData[activePetIndex];
+            const currentStepData = pet.steps[currentStepIndex];
+            
+            // We want to render a mix of tools (including the correct one, and 2 random distractor tools)
+            const correctToolId = currentStepData.tool;
+            const allToolKeys = Object.keys(toolsDatabase);
+            
+            // Filter out duplicate or sticker tools to create 2 wrong random options
+            let candidateDistractors = allToolKeys.filter(key => key !== correctToolId && key !== 'heart_sticker');
+            // Shuffle
+            candidateDistractors.sort(() => Math.random() - 0.5);
+            
+            // Select 2 distractors + 1 correct tool
+            let displayedTools = [correctToolId, candidateDistractors[0], candidateDistractors[1]];
+            // Shuffle again so correct tool isn't always first
+            displayedTools.sort(() => Math.random() - 0.5);
+
+            displayedTools.forEach(toolId => {
+                const tool = toolsDatabase[toolId];
+                const isSelected = activeToolSelected === toolId;
+                const isCorrect = toolId === correctToolId;
+                
+                const btn = document.createElement('button');
+                btn.onclick = () => selectTool(toolId);
+                
+                // Cutesy styling classes
+                let activeStyle = isSelected 
+                    ? 'border-dashed border-4 border-rose-500 scale-105 shadow-md pulse-glowing bounce-gentle' 
+                    : 'border-2 scale-100 shadow-sm';
+                    
+                // Special helper cue: highlight tool gently if the child waits
+                let glowCue = isCorrect ? 'hover:scale-105' : '';
+
+                btn.className = `flex flex-col items-center justify-center p-3 rounded-2xl transition-all ${tool.color} ${activeStyle} ${glowCue}`;
+                btn.innerHTML = `
+                    <span class="text-4xl mb-1">${tool.emoji}</span>
+                    <span class="text-[10px] md:text-xs font-bold leading-tight text-center">${tool.name}</span>
+                `;
+                
+                grid.appendChild(btn);
+            });
+
+            // Update helper dialogue instructions
+            document.getElementById('helper-text').innerText = currentStepData.instruction;
+            speakText(currentStepData.instruction);
+        }
+
+        function selectTool(toolId) {
+            const pet = patientsData[activePetIndex];
+            const currentStepData = pet.steps[currentStepIndex];
+            
+            if (toolId === currentStepData.tool) {
+                playClickSound();
+                activeToolSelected = toolId;
+                
+                // Re-render shelf to show item selected
+                renderToolsShelf();
+                
+                document.getElementById('helper-text').innerText = `Tuyệt quá! Bé đã chọn đúng dụng cụ. Giờ hãy nhấn vào vòng tròn nhấp nháy trên bạn thú cưng nhé!`;
+                speakText("Tuyệt quá! Bé chọn đúng rồi. Giờ hãy giúp bạn ấy nhé!");
+            } else {
+                // Incorrect tool selected
+                playWrongSound();
+                createFloatingConfetti(event?.clientX || 400, event?.clientY || 300, '❌', 3);
+                document.getElementById('helper-text').innerText = `Ôi, món đồ này chưa thích hợp rồi! Bé hãy tìm món đồ khác giúp bạn ấy nhé!`;
+                speakText("Món đồ này chưa đúng rồi bé ơi, tìm món khác xem nào!");
+            }
+        }
+
+        function applyActiveToolToPet() {
+            if (!activeToolSelected) {
+                playWrongSound();
+                document.getElementById('helper-text').innerText = `Bé hãy chọn một dụng cụ ở tủ thuốc bên phải trước nhé!`;
+                speakText("Bé ơi, hãy chọn dụng cụ trước nhé!");
+                return;
+            }
+
+            const pet = patientsData[activePetIndex];
+            const currentStepData = pet.steps[currentStepIndex];
+
+            if (activeToolSelected === currentStepData.tool) {
+                // Perform healing action
+                playCareActionSound();
+                
+                // Visual sparklers near target action coordinate
+                const targetZone = document.getElementById('target-zone');
+                const rect = targetZone.getBoundingClientRect();
+                createFloatingConfetti(rect.left + rect.width/2, rect.top + rect.height/2, '⭐', 8);
+                createFloatingConfetti(rect.left + rect.width/2, rect.top + rect.height/2, '✨', 8);
+                
+                // Advance state
+                currentStepIndex++;
+                activeToolSelected = null; // Clear active tool selection
+                
+                // Update dots visual
+                updateStepIndicator();
+
+                if (currentStepIndex > 3) {
+                    // Fully cured! Show victory panel
+                    triggerPatientHealedSuccess();
+                } else {
+                    // Advance to next step
+                    renderInteractivePet();
+                    renderToolsShelf();
+                }
+            }
+        }
+
+        function updateStepIndicator() {
+            for (let i = 0; i < 4; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i < currentStepIndex) {
+                    dot.className = "w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs bg-emerald-500 text-white shadow-sm";
+                    dot.innerHTML = "✓";
+                } else if (i === currentStepIndex) {
+                    dot.className = "w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs bg-pink-500 text-white shadow-sm animate-pulse";
+                    dot.innerHTML = i + 1;
+                } else {
+                    dot.className = "w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs bg-slate-300 text-slate-600";
+                    dot.innerHTML = i + 1;
+                }
+            }
+        }
+
+        function triggerPatientHealedSuccess() {
+            playSuccessSound();
+            playHappySqueak();
+            
+            // Add stars
+            starsCount += 10;
+            document.getElementById('star-count').innerText = starsCount;
+            
+            const pet = patientsData[activePetIndex];
+            
+            // Create celebratory confetti storms
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight * 0.5 + window.innerHeight * 0.2;
+                    createFloatingConfetti(x, y, ['🌸', '✨', '💖', '🎈', '🎉'][Math.floor(Math.random() * 5)], 3);
+                }, i * 100);
+            }
+
+            // Switch screen state
+            setTimeout(() => {
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('success-screen').classList.remove('hidden');
+                
+                // Update UI data on success screen
+                document.getElementById('success-pet-emoji').innerText = pet.emoji;
+                document.getElementById('success-title').innerText = `Bé Thật Tuyệt Vời!`;
+                document.getElementById('success-desc').innerText = `Bạn ${pet.name} đã khỏe mạnh, cười tươi và tràn đầy yêu thương trở lại rồi!`;
+                
+                speakText(`Bác sĩ thật là giỏi! Bạn ${pet.name} đã khỏe mạnh trở lại rồi! Chúc mừng bác sĩ nhí nhé!`);
+            }, 1000);
+        }
+
+        function pickAnotherPatient() {
+            playClickSound();
+            document.getElementById('success-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            // Rotate to next patient index
+            const nextIndex = (activePetIndex + 1) % patientsData.length;
+            loadPatient(nextIndex);
+        }
+
+        function backToLobby() {
+            playClickSound();
+            document.getElementById('success-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('lobby-screen').classList.remove('hidden');
+        }
+
+        // Particles helper
+        function createFloatingConfetti(x, y, emoji, count) {
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'sparkle-particle text-xl';
+                particle.innerText = emoji;
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                
+                // Random drift values
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 60 + 20;
+                const xOffset = Math.cos(angle) * distance;
+                const yOffset = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--x-offset', `${xOffset}px`);
+                particle.style.setProperty('--y-offset', `${yOffset}px`);
+                
+                // Inline animation overrides
+                particle.animate([
+                    { transform: 'translate(0, 0) scale(0.6) rotate(0deg)', opacity: 1 },
+                    { transform: `translate(${xOffset}px, ${yOffset}px) scale(1.4) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                ], {
+                    duration: 1000 + Math.random() * 500,
+                    easing: 'ease-out',
+                    fill: 'forwards'
+                });
+
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 1500);
+            }
+        }
+
+        // Pre-render lobby illustration
+        function renderLobbySelection() {
+            // Setup code for lobby graphics if needed, or play brief sweet intro chime
+        }
+    </script>
+</body>
+</html>

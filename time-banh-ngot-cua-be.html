@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiệm Bánh Ngọt Của Bé - Bé Tập Làm Bánh</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Comfortaa & Fredoka for super cute rounded typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', 'Comfortaa', sans-serif;
+            background-color: #FFF0F5; /* Lavender Blush */
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        /* Custom scrollbar for cute look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFE4E1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FFB6C1;
+            border-radius: 10px;
+        }
+
+        /* Animations */
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .animate-bounce-slow {
+            animation: bounce-slow 2.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(255,182,193,0.6)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 15px rgba(255,105,180,0.8)); }
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+        .animate-wiggle {
+            animation: wiggle 0.5s infinite ease-in-out;
+        }
+
+        /* Bake rising simulation */
+        @keyframes baking-rise {
+            0% { transform: scaleY(0.6) scaleX(0.9); filter: brightness(1); }
+            50% { transform: scaleY(0.9) scaleX(1); filter: brightness(1.05); }
+            100% { transform: scaleY(1.1) scaleX(1.02); filter: brightness(1.15); }
+        }
+        .baking-animation {
+            animation: baking-rise 4s forwards ease-out;
+        }
+
+        /* Sparkle particles */
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            background: radial-gradient(circle, #FFF 20%, transparent 60%);
+            border-radius: 50%;
+            z-index: 100;
+        }
+
+        /* Active option indicator */
+        .active-ring {
+            box-shadow: 0 0 0 6px #FF69B4, 0 8px 16px rgba(255, 105, 180, 0.3);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between overflow-x-hidden p-2 md:p-4 text-slate-700">
+
+<script>
+    // Audio Sound Effects Generator using Web Audio API
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new AudioCtx();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function playSound(type) {
+        if (!soundEnabled) return;
+        initAudio();
+        
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'mix') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.linearRampToValueAtTime(180, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'bell') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, now);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1.2);
+                osc.start(now);
+                osc.stop(now + 1.2);
+            } else if (type === 'success') {
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const oscSeq = audioCtx.createOscillator();
+                    const gainSeq = audioCtx.createGain();
+                    oscSeq.type = 'triangle';
+                    oscSeq.frequency.setValueAtTime(freq, now + idx * 0.1);
+                    oscSeq.connect(gainSeq);
+                    gainSeq.connect(audioCtx.destination);
+                    gainSeq.gain.setValueAtTime(0.15, now + idx * 0.1);
+                    gainSeq.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.4);
+                    oscSeq.start(now + idx * 0.1);
+                    oscSeq.stop(now + idx * 0.1 + 0.4);
+                });
+            } else if (type === 'sprinkle') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1800 + Math.random() * 400, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'box') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(250, now);
+                osc.frequency.exponentialRampToValueAtTime(100, now + 0.4);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        } catch (e) {
+            console.log("Audio play blocked or unsupported", e);
+        }
+    }
+</script>
+
+<!-- Background cute elements -->
+<div class="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-25">
+    <div class="absolute top-[10%] left-[5%] text-4xl md:text-6xl animate-bounce-slow" style="animation-delay: 0.2s;">🧁</div>
+    <div class="absolute top-[15%] right-[10%] text-4xl md:text-6xl animate-bounce-slow" style="animation-delay: 0.8s;">🍓</div>
+    <div class="absolute bottom-[20%] left-[8%] text-4xl md:text-6xl animate-bounce-slow" style="animation-delay: 1.4s;">🍪</div>
+    <div class="absolute bottom-[10%] right-[5%] text-4xl md:text-6xl animate-bounce-slow" style="animation-delay: 1.9s;">🎀</div>
+</div>
+
+<!-- Main Game Canvas Wrapper -->
+<div class="w-full max-w-4xl bg-white/80 backdrop-blur-md rounded-3xl border-8 border-pink-200 shadow-2xl z-10 p-3 md:p-6 flex flex-col justify-between min-h-[90vh] md:min-h-[85vh] relative">
+    
+    <!-- Top Bar Control Panel -->
+    <div class="flex items-center justify-between border-b-4 border-dashed border-pink-100 pb-3 mb-3">
+        <!-- Logo / Bakery Signboard -->
+        <div class="flex items-center gap-2 cursor-pointer" onclick="goHome()">
+            <span class="text-3xl md:text-4xl">🎂</span>
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold bg-gradient-to-r from-pink-500 to-amber-500 bg-clip-text text-transparent">Bếp Nhỏ Của Bé</h1>
+                <p class="text-[10px] md:text-xs text-pink-400 font-semibold uppercase tracking-wider">Tiệm Bánh Thần Kỳ ✨</p>
+            </div>
+        </div>
+
+        <!-- Right Utilities -->
+        <div class="flex items-center gap-2">
+            <!-- Audio Button -->
+            <button id="soundToggle" onclick="toggleSound()" class="w-10 h-10 md:w-12 md:h-12 bg-pink-100 border-2 border-pink-300 text-pink-500 rounded-full flex items-center justify-center hover:scale-115 transition-transform text-lg shadow-sm">
+                🔊
+            </button>
+            <!-- Mode Reset / Home Button -->
+            <button onclick="goHome()" class="px-3 py-2 md:px-4 md:py-2 bg-amber-100 border-2 border-amber-300 text-amber-600 font-bold rounded-2xl hover:scale-105 transition-transform text-sm md:text-base flex items-center gap-1 shadow-sm">
+                <span>🏠</span> <span class="hidden sm:inline">Trang Chủ</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 1: Welcome/Mode Selector Screen -->
+    <div id="screenWelcome" class="flex-1 flex flex-col items-center justify-center text-center py-6">
+        <div class="relative mb-6">
+            <div class="text-8xl md:text-9xl animate-wiggle inline-block">🐰</div>
+            <div class="absolute -top-3 -right-3 text-3xl animate-bounce-slow">✨</div>
+            <div class="absolute top-2 -left-4 text-3xl animate-bounce-slow" style="animation-delay: 1s;">🌟</div>
+        </div>
+        
+        <h2 class="text-3xl md:text-5xl font-extrabold text-pink-500 mb-2 leading-tight">Chào Mừng Bé Yêu!</h2>
+        <p class="text-base md:text-lg text-slate-500 font-medium max-w-md px-4 mb-8">
+            Hôm nay bé muốn làm đầu bếp nhí tài ba để thực hiện thử thách hay tự do sáng tạo những chiếc bánh cực kì dễ thương nào? 🎉
+        </p>
+
+        <!-- Play Modes -->
+        <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md px-4 justify-center">
+            <!-- Mode 1: Challenge -->
+            <button onclick="startMode('challenge')" class="group flex-1 bg-gradient-to-b from-pink-400 to-pink-500 border-4 border-pink-300 hover:border-pink-200 text-white rounded-3xl p-5 shadow-lg transition-transform hover:-translate-y-2 active:translate-y-0 text-center flex flex-col items-center gap-3">
+                <span class="text-5xl group-hover:scale-110 transition-transform">🏆</span>
+                <div>
+                    <span class="block text-xl font-bold">Thử Thách Nhỏ</span>
+                    <span class="text-xs text-pink-100 block mt-1">Làm bánh theo yêu cầu từ khách hàng dễ thương</span>
+                </div>
+            </button>
+
+            <!-- Mode 2: Free Play -->
+            <button onclick="startMode('free')" class="group flex-1 bg-gradient-to-b from-amber-400 to-amber-500 border-4 border-amber-300 hover:border-amber-200 text-white rounded-3xl p-5 shadow-lg transition-transform hover:-translate-y-2 active:translate-y-0 text-center flex flex-col items-center gap-3">
+                <span class="text-5xl group-hover:scale-110 transition-transform">🎨</span>
+                <div>
+                    <span class="block text-xl font-bold">Tự Do Sáng Tạo</span>
+                    <span class="text-xs text-amber-100 block mt-1">Tự tay thiết kế chiếc bánh ước mơ của riêng bé</span>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: Main Bakery Gameplay Station -->
+    <div id="screenGame" class="hidden flex-1 flex flex-col lg:flex-row gap-6">
+        
+        <!-- Left Panel: The Interactive Kitchen & Canvas Stage -->
+        <div class="flex-[3] bg-gradient-to-b from-sky-50 to-pink-50 rounded-3xl border-4 border-sky-100 p-4 md:p-6 flex flex-col items-center justify-center relative min-h-[300px] md:min-h-[420px] shadow-inner overflow-hidden">
+            
+            <!-- Step Indicators (Progress Breadcrumbs for Kids) -->
+            <div class="absolute top-3 left-3 right-3 flex justify-between gap-1 z-20">
+                <div class="flex flex-wrap gap-1 justify-center w-full">
+                    <span id="stepBadge-mold" class="px-2 py-1 text-xs rounded-full bg-pink-200 text-pink-600 font-bold border-2 border-pink-300">1. Chọn Khuôn 🥣</span>
+                    <span id="stepBadge-flavor" class="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-400 font-bold">2. Bột Bánh 🍓</span>
+                    <span id="stepBadge-mix" class="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-400 font-bold">3. Trộn Bột 🥄</span>
+                    <span id="stepBadge-bake" class="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-400 font-bold">4. Nướng Bánh 🔥</span>
+                    <span id="stepBadge-cream" class="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-400 font-bold">5. Kem Phủ 🍦</span>
+                    <span id="stepBadge-decor" class="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-400 font-bold">6. Trang Trí ⭐</span>
+                    <span id="stepBadge-wrap" class="px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-400 font-bold">7. Hộp Quà 🎁</span>
+                </div>
+            </div>
+
+            <!-- Mascot Speech Bubble / Order Spec (Challenge Mode Only) -->
+            <div id="challengeBubble" class="absolute top-16 left-4 right-4 bg-white/95 rounded-2xl border-2 border-amber-300 p-3 flex items-center gap-3 shadow-md z-20 animate-bounce-slow max-w-md mx-auto hidden">
+                <span class="text-3xl">🐰</span>
+                <div>
+                    <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Yêu cầu từ khách hàng:</p>
+                    <p id="challengeText" class="text-sm md:text-base font-bold text-pink-600 leading-snug">Hãy giúp thỏ làm chiếc bánh ngọt ngào màu hồng nào!</p>
+                </div>
+            </div>
+
+            <!-- THE MAIN BAKING INTERACTIVE WORKSPACE -->
+            <div class="w-full flex-1 flex flex-col items-center justify-center relative mt-16 md:mt-10">
+                
+                <!-- STAGE 1 & 2: Mold and Batter Flavor Selection Vis (Bowl Visuals) -->
+                <div id="bowlContainer" class="hidden flex-col items-center relative py-6">
+                    <div class="text-xl font-bold text-pink-500 mb-2" id="bowlTitle">Hãy chọn khuôn yêu thích nhé!</div>
+                    <!-- The Mixing Bowl -->
+                    <div class="relative w-44 h-44 md:w-56 md:h-56 bg-sky-200 border-b-[12px] border-r-4 border-sky-300 rounded-b-full rounded-t-lg shadow-lg flex flex-col items-center justify-end overflow-hidden transition-all duration-300">
+                        <!-- Inside Batter Liquid representation -->
+                        <div id="batterLiquid" class="absolute bottom-0 left-0 right-0 h-0 bg-transparent transition-all duration-700 ease-out flex items-center justify-center">
+                            <!-- Visual Swirl inside batter -->
+                            <div id="batterSwirl" class="w-full h-full opacity-60 bg-white/20 hidden"></div>
+                        </div>
+                        
+                        <!-- Mini representation of the selected Mold icon floating -->
+                        <div id="chosenMoldMini" class="text-5xl mb-12 drop-shadow-md z-10 transition-transform"></div>
+                    </div>
+                </div>
+
+                <!-- STAGE 3: Mixing interactive zone -->
+                <div id="mixZone" class="hidden flex-col items-center py-6">
+                    <div class="text-lg md:text-xl font-bold text-pink-500 text-center mb-1">Dùng tay khuấy/vuốt hoặc bấm để trộn bột nhé!</div>
+                    <div class="text-xs text-slate-400 font-semibold mb-4">Trộn thật đều cho đến khi bột mịn màng ✨</div>
+                    
+                    <div class="relative w-56 h-56 flex items-center justify-center">
+                        <!-- Mixing Bowl Stage -->
+                        <div id="mixBowl" onclick="advanceMix()" class="cursor-pointer relative w-52 h-52 bg-pink-100 border-b-[12px] border-pink-200 rounded-b-full rounded-t-lg shadow-md flex items-center justify-center transition-transform active:scale-95 overflow-hidden">
+                            <!-- Flour Batter Inside -->
+                            <div id="mixBatter" class="absolute bottom-0 left-0 right-0 bg-amber-100 h-2/3 transition-all duration-300"></div>
+                            <!-- Cute Animated Stir Spoon -->
+                            <span id="stirSpoon" class="absolute text-5xl origin-bottom transition-all duration-200 pointer-events-none" style="transform: rotate(15deg);">🥄</span>
+                        </div>
+                        <!-- Completion percentage floating ring -->
+                        <div class="absolute -top-3 -right-3 bg-pink-500 text-white font-bold w-12 h-12 rounded-full border-2 border-white flex items-center justify-center shadow-lg text-sm" id="mixPercent">
+                            0%
+                        </div>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div class="w-64 bg-slate-200 h-4 rounded-full mt-6 overflow-hidden border-2 border-white shadow-inner">
+                        <div id="mixProgressBar" class="bg-gradient-to-r from-pink-400 to-amber-400 h-full w-0 transition-all duration-200"></div>
+                    </div>
+                </div>
+
+                <!-- STAGE 4: Baking interactive zone (Oven Visual) -->
+                <div id="bakeZone" class="hidden flex-col items-center py-6">
+                    <div class="text-lg md:text-xl font-bold text-pink-500 mb-2">Đưa bánh vào lò nướng thần kỳ!</div>
+                    
+                    <!-- Cute Electric Oven Model -->
+                    <div class="relative w-64 h-56 bg-slate-700 border-8 border-slate-600 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden">
+                        <!-- Glass Window/Door of Oven -->
+                        <div id="ovenDoor" class="absolute inset-2 bg-slate-800/80 rounded-xl border-4 border-slate-500 flex items-center justify-center transition-all duration-500 z-10">
+                            <!-- Inside Light Indicator / Baked Cake Preview -->
+                            <div id="ovenCakeLight" class="hidden flex-col items-center justify-center transition-all duration-500">
+                                <span id="bakingCakeModel" class="text-6xl drop-shadow-lg filter brightness-75">🧁</span>
+                                <div class="w-8 h-2 bg-red-500 rounded-full animate-pulse mt-2 shadow-glow"></div>
+                            </div>
+                        </div>
+
+                        <!-- Front control panel panel -->
+                        <div class="absolute bottom-1 inset-x-2 flex items-center justify-between z-20 px-4 py-1 bg-slate-800 rounded-lg">
+                            <span class="text-amber-400 text-xs font-mono" id="ovenTimer">00:03</span>
+                            <div class="flex gap-2">
+                                <span class="w-3 h-3 rounded-full bg-red-500" id="ovenLightRed"></span>
+                                <span class="w-3 h-3 rounded-full bg-green-500 opacity-30" id="ovenLightGreen"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Start Baking Button -->
+                    <button id="btnStartBaking" onclick="startBakingTimer()" class="mt-6 px-6 py-3 bg-gradient-to-r from-orange-400 to-amber-500 border-b-4 border-orange-600 active:border-b-0 hover:scale-105 transition-all text-white font-bold text-lg rounded-2xl flex items-center gap-2 shadow-lg">
+                        🔥 Bật Lò Nướng
+                    </button>
+                </div>
+
+                <!-- STAGE 5 & 6: Decoration Stage Canvas -->
+                <div id="decorStage" class="hidden flex-col items-center relative w-full h-full py-4">
+                    <!-- Tip label -->
+                    <p class="text-xs md:text-sm text-slate-500 font-semibold mb-2 bg-pink-100/50 px-3 py-1 rounded-full border border-pink-200">
+                        👉 Chọn Topping bên phải và <strong class="text-pink-600">bấm trực tiếp lên bánh</strong> để trang trí nhé!
+                    </p>
+
+                    <!-- The Cake Canvas Container -->
+                    <div id="cakeCanvas" onclick="placeTopping(event)" class="relative w-72 h-72 md:w-80 md:h-80 flex items-center justify-center cursor-crosshair border-4 border-pink-200/40 rounded-3xl bg-white/40 shadow-inner">
+                        
+                        <!-- Base Wrapper for Cupcake / Cake / Cookie to rise/wiggle -->
+                        <div id="cakeVisualWrapper" class="relative flex flex-col items-center justify-end w-full h-full pb-10">
+                            <!-- Liner/Mold Visual Representation (Bottom part) -->
+                            <div id="canvasMold" class="z-10 transition-transform"></div>
+
+                            <!-- Batter/Body representation (Middle part) -->
+                            <div id="canvasBatter" class="z-20 transition-transform -mt-10"></div>
+
+                            <!-- Cream layer representation (Top Layer) -->
+                            <div id="canvasCream" class="z-30 absolute top-[30%] text-8xl transition-all"></div>
+                        </div>
+
+                        <!-- Absolute placed decorations layer -->
+                        <div id="toppingsPlacementLayer" class="absolute inset-0 z-40 pointer-events-none">
+                            <!-- Child toppings elements will get appended here dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Helper to Clear Decorations -->
+                    <div class="flex gap-2 mt-4 z-50">
+                        <button onclick="clearLastTopping()" class="px-3 py-1.5 bg-slate-100 border-2 border-slate-300 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-200 transition-colors">
+                            ↩️ Xóa Topping Vừa Làm
+                        </button>
+                        <button onclick="clearAllToppings()" class="px-3 py-1.5 bg-rose-50 border-2 border-rose-200 text-rose-500 font-bold rounded-xl text-xs hover:bg-rose-100 transition-colors">
+                            🗑️ Trang Trí Lại
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STAGE 7: Wrap and Pack Box Screen -->
+                <div id="wrapStage" class="hidden flex-col items-center py-6 w-full">
+                    <div class="text-lg md:text-xl font-bold text-pink-500 mb-4 text-center">Bánh đã chín và siêu cute! Cùng đóng gói vào hộp nhé! 🎁</div>
+                    
+                    <div class="relative w-64 h-64 flex items-center justify-center">
+                        <!-- Gift Box wrapper -->
+                        <div id="giftBox" class="relative w-52 h-52 bg-pink-200 rounded-3xl border-b-[10px] border-r-4 border-pink-300 flex items-center justify-center transition-all duration-500 shadow-xl overflow-hidden cursor-pointer" onclick="wrapBoxAction()">
+                            <!-- Gift Lid / Tape ribbon representation inside -->
+                            <div id="giftBoxLid" class="absolute -top-1 inset-x-0 h-10 bg-pink-400 border-b-4 border-pink-500 flex items-center justify-center transition-all duration-500 z-10">
+                                <div class="w-12 h-12 bg-rose-500 rounded-full border-2 border-white -top-6 absolute flex items-center justify-center text-xs text-white">🎀</div>
+                            </div>
+                            
+                            <!-- Box contents preview inside (semi-open initially) -->
+                            <div id="miniCakeInside" class="text-7xl pt-4 animate-bounce-slow">
+                                🧁
+                            </div>
+
+                            <!-- Fully Packaged wrap layer -->
+                            <div id="giftPackedOverlay" class="absolute inset-0 bg-gradient-to-tr from-rose-400 to-pink-500 hidden items-center justify-center z-20 flex-col">
+                                <div class="text-8xl">🎁</div>
+                                <span class="bg-yellow-300 text-rose-600 font-bold px-3 py-1 rounded-full text-xs mt-2 border-2 border-white shadow-md">XONG RỒI! 🎉</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button id="btnWrapAction" onclick="wrapBoxAction()" class="mt-6 px-6 py-3 bg-gradient-to-r from-pink-500 to-rose-500 text-white font-bold text-lg rounded-2xl flex items-center gap-2 shadow-lg border-b-4 border-rose-700 active:border-b-0 hover:scale-105 transition-all">
+                        🎀 Buộc Nơ Đóng Hộp
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Right Panel: Creative Control Panel / Ingredients & Options Selector -->
+        <div id="rightControlPanel" class="flex-[2] bg-white border-4 border-pink-100 rounded-3xl p-4 flex flex-col justify-between max-h-[500px] lg:max-h-[550px] overflow-y-auto shadow-sm">
+            
+            <!-- Step Specific Controls -->
+            <div id="optionsWrapper" class="flex-1 flex flex-col justify-start">
+                
+                <!-- STAGE 1 OPTIONS: Choose Mold (🧁 vs 🎂 vs 🍪) -->
+                <div id="group-mold" class="step-options-group flex flex-col gap-4">
+                    <h3 class="text-lg font-bold text-pink-500 border-b-2 border-dashed border-pink-100 pb-2">Bước 1: Chọn Loại Bánh 🥣</h3>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="selectMold(event, 'cupcake', '🧁')" class="mold-option p-4 bg-pink-50 border-4 border-pink-100 rounded-2xl text-center hover:bg-pink-100 active:scale-95 transition-all flex flex-col items-center">
+                            <span class="text-4xl mb-1">🧁</span>
+                            <span class="text-xs font-bold text-slate-600">Cupcake</span>
+                        </button>
+                        <button onclick="selectMold(event, 'cake', '🎂')" class="mold-option p-4 bg-pink-50 border-4 border-pink-100 rounded-2xl text-center hover:bg-pink-100 active:scale-95 transition-all flex flex-col items-center">
+                            <span class="text-4xl mb-1">🎂</span>
+                            <span class="text-xs font-bold text-slate-600">Bánh Kem</span>
+                        </button>
+                        <button onclick="selectMold(event, 'cookie', '🍪')" class="mold-option p-4 bg-pink-50 border-4 border-pink-100 rounded-2xl text-center hover:bg-pink-100 active:scale-95 transition-all flex flex-col items-center">
+                            <span class="text-4xl mb-1">🍪</span>
+                            <span class="text-xs font-bold text-slate-600">Bánh Cookie</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STAGE 2 OPTIONS: Choose Batter Flavor (Chocolate, Strawberry, Matcha, Vanilla) -->
+                <div id="group-flavor" class="step-options-group hidden flex flex-col gap-4">
+                    <h3 class="text-lg font-bold text-pink-500 border-b-2 border-dashed border-pink-100 pb-2">Bước 2: Chọn Hương Vị Bột 🍓</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="selectFlavor(event, 'strawberry', '#FFB6C1', 'Hương Dâu 🍓')" class="flavor-option p-3 bg-pink-50 border-4 border-pink-100 rounded-2xl flex items-center gap-3 hover:bg-pink-100 transition-all text-left">
+                            <span class="text-3xl">🍓</span>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-700">Dâu Tây</span>
+                                <span class="text-[10px] text-pink-400 font-bold">Màu Hồng</span>
+                            </div>
+                        </button>
+                        <button onclick="selectFlavor(event, 'chocolate', '#8B4513', 'Hương Socola 🍫')" class="flavor-option p-3 bg-pink-50 border-4 border-pink-100 rounded-2xl flex items-center gap-3 hover:bg-pink-100 transition-all text-left">
+                            <span class="text-3xl">🍫</span>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-700">Socola</span>
+                                <span class="text-[10px] text-amber-700 font-bold">Màu Nâu</span>
+                            </div>
+                        </button>
+                        <button onclick="selectFlavor(event, 'matcha', '#8FBC8F', 'Hương Trà Xanh 🍵')" class="flavor-option p-3 bg-pink-50 border-4 border-pink-100 rounded-2xl flex items-center gap-3 hover:bg-pink-100 transition-all text-left">
+                            <span class="text-3xl">🍵</span>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-700">Trà Xanh</span>
+                                <span class="text-[10px] text-green-500 font-bold">Màu Xanh</span>
+                            </div>
+                        </button>
+                        <button onclick="selectFlavor(event, 'vanilla', '#FFF8DC', 'Hương Vani 🍦')" class="flavor-option p-3 bg-pink-50 border-4 border-pink-100 rounded-2xl flex items-center gap-3 hover:bg-pink-100 transition-all text-left">
+                            <span class="text-3xl">🍦</span>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-700">Vani Thơm</span>
+                                <span class="text-[10px] text-amber-400 font-bold">Màu Vàng</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STAGE 3 OPTIONS: Mixing directions -->
+                <div id="group-mix" class="step-options-group hidden flex flex-col gap-4">
+                    <h3 class="text-lg font-bold text-pink-500 border-b-2 border-dashed border-pink-100 pb-2">Bước 3: Khuấy Trộn 🥄</h3>
+                    <p class="text-sm text-slate-500">Khuấy thật lực lên nào bé yêu! Hãy bấm liên tục vào chiếc bát để trộn nhuyễn bột nhé.</p>
+                    <button onclick="advanceMix()" class="py-4 bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 active:scale-95 text-white font-bold text-lg rounded-2xl shadow-md transition-all">
+                        🥄 Gõ Vào Đây Để Khuấy Bột!
+                    </button>
+                </div>
+
+                <!-- STAGE 4 OPTIONS: Oven timer controls -->
+                <div id="group-bake" class="step-options-group hidden flex flex-col gap-4">
+                    <h3 class="text-lg font-bold text-pink-500 border-b-2 border-dashed border-pink-100 pb-2">Bước 4: Nướng Bánh Chín 🍩</h3>
+                    <p class="text-sm text-slate-500 leading-relaxed">Hãy bấm nút đỏ <strong class="text-orange-500">"Bật Lò Nướng"</strong> ở bên cạnh, đợi nhiệt độ lò tăng cao để bánh nở xốp thật ngon lành nhé!</p>
+                </div>
+
+                <!-- STAGE 5 OPTIONS: Cream Style & Flavor/Color -->
+                <div id="group-cream" class="step-options-group hidden flex flex-col gap-4">
+                    <h3 class="text-lg font-bold text-pink-500 border-b-2 border-dashed border-pink-100 pb-2">Bước 5: Bơm Lớp Kem Phủ 🍦</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="selectCream(event, 'pink', '🧁')" class="cream-option p-3 bg-pink-50 border-4 border-pink-100 rounded-2xl flex items-center gap-2 hover:bg-pink-100 transition-all">
+                            <span class="text-4xl">💗</span>
+                            <span class="text-xs font-bold text-slate-700">Kem Hồng</span>
+                        </button>
+                        <button onclick="selectCream(event, 'blue', '💙')" class="cream-option p-3 bg-blue-50 border-4 border-blue-100 rounded-2xl flex items-center gap-2 hover:bg-blue-100 transition-all">
+                            <span class="text-4xl">💙</span>
+                            <span class="text-xs font-bold text-slate-700">Kem Xanh</span>
+                        </button>
+                        <button onclick="selectCream(event, 'chocolate', '🍫')" class="cream-option p-3 bg-yellow-50 border-4 border-yellow-100 rounded-2xl flex items-center gap-2 hover:bg-yellow-100 transition-all">
+                            <span class="text-4xl">🤎</span>
+                            <span class="text-xs font-bold text-slate-700">Kem Socola</span>
+                        </button>
+                        <button onclick="selectCream(event, 'rainbow', '🌈')" class="cream-option p-3 bg-purple-50 border-4 border-purple-100 rounded-2xl flex items-center gap-2 hover:bg-purple-100 transition-all">
+                            <span class="text-4xl">🌈</span>
+                            <span class="text-xs font-bold text-slate-700">Kem Cầu Vồng</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STAGE 6 OPTIONS: Topping Sprinkles (Candies, Strawberries, Stars, etc) -->
+                <div id="group-decor" class="step-options-group hidden flex flex-col gap-4">
+                    <h3 class="text-base font-bold text-pink-500 border-b-2 border-dashed border-pink-100 pb-2 flex justify-between items-center">
+                        <span>Bước 6: Rắc Topping Trang Trí</span>
+                        <span id="placedCountBadge" class="text-xs bg-pink-500 text-white font-bold px-2 py-0.5 rounded-full">Đã rắc: 0</span>
+                    </h3>
+                    
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="selectToppingItem(event, '🍓', 'strawberry')" class="topping-item-btn p-3 bg-amber-50 border-4 border-amber-100 rounded-2xl hover:bg-amber-100 transition-all flex flex-col items-center active-ring">
+                            <span class="text-3xl">🍓</span>
+                            <span class="text-[10px] font-bold mt-1">Dâu Tây</span>
+                        </button>
+                        <button onclick="selectToppingItem(event, '⭐', 'star')" class="topping-item-btn p-3 bg-amber-50 border-4 border-amber-100 rounded-2xl hover:bg-amber-100 transition-all flex flex-col items-center">
+                            <span class="text-3xl">⭐</span>
+                            <span class="text-[10px] font-bold mt-1">Sao Vàng</span>
+                        </button>
+                        <button onclick="selectToppingItem(event, '🍬', 'candy')" class="topping-item-btn p-3 bg-amber-50 border-4 border-amber-100 rounded-2xl hover:bg-amber-100 transition-all flex flex-col items-center">
+                            <span class="text-3xl">🍬</span>
+                            <span class="text-[10px] font-bold mt-1">Kẹo Ngọt</span>
+                        </button>
+                        <button onclick="selectToppingItem(event, '🍒', 'cherry')" class="topping-item-btn p-3 bg-amber-50 border-4 border-amber-100 rounded-2xl hover:bg-amber-100 transition-all flex flex-col items-center">
+                            <span class="text-3xl">🍒</span>
+                            <span class="text-[10px] font-bold mt-1">Anh Đào</span>
+                        </button>
+                        <button onclick="selectToppingItem(event, '🍫', 'chocolate')" class="topping-item-btn p-3 bg-amber-50 border-4 border-amber-100 rounded-2xl hover:bg-amber-100 transition-all flex flex-col items-center">
+                            <span class="text-3xl">🍫</span>
+                            <span class="text-[10px] font-bold mt-1">Socola</span>
+                        </button>
+                        <button onclick="selectToppingItem(event, '🦄', 'unicorn')" class="topping-item-btn p-3 bg-amber-50 border-4 border-amber-100 rounded-2xl hover:bg-amber-100 transition-all flex flex-col items-center">
+                            <span class="text-3xl">🦄</span>
+                            <span class="text-[10px] font-bold mt-1">Kỳ Lân</span>
+                        </button>
+                    </div>
+
+                    <!-- Selected Indicator feedback info -->
+                    <div class="bg-amber-50 border border-amber-200 p-2 rounded-xl text-center text-xs font-bold text-amber-700">
+                        Đang chọn: <span id="selectedToppingLabel" class="text-base">🍓 Dâu Tây</span>
+                    </div>
+                </div>
+
+                <!-- STAGE 7 OPTIONS: Gift Boxes choices -->
+                <div id="group-wrap" class="step-options-group hidden flex flex-col gap-4">
+                    <h3 class="text-lg font-bold text-pink-500 border-b-2 border-dashed border-pink-100 pb-2">Bước 7: Đóng Hộp Quà 🎁</h3>
+                    <p class="text-sm text-slate-500">Món quà ngọt ngào của bé sẽ được gửi gắm trong chiếc hộp thắt nơ xinh xắn!</p>
+                </div>
+
+            </div>
+
+            <!-- Bottom Navigation Bar (Prev / Next Buttons) -->
+            <div class="mt-4 pt-3 border-t-2 border-dashed border-slate-100 flex justify-between gap-2 z-20">
+                <button id="btnPrevStep" onclick="navigateStep(-1)" class="flex-1 py-2 px-3 bg-slate-100 border-2 border-slate-200 text-slate-500 font-bold rounded-2xl text-xs md:text-sm hover:bg-slate-200 active:scale-95 transition-all">
+                    ⬅️ Làm lại bước trước
+                </button>
+                <button id="btnNextStep" onclick="navigateStep(1)" class="flex-1 py-3 px-4 bg-gradient-to-r from-pink-500 to-amber-500 border-b-4 border-pink-700 active:border-b-0 hover:scale-105 text-white font-extrabold rounded-2xl text-xs md:text-sm shadow-md transition-all flex items-center justify-center gap-1">
+                    <span>Xong rồi! Tiếp tục</span> ➡️
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCREEN 3: Level Completed / Celebration Screen -->
+    <div id="screenSuccess" class="hidden flex-1 flex flex-col items-center justify-center text-center py-6">
+        
+        <div class="relative mb-6">
+            <span class="text-8xl md:text-9xl animate-bounce-slow inline-block">🐰🎉</span>
+            <span class="absolute top-0 right-0 text-4xl animate-wiggle">⭐</span>
+            <span class="absolute bottom-4 left-0 text-4xl animate-wiggle" style="animation-delay: 0.3s;">✨</span>
+        </div>
+
+        <h2 id="successHeading" class="text-3xl md:text-5xl font-extrabold bg-gradient-to-r from-pink-500 via-amber-500 to-rose-500 bg-clip-text text-transparent mb-3">
+            Bé Quá Xuất Sắc!
+        </h2>
+        
+        <p id="successMessage" class="text-base md:text-lg text-slate-600 font-bold max-w-lg px-4 mb-6">
+            Chiếc bánh của bé đã hoàn thành tuyệt đẹp và rực rỡ sắc màu rồi đấy! Khách hàng Thỏ Trắng vô cùng vui sướng và hạnh phúc! ❤️
+        </p>
+
+        <!-- Final Cake Result Visual snapshot in screen success -->
+        <div id="successBakedSnapshot" class="text-7xl p-6 bg-pink-50 border-4 border-dashed border-pink-200 rounded-3xl mb-8 relative">
+            🎂
+        </div>
+
+        <!-- Completion Actions -->
+        <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md px-4 justify-center">
+            <button onclick="startMode('free')" class="flex-1 py-4 bg-gradient-to-b from-amber-400 to-amber-500 text-white font-extrabold rounded-2xl shadow-lg border-b-4 border-amber-600 hover:-translate-y-1 active:translate-y-0 transition-transform flex items-center justify-center gap-2">
+                🎨 Sáng Tạo Tự Do Thôi!
+            </button>
+            <button onclick="goHome()" class="flex-1 py-4 bg-slate-100 border-2 border-slate-300 text-slate-700 font-extrabold rounded-2xl shadow-md hover:-translate-y-1 active:translate-y-0 transition-transform flex items-center justify-center gap-2">
+                🏠 Về Trang Chủ
+            </button>
+        </div>
+    </div>
+
+    <!-- Confetti canvas container -->
+    <canvas id="confettiCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-50 rounded-3xl"></canvas>
+
+    <div class="text-center text-[10px] md:text-xs text-slate-400 font-semibold border-t-2 border-dashed border-pink-100 pt-3 mt-3">
+        Chúc bé và ba mẹ chơi game thật vui vẻ cùng nhau nhé! 💕
+    </div>
+</div>
+
+<script>
+    const challenges = [
+        {
+            text: "Bé ơi, hãy làm 1 chiếc Bánh Cupcake có Kem màu Hồng và rắc đúng 2 quả dâu tây 🍓 nhé!",
+            type: "cupcake",
+            creamColor: "pink",
+            requiredTopping: "strawberry",
+            requiredCount: 2,
+            toppingSymbol: "🍓"
+        },
+        {
+            text: "Hãy trang trí 1 chiếc Bánh Kem thật đặc biệt với 3 ngôi sao vàng ⭐ lấp lánh nha!",
+            type: "cake",
+            creamColor: "blue",
+            requiredTopping: "star",
+            requiredCount: 3,
+            toppingSymbol: "⭐"
+        },
+        {
+            text: "Bạn thỏ muốn ăn Bánh Cookie ngon tuyệt với Kem Socola 🤎 phủ đầy 4 viên kẹo màu sắc 🍬 nhé!",
+            type: "cookie",
+            creamColor: "chocolate",
+            requiredTopping: "candy",
+            requiredCount: 4,
+            toppingSymbol: "🍬"
+        }
+    ];
+
+    let gameState = {
+        mode: 'free', 
+        challengeIndex: 0,
+        currentStep: 'mold', 
+        cakeType: '', 
+        batterFlavor: '', 
+        mixProgress: 0,
+        isBaked: false,
+        creamColor: '', 
+        selectedTopping: 'strawberry', 
+        selectedToppingIcon: '🍓',
+        toppings: [], 
+        isPacked: false
+    };
+
+    const stepOrder = ['mold', 'flavor', 'mix', 'bake', 'cream', 'decor', 'wrap'];
+
+    window.onload = function() {
+        goHome();
+    };
+
+    function startMode(mode) {
+        playSound('click');
+        
+        // CRITICAL BUG FIX: Completely reset state on new start
+        gameState.mode = mode;
+        gameState.currentStep = 'mold';
+        gameState.cakeType = ''; 
+        gameState.batterFlavor = ''; 
+        gameState.mixProgress = 0;
+        gameState.isBaked = false;
+        gameState.creamColor = '';
+        gameState.selectedTopping = 'strawberry';
+        gameState.selectedToppingIcon = '🍓';
+        gameState.toppings = [];
+        gameState.isPacked = false;
+        
+        // Reset selections highlighting rings in HTML UI
+        document.querySelectorAll('.mold-option, .flavor-option, .cream-option').forEach(btn => btn.classList.remove('active-ring'));
+        
+        // Ensure default selected topping ring is on strawberry
+        document.querySelectorAll('.topping-item-btn').forEach(btn => btn.classList.remove('active-ring'));
+        const defaultToppingBtn = document.querySelector('.topping-item-btn');
+        if (defaultToppingBtn) defaultToppingBtn.classList.add('active-ring');
+        document.getElementById('selectedToppingLabel').innerText = "🍓 Dâu Tây";
+
+        // Reset Bowl and Visual elements
+        const batterLiquid = document.getElementById('batterLiquid');
+        batterLiquid.style.backgroundColor = 'transparent';
+        batterLiquid.style.height = '0%';
+        document.getElementById('batterSwirl').classList.add('hidden');
+        document.getElementById('chosenMoldMini').innerText = '';
+
+        if (mode === 'challenge') {
+            gameState.challengeIndex = Math.floor(Math.random() * challenges.length);
+            document.getElementById('challengeBubble').classList.remove('hidden');
+            document.getElementById('challengeText').innerText = challenges[gameState.challengeIndex].text;
+        } else {
+            document.getElementById('challengeBubble').classList.add('hidden');
+        }
+
+        // Reset UI Stages
+        document.getElementById('screenWelcome').classList.add('hidden');
+        document.getElementById('screenSuccess').classList.add('hidden');
+        document.getElementById('screenGame').classList.remove('hidden');
+
+        updateStepUI();
+        clearAllToppings();
+    }
+
+    function goHome() {
+        playSound('click');
+        document.getElementById('screenWelcome').classList.remove('hidden');
+        document.getElementById('screenGame').classList.add('hidden');
+        document.getElementById('screenSuccess').classList.add('hidden');
+        stopConfetti();
+    }
+
+    function updateStepUI() {
+        const currentIdx = stepOrder.indexOf(gameState.currentStep);
+        document.getElementById('btnPrevStep').disabled = (currentIdx === 0);
+        document.getElementById('btnPrevStep').style.opacity = (currentIdx === 0) ? '0.4' : '1';
+
+        if (gameState.currentStep === 'wrap') {
+            document.getElementById('btnNextStep').innerHTML = "🎁 Mở Hộp Quà 🎉";
+        } else {
+            document.getElementById('btnNextStep').innerHTML = "Xong rồi! Tiếp tục ➡️";
+        }
+
+        stepOrder.forEach(step => {
+            const badge = document.getElementById(`stepBadge-${step}`);
+            if (badge) {
+                if (step === gameState.currentStep) {
+                    badge.className = "px-2 py-1 text-xs rounded-full bg-pink-500 text-white font-bold border-2 border-white shadow-md animate-pulse";
+                } else if (stepOrder.indexOf(step) < currentIdx) {
+                    badge.className = "px-2 py-1 text-xs rounded-full bg-green-100 text-green-600 font-bold border border-green-200";
+                } else {
+                    badge.className = "px-2 py-1 text-xs rounded-full bg-slate-100 text-slate-400 font-semibold";
+                }
+            }
+        });
+
+        document.querySelectorAll('.step-options-group').forEach(group => {
+            group.classList.add('hidden');
+        });
+        const currentOptionGroup = document.getElementById(`group-${gameState.currentStep}`);
+        if (currentOptionGroup) currentOptionGroup.classList.remove('hidden');
+
+        document.getElementById('bowlContainer').classList.add('hidden');
+        document.getElementById('mixZone').classList.add('hidden');
+        document.getElementById('bakeZone').classList.add('hidden');
+        document.getElementById('decorStage').classList.add('hidden');
+        document.getElementById('wrapStage').classList.add('hidden');
+
+        if (gameState.currentStep === 'mold' || gameState.currentStep === 'flavor') {
+            document.getElementById('bowlContainer').classList.remove('hidden');
+            document.getElementById('bowlTitle').innerText = gameState.currentStep === 'mold' ? 'Bé hãy chọn khuôn bánh yêu thích nhé! 🥣' : 'Bột thơm ngon hương vị nào nhỉ? 🍓';
+        } else if (gameState.currentStep === 'mix') {
+            document.getElementById('mixZone').classList.remove('hidden');
+            updateMixProgressUI();
+        } else if (gameState.currentStep === 'bake') {
+            document.getElementById('bakeZone').classList.remove('hidden');
+            resetOvenUI();
+        } else if (gameState.currentStep === 'cream' || gameState.currentStep === 'decor') {
+            document.getElementById('decorStage').classList.remove('hidden');
+            renderBakeStageCanvas();
+        } else if (gameState.currentStep === 'wrap') {
+            document.getElementById('wrapStage').classList.remove('hidden');
+            document.getElementById('giftPackedOverlay').style.display = 'none';
+        }
+    }
+
+    function navigateStep(direction) {
+        playSound('click');
+        const currentIdx = stepOrder.indexOf(gameState.currentStep);
+        let nextIdx = currentIdx + direction;
+
+        if (nextIdx < 0) return;
+
+        if (direction === 1) {
+            if (gameState.currentStep === 'mold' && !gameState.cakeType) {
+                alertBox("Bé yêu ơi, hãy chọn một loại khuôn bánh trước nhé! 🧁🎂🍪");
+                return;
+            }
+            if (gameState.currentStep === 'flavor' && !gameState.batterFlavor) {
+                alertBox("Bé hãy chọn hương vị bột bánh thơm ngon bên phải trước nhé! 🍫🍓🍵");
+                return;
+            }
+            if (gameState.currentStep === 'mix' && gameState.mixProgress < 100) {
+                alertBox("Cùng nhau khuấy đều tay cho bột mịn 100% rồi mới nướng nhé bé! 🥄");
+                return;
+            }
+            if (gameState.currentStep === 'bake' && !gameState.isBaked) {
+                alertBox("Lò nướng đã bật chưa nhỉ? Hãy chờ bánh chín thơm lừng rồi hẵng lấy ra nhé! 🔥");
+                return;
+            }
+            if (gameState.currentStep === 'cream' && !gameState.creamColor) {
+                alertBox("Lớp kem phủ màu sắc tuyệt đẹp đâu rồi ta? Bé chọn 1 loại kem nhé! 🍦");
+                return;
+            }
+            if (gameState.currentStep === 'wrap' && !gameState.isPacked) {
+                alertBox("Bé hãy nhấn buộc chiếc nơ hồng để thắt hộp quà xinh xắn lại nhé! 🎁");
+                return;
+            }
+        }
+
+        if (nextIdx >= stepOrder.length) {
+            completeGame();
+            return;
+        }
+
+        gameState.currentStep = stepOrder[nextIdx];
+        updateStepUI();
+    }
+
+    function alertBox(message) {
+        playSound('click');
+        const alertDiv = document.createElement('div');
+        alertDiv.className = "fixed inset-x-6 top-10 mx-auto max-w-sm bg-white border-4 border-amber-300 rounded-2xl p-4 shadow-2xl z-[100] flex items-center gap-3 animate-bounce-slow text-sm font-bold text-slate-700";
+        alertDiv.innerHTML = `
+            <span class="text-3xl">🐰</span>
+            <div>
+                <p class="text-xs text-amber-500 uppercase">Thỏ Thắt Nơ Nhắc Nhỏ:</p>
+                <p>${message}</p>
+            </div>
+        `;
+        document.body.appendChild(alertDiv);
+        setTimeout(() => { alertDiv.remove(); }, 3000);
+    }
+
+    // CRITICAL FIX: Removed auto-advancing setTimeouts to avoid skipping screens
+    function selectMold(event, type, emoji) {
+        playSound('click');
+        gameState.cakeType = type;
+        
+        document.querySelectorAll('.mold-option').forEach(btn => btn.classList.remove('active-ring'));
+        event.currentTarget.classList.add('active-ring');
+
+        const chosenMoldMini = document.getElementById('chosenMoldMini');
+        chosenMoldMini.innerText = emoji;
+        chosenMoldMini.className = "text-5xl mb-12 drop-shadow-md z-10 transition-transform scale-125";
+    }
+
+    function selectFlavor(event, flavor, colorHex, text) {
+        playSound('click');
+        gameState.batterFlavor = flavor;
+
+        document.querySelectorAll('.flavor-option').forEach(btn => btn.classList.remove('active-ring'));
+        event.currentTarget.classList.add('active-ring');
+
+        const batterLiquid = document.getElementById('batterLiquid');
+        batterLiquid.style.backgroundColor = colorHex;
+        batterLiquid.style.height = '60%';
+        document.getElementById('batterSwirl').classList.remove('hidden');
+
+        createSparkles(document.getElementById('bowlContainer'), 15);
+    }
+
+    function advanceMix() {
+        if (gameState.mixProgress >= 100) return;
+        playSound('mix');
+        
+        gameState.mixProgress += 10;
+        if (gameState.mixProgress > 100) gameState.mixProgress = 100;
+
+        const spoon = document.getElementById('stirSpoon');
+        spoon.style.transform = spoon.style.transform === 'rotate(15deg)' ? 'rotate(-25deg) translateY(-5px)' : 'rotate(15deg)';
+
+        updateMixProgressUI();
+
+        if (gameState.mixProgress === 100) {
+            playSound('success');
+            createSparkles(document.getElementById('mixBowl'), 20);
+            setTimeout(() => {
+                navigateStep(1);
+            }, 1000);
+        }
+    }
+
+    function updateMixProgressUI() {
+        document.getElementById('mixPercent').innerText = gameState.mixProgress + "%";
+        document.getElementById('mixProgressBar').style.width = gameState.mixProgress + "%";
+        
+        const batter = document.getElementById('mixBatter');
+        if (gameState.batterFlavor === 'strawberry') batter.style.backgroundColor = `rgb(255, ${240 - gameState.mixProgress * 0.5}, ${240 - gameState.mixProgress * 0.4})`;
+        else if (gameState.batterFlavor === 'chocolate') batter.style.backgroundColor = `rgb(${139 - gameState.mixProgress * 0.5}, ${69 - gameState.mixProgress * 0.25}, 19)`;
+        else if (gameState.batterFlavor === 'matcha') batter.style.backgroundColor = `rgb(${143 - gameState.mixProgress * 0.4}, ${188 - gameState.mixProgress * 0.5}, ${143 - gameState.mixProgress * 0.4})`;
+    }
+
+    function resetOvenUI() {
+        document.getElementById('ovenDoor').style.backgroundColor = 'rgba(30, 41, 59, 0.9)';
+        document.getElementById('ovenCakeLight').classList.add('hidden');
+        document.getElementById('ovenTimer').innerText = "00:03";
+        document.getElementById('ovenLightRed').classList.add('bg-red-500');
+        document.getElementById('ovenLightGreen').classList.add('opacity-30');
+    }
+
+    function startBakingTimer() {
+        if (gameState.isBaked) return;
+        playSound('click');
+
+        document.getElementById('ovenDoor').style.backgroundColor = 'rgba(251, 146, 60, 0.2)'; 
+        document.getElementById('ovenCakeLight').classList.remove('hidden');
+        
+        const bakeModel = document.getElementById('bakingCakeModel');
+        bakeModel.innerText = gameState.cakeType === 'cupcake' ? '🧁' : (gameState.cakeType === 'cake' ? '🎂' : '🍪');
+        bakeModel.classList.add('baking-animation');
+
+        let secondsLeft = 3;
+        const interval = setInterval(() => {
+            secondsLeft--;
+            document.getElementById('ovenTimer').innerText = `00:0${secondsLeft}`;
+            
+            if (secondsLeft <= 0) {
+                clearInterval(interval);
+                gameState.isBaked = true;
+                playSound('bell');
+
+                document.getElementById('ovenLightRed').classList.add('opacity-30');
+                document.getElementById('ovenLightGreen').classList.remove('opacity-30');
+                document.getElementById('ovenDoor').style.backgroundColor = 'rgba(74, 222, 128, 0.15)'; 
+
+                setTimeout(() => {
+                    navigateStep(1);
+                }, 1200);
+            } else {
+                playSound('click');
+            }
+        }, 1000);
+    }
+
+    function renderBakeStageCanvas() {
+        const canvasMold = document.getElementById('canvasMold');
+        const canvasBatter = document.getElementById('canvasBatter');
+        const canvasCream = document.getElementById('canvasCream');
+
+        if (gameState.cakeType === 'cupcake') {
+            canvasMold.innerHTML = `
+                <svg class="w-32 h-20" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 10 L25 55 A 5 5 0 0 0 30 60 L70 60 A 5 5 0 0 0 75 55 L85 10 Z" fill="#FFC0CB" stroke="#FF69B4" stroke-width="4"/>
+                    <line x1="30" y1="10" x2="38" y2="58" stroke="#FF69B4" stroke-width="2"/>
+                    <line x1="50" y1="10" x2="50" y2="58" stroke="#FF69B4" stroke-width="2"/>
+                    <line x1="70" y1="10" x2="62" y2="58" stroke="#FF69B4" stroke-width="2"/>
+                </svg>
+            `;
+        } else if (gameState.cakeType === 'cake') {
+            canvasMold.innerHTML = `
+                <svg class="w-48 h-16" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="5" y="5" width="110" height="30" rx="6" fill="#FFFACD" stroke="#DAA520" stroke-width="4"/>
+                </svg>
+            `;
+        } else if (gameState.cakeType === 'cookie') {
+            canvasMold.innerHTML = `
+                <svg class="w-36 h-8" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <ellipse cx="50" cy="10" rx="45" ry="8" fill="#D2B48C" stroke="#8B4513" stroke-width="3"/>
+                </svg>
+            `;
+        }
+
+        let flavorColor = '#FFF8DC'; 
+        if (gameState.batterFlavor === 'strawberry') flavorColor = '#FFC0CB';
+        else if (gameState.batterFlavor === 'chocolate') flavorColor = '#A0522D';
+        else if (gameState.batterFlavor === 'matcha') flavorColor = '#9ACD32';
+
+        if (gameState.cakeType === 'cupcake') {
+            canvasBatter.innerHTML = `
+                <div class="w-32 h-20 rounded-t-full shadow-inner border-2 border-white/20" style="background-color: ${flavorColor};"></div>
+            `;
+        } else if (gameState.cakeType === 'cake') {
+            canvasBatter.innerHTML = `
+                <div class="w-44 h-24 rounded-t-lg -mt-4 shadow-inner border-2 border-white/20" style="background-color: ${flavorColor};"></div>
+            `;
+        } else if (gameState.cakeType === 'cookie') {
+            canvasBatter.innerHTML = `
+                <div class="w-32 h-28 rounded-full -mt-20 flex items-center justify-center border-4 border-dashed border-[#8B4513]/30" style="background-color: ${flavorColor};">
+                    <span class="text-xs opacity-40 font-bold">🤎 Choco chip</span>
+                </div>
+            `;
+        }
+
+        if (gameState.creamColor) {
+            let creamEmoji = '🧁';
+            if (gameState.creamColor === 'pink') creamEmoji = '🌸';
+            else if (gameState.creamColor === 'blue') creamEmoji = '💦';
+            else if (gameState.creamColor === 'chocolate') creamEmoji = '🍫';
+            else if (gameState.creamColor === 'rainbow') creamEmoji = '🌈';
+
+            canvasCream.className = "absolute z-30 transition-all text-7xl md:text-8xl flex justify-center w-full";
+            
+            if (gameState.cakeType === 'cupcake') {
+                canvasCream.style.top = "20%";
+                canvasCream.innerHTML = `<span class="animate-bounce-slow" style="text-shadow: 0 4px 8px rgba(0,0,0,0.1);">${creamEmoji === '🌸' ? '🧁' : (creamEmoji === '💦' ? '🌀' : (creamEmoji === '🍫' ? '🟤' : '🌈'))}</span>`;
+            } else if (gameState.cakeType === 'cake') {
+                canvasCream.style.top = "15%";
+                canvasCream.innerHTML = `
+                    <div class="flex gap-1">
+                        <span>🍦</span><span>🍦</span><span>🍦</span>
+                    </div>
+                `;
+            } else if (gameState.cakeType === 'cookie') {
+                canvasCream.style.top = "20%";
+                canvasCream.innerHTML = `<span class="text-4xl">🧁</span>`;
+            }
+        } else {
+            canvasCream.innerHTML = '';
+        }
+    }
+
+    function selectCream(event, color, symbol) {
+        playSound('click');
+        gameState.creamColor = color;
+        
+        document.querySelectorAll('.cream-option').forEach(btn => btn.classList.remove('active-ring'));
+        event.currentTarget.classList.add('active-ring');
+
+        renderBakeStageCanvas();
+        createSparkles(document.getElementById('cakeCanvas'), 15);
+    }
+
+    function selectToppingItem(event, emoji, labelId) {
+        playSound('click');
+        gameState.selectedTopping = labelId;
+        gameState.selectedToppingIcon = emoji;
+
+        document.querySelectorAll('.topping-item-btn').forEach(btn => btn.classList.remove('active-ring'));
+        event.currentTarget.classList.add('active-ring');
+
+        const prettyNames = {
+            strawberry: '🍓 Quả Dâu Tây',
+            star: '⭐ Ngôi Sao Vàng',
+            candy: '🍬 Kẹo Dẻo Ngọt',
+            cherry: '🍒 Quả Anh Đào',
+            chocolate: '🍫 Thanh Socola',
+            unicorn: '🦄 Kỳ Lân Bé Con'
+        };
+        document.getElementById('selectedToppingLabel').innerText = prettyNames[labelId] || emoji;
+    }
+
+    function placeTopping(event) {
+        if (gameState.currentStep !== 'decor') return;
+        playSound('sprinkle');
+
+        const canvasRect = document.getElementById('cakeCanvas').getBoundingClientRect();
+        
+        const x = ((event.clientX - canvasRect.left) / canvasRect.width) * 100;
+        const y = ((event.clientY - canvasRect.top) / canvasRect.height) * 100;
+
+        const newTopping = {
+            id: Date.now(),
+            type: gameState.selectedTopping,
+            icon: gameState.selectedToppingIcon,
+            x: x,
+            y: y
+        };
+        gameState.toppings.push(newTopping);
+
+        renderPlacedToppings();
+        createSparkles(document.getElementById('cakeCanvas'), 5, event.clientX - canvasRect.left, event.clientY - canvasRect.top);
+    }
+
+    function renderPlacedToppings() {
+        const layer = document.getElementById('toppingsPlacementLayer');
+        layer.innerHTML = '';
+
+        gameState.toppings.forEach(top => {
+            const el = document.createElement('div');
+            el.className = "absolute text-3xl md:text-4xl transition-all select-none pointer-events-auto cursor-pointer animate-wiggle";
+            el.style.left = `${top.x}%`;
+            el.style.top = `${top.y}%`;
+            el.style.transform = `translate(-50%, -50%)`;
+            el.innerHTML = top.icon;
+
+            el.onclick = (e) => {
+                e.stopPropagation();
+                playSound('click');
+                gameState.toppings = gameState.toppings.filter(item => item.id !== top.id);
+                renderPlacedToppings();
+            };
+
+            layer.appendChild(el);
+        });
+
+        document.getElementById('placedCountBadge').innerText = `Đã rắc: ${gameState.toppings.length}`;
+    }
+
+    function clearLastTopping() {
+        playSound('click');
+        gameState.toppings.pop();
+        renderPlacedToppings();
+    }
+
+    function clearAllToppings() {
+        playSound('click');
+        gameState.toppings = [];
+        renderPlacedToppings();
+    }
+
+    function wrapBoxAction() {
+        playSound('box');
+        
+        const lid = document.getElementById('giftBoxLid');
+        lid.style.transform = 'translateY(40px)'; 
+
+        setTimeout(() => {
+            gameState.isPacked = true;
+            document.getElementById('giftPackedOverlay').style.display = 'flex';
+            playSound('success');
+            createSparkles(document.getElementById('giftBox'), 25);
+            
+            setTimeout(() => {
+                navigateStep(1);
+            }, 1200);
+
+        }, 500);
+    }
+
+    function completeGame() {
+        document.getElementById('screenGame').classList.add('hidden');
+        document.getElementById('screenSuccess').classList.remove('hidden');
+
+        const finalSnapshot = document.getElementById('successBakedSnapshot');
+        let cakeEmoji = '🧁';
+        if (gameState.cakeType === 'cake') cakeEmoji = '🎂';
+        if (gameState.cakeType === 'cookie') cakeEmoji = '🍪';
+        
+        if (gameState.mode === 'challenge') {
+            const chal = challenges[gameState.challengeIndex];
+            
+            const matchesCount = gameState.toppings.filter(t => t.type === chal.requiredTopping).length;
+            const matchesType = gameState.cakeType === chal.type;
+            const matchesCream = gameState.creamColor === chal.creamColor;
+
+            if (matchesCount === chal.requiredCount && matchesType && matchesCream) {
+                document.getElementById('successHeading').innerText = "Hết Sức Xuất Sắc! 🎉";
+                document.getElementById('successMessage').innerHTML = `
+                    <span class="text-green-600 block mb-2">🎉 Bé đã làm đúng yêu cầu rồi! 🎉</span>
+                    Bé nướng đúng loại <strong class="text-pink-600">${chal.type === 'cupcake' ? 'Cupcake' : (chal.type === 'cake' ? 'Bánh Kem' : 'Bánh Cookie')}</strong>, 
+                    phủ đúng kem màu <strong class="text-pink-600">${chal.creamColor === 'pink' ? 'Hồng' : (chal.creamColor === 'blue' ? 'Xanh' : 'Socola')}</strong>, 
+                    và rắc chính xác <strong class="text-pink-600">${chal.requiredCount} quả dâu tây ${chal.toppingSymbol}</strong>! Thỏ Trắng yêu bé vô cùng! ❤️
+                `;
+            } else {
+                document.getElementById('successHeading').innerText = "Bánh Đẹp Tuyệt Vời! 🎂";
+                document.getElementById('successMessage').innerHTML = `
+                    Mặc dù chiếc bánh này hơi khác yêu cầu ban đầu một tí, nhưng nó <strong class="text-amber-500">cực kì đáng yêu và ngon mắt</strong>! 
+                    Bé rất có khiếu sáng tạo phối màu đấy! Hãy thử lại một thử thách khác nhé! 💕
+                `;
+            }
+        } else {
+            document.getElementById('successHeading').innerText = "Nhà Sáng Tạo Tài Ba! 🎨";
+            document.getElementById('successMessage').innerHTML = `
+                Wow! Bé đã hoàn thành thiết kế chiếc bánh ước mơ của riêng mình rồi! 
+                Một sự kết hợp màu sắc và rắc toppings thật tuyệt vời! Bé hãy tiếp tục sáng tạo nhé! ✨
+            `;
+        }
+
+        finalSnapshot.innerHTML = `
+            <div class="flex flex-col items-center">
+                <span class="text-8xl">${cakeEmoji}</span>
+                <div class="text-xl mt-3 font-bold text-pink-500">Món Quà Của Bé 🎁</div>
+                <div class="text-xs text-slate-400 mt-1">Đã dùng ${gameState.toppings.length} topping trang trí</div>
+            </div>
+        `;
+
+        startConfetti();
+        playSound('success');
+    }
+
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+    let confettiActive = false;
+    let confettiParticles = [];
+    const colors = ['#FFC0CB', '#FF69B4', '#FFD700', '#20B2AA', '#87CEFA', '#DDA0DD'];
+
+    function resizeCanvas() {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+    }
+
+    function startConfetti() {
+        confettiActive = true;
+        resizeCanvas();
+        confettiParticles = [];
+        for (let i = 0; i < 80; i++) {
+            confettiParticles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                r: Math.random() * 6 + 4,
+                d: Math.random() * canvas.height,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                tilt: Math.random() * 10 - 5,
+                tiltAngleIncremental: Math.random() * 0.07 + 0.02,
+                tiltAngle: 0
+            });
+        }
+        animateConfetti();
+    }
+
+    function animateConfetti() {
+        if (!confettiActive) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        let remaining = false;
+        confettiParticles.forEach(p => {
+            p.tiltAngle += p.tiltAngleIncremental;
+            p.y += (Math.cos(p.d) + 3 + p.r / 2) / 2;
+            p.x += Math.sin(p.tiltAngle);
+            p.tilt = Math.sin(p.tiltAngle - p.r/2) * 15;
+
+            if (p.y < canvas.height) remaining = true;
+
+            ctx.beginPath();
+            ctx.lineWidth = p.r;
+            ctx.strokeStyle = p.color;
+            ctx.moveTo(p.x + p.tilt + p.r/2, p.y);
+            ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r/2);
+            ctx.stroke();
+        });
+
+        if (remaining) {
+            requestAnimationFrame(animateConfetti);
+        }
+    }
+
+    function stopConfetti() {
+        confettiActive = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function createSparkles(element, count, explicitX, explicitY) {
+        for (let i = 0; i < count; i++) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle w-3 h-3 md:w-4 md:h-4 bg-yellow-200';
+            
+            const rect = element.getBoundingClientRect();
+            const left = explicitX !== undefined ? explicitX : Math.random() * rect.width;
+            const top = explicitY !== undefined ? explicitY : Math.random() * rect.height;
+
+            sparkle.style.left = `${left}px`;
+            sparkle.style.top = `${top}px`;
+            sparkle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+            element.appendChild(sparkle);
+
+            const angle = Math.random() * Math.PI * 2;
+            const velocity = Math.random() * 4 + 2;
+            let currentX = left;
+            let currentY = top;
+            let opacity = 1;
+
+            const sparkleInterval = setInterval(() => {
+                currentX += Math.cos(angle) * velocity;
+                currentY += Math.sin(angle) * velocity;
+                opacity -= 0.05;
+
+                sparkle.style.left = `${currentX}px`;
+                sparkle.style.top = `${currentY}px`;
+                sparkle.style.opacity = opacity;
+
+                if (opacity <= 0) {
+                    clearInterval(sparkleInterval);
+                    sparkle.remove();
+                }
+            }, 30);
+        }
+    }
+
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        const btn = document.getElementById('soundToggle');
+        if (soundEnabled) {
+            btn.innerHTML = '🔊';
+            btn.classList.remove('bg-slate-200', 'text-slate-400');
+            btn.classList.add('bg-pink-100', 'text-pink-500');
+            playSound('click');
+        } else {
+            btn.innerHTML = '🔇';
+            btn.classList.add('bg-slate-200', 'text-slate-400');
+            btn.classList.remove('bg-pink-100', 'text-pink-500');
+        }
+    }
+</script>
+</body>
+</html>
