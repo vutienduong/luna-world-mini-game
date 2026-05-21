@@ -99,8 +99,36 @@
             animation: coin-bounce 1s infinite ease-in-out;
         }
     </style>
+    <style>
+        .world-back-link {
+            position: fixed;
+            top: max(12px, env(safe-area-inset-top));
+            left: max(12px, env(safe-area-inset-left));
+            z-index: 9999;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 42px;
+            padding: 0 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 143, 179, 0.45);
+            box-shadow: 0 8px 18px rgba(126, 80, 129, 0.18);
+            color: #9d2f61;
+            font-weight: 800;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            transition: transform 160ms ease, background 160ms ease;
+        }
+
+        .world-back-link:hover {
+            transform: translateY(-2px);
+            background: #fff;
+        }
+    </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between p-2 md:p-4 overflow-x-hidden">
+    <a class="world-back-link" href="index.html" aria-label="Quay về bản đồ">🏡 Bản đồ</a>
 
     <script>
         // Khởi tạo Audio Context tích hợp sẵn
