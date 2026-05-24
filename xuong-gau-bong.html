@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xưởng Gấu Bông Của Bé</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Nunito", sans-serif;
+      color: #4d3945;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(255, 214, 148, 0.55), transparent 24%),
+        radial-gradient(circle at 86% 12%, rgba(184, 229, 255, 0.7), transparent 25%),
+        linear-gradient(160deg, #fff3e8, #fff7fb 48%, #eefdf4);
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      user-select: none;
+    }
+    .world-back-link {
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top));
+      left: max(12px, env(safe-area-inset-left));
+      z-index: 10;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid rgba(255, 143, 179, 0.45);
+      box-shadow: 0 8px 18px rgba(126, 80, 129, 0.18);
+      color: #9d2f61;
+      font-weight: 900;
+      text-decoration: none;
+    }
+    .game {
+      width: min(100%, 920px);
+      min-height: min(760px, calc(100vh - 36px));
+      display: grid;
+      grid-template-columns: 1fr 0.9fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .stage, .panel {
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 4px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 20px 60px rgba(112, 72, 104, 0.16);
+      padding: clamp(18px, 4vw, 30px);
+    }
+    h1 {
+      margin: 0;
+      font-family: "Baloo 2", sans-serif;
+      font-size: clamp(2.7rem, 7vw, 5rem);
+      line-height: 0.9;
+      color: #d95785;
+    }
+    .lead {
+      margin: 14px 0 0;
+      color: #7b6977;
+      font-size: 1.08rem;
+      line-height: 1.42;
+      font-weight: 900;
+    }
+    .bear-wrap {
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .bear {
+      position: relative;
+      width: min(62vw, 300px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--fur, #ddb68c);
+      box-shadow: inset 0 -18px rgba(111, 74, 54, 0.08), 0 18px 28px rgba(90, 57, 72, 0.16);
+      transform: translateY(8px);
+      transition: transform 180ms ease, background 180ms ease;
+    }
+    .bear::before, .bear::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 34%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: inherit;
+      border: 10px solid rgba(255,255,255,0.35);
+    }
+    .bear::before { left: -7%; }
+    .bear::after { right: -7%; }
+    .face {
+      position: absolute;
+      inset: 31% 21% 18%;
+      border-radius: 45%;
+      background: rgba(255, 238, 211, 0.9);
+      display: grid;
+      place-items: center;
+      font-size: 3.8rem;
+    }
+    .parts {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .part {
+      position: absolute;
+      opacity: 0;
+      transform: scale(0.6);
+      transition: opacity 180ms ease, transform 180ms ease;
+      font-size: 2.4rem;
+    }
+    .part.show { opacity: 1; transform: scale(1); }
+    .part.stuffing { left: 8%; bottom: 12%; }
+    .part.button { right: 14%; top: 38%; }
+    .part.ribbon { left: 43%; top: 4%; }
+    .part.box { right: -5%; bottom: -5%; }
+    .steps {
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .step {
+      padding: 14px;
+      border-radius: 18px;
+      background: #fff;
+      border: 2px solid rgba(217, 87, 133, 0.18);
+      font-weight: 900;
+      color: #7b6977;
+    }
+    .step.active { border-color: #d95785; color: #d95785; }
+    .step.done { background: #fff8d8; color: #93602f; }
+    .choices {
+      display: grid;
+      gap: 12px;
+      margin-top: 22px;
+    }
+    button {
+      min-height: 58px;
+      border: 0;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #ff8fb3, #e85d8f);
+      color: #fff;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 0 #c94473, 0 18px 26px rgba(201, 68, 115, 0.18);
+      transition: transform 140ms ease;
+    }
+    button:active { transform: translateY(5px); box-shadow: 0 5px 0 #c94473; }
+    .swatches { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .swatch { min-height: 54px; box-shadow: none; }
+    @media (max-width: 760px) {
+      .game { grid-template-columns: 1fr; padding-top: 46px; }
+      .stage, .panel { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="world-back-link" href="index.html" aria-label="Quay về bản đồ">🏡 Bản đồ</a>
+  <main class="game">
+    <section class="stage">
+      <h1>Xưởng Gấu Bông</h1>
+      <p class="lead">Bé chọn vải, nhồi bông, may nút và đóng hộp quà cho bạn gấu mềm ơi là mềm.</p>
+      <div class="bear-wrap">
+        <div class="bear" id="bear">
+          <div class="face">ʕ•ᴥ•ʔ</div>
+          <div class="parts">
+            <span class="part stuffing" id="part-stuffing">☁️</span>
+            <span class="part button" id="part-button">🔘</span>
+            <span class="part ribbon" id="part-ribbon">🎀</span>
+            <span class="part box" id="part-box">🎁</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="steps">
+        <div class="step active" data-step="0">1. Chọn vải mềm</div>
+        <div class="step" data-step="1">2. Nhồi bông</div>
+        <div class="step" data-step="2">3. May nút áo</div>
+        <div class="step" data-step="3">4. Thắt nơ</div>
+        <div class="step" data-step="4">5. Đóng hộp quà</div>
+      </div>
+      <div class="choices" id="choices"></div>
+    </section>
+  </main>
+  <script src="assets/progress.js"></script>
+  <script>
+    TinyFairyProgress.recordGameStart("plush");
+    const colors = [
+      { label: "Vải mật ong", value: "#ddb68c" },
+      { label: "Vải hồng dâu", value: "#f3a8ba" },
+      { label: "Vải xanh bạc hà", value: "#a9dfc1" }
+    ];
+    let step = 0;
+
+    function render() {
+      document.querySelectorAll(".step").forEach((node) => {
+        const index = Number(node.dataset.step);
+        node.classList.toggle("active", index === step);
+        node.classList.toggle("done", index < step);
+      });
+      const choices = document.getElementById("choices");
+      if (step === 0) {
+        choices.innerHTML = `<div class="swatches">${colors.map((c) => `<button class="swatch" style="background:${c.value}" onclick="chooseFabric('${c.value}')">${c.label}</button>`).join("")}</div>`;
+      } else if (step === 1) {
+        choices.innerHTML = `<button onclick="nextStep('part-stuffing')">Nhồi bông mây ☁️</button>`;
+      } else if (step === 2) {
+        choices.innerHTML = `<button onclick="nextStep('part-button')">May 2 nút tròn 🔘</button>`;
+      } else if (step === 3) {
+        choices.innerHTML = `<button onclick="nextStep('part-ribbon')">Thắt nơ xinh 🎀</button>`;
+      } else {
+        choices.innerHTML = `<button onclick="finish()">Đóng hộp quà 🎁</button>`;
+      }
+    }
+
+    function chooseFabric(color) {
+      document.getElementById("bear").style.setProperty("--fur", color);
+      step = 1;
+      render();
+    }
+
+    function nextStep(partId) {
+      document.getElementById(partId).classList.add("show");
+      step += 1;
+      render();
+    }
+
+    function finish() {
+      document.getElementById("part-box").classList.add("show");
+      TinyFairyProgress.showCompletionOverlay({
+        gameId: "plush",
+        title: "Gấu bông hoàn thành!",
+        message: "Bạn gấu đã mềm, xinh và sẵn sàng vào hộp quà rồi.",
+        stars: 3,
+        coins: 8,
+        sticker: "🧸"
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>

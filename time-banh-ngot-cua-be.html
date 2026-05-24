@@ -128,6 +128,7 @@
     }
 
     function playSound(type) {
+        if (window.TinyFairyProgress && !TinyFairyProgress.load().settings.soundEnabled) return;
         if (!soundEnabled) return;
         initAudio();
         
@@ -643,7 +644,10 @@
     </div>
 </div>
 
+<script src="assets/progress.js"></script>
 <script>
+    TinyFairyProgress.recordGameStart('bakery');
+
     const challenges = [
         {
             text: "Bé ơi, hãy làm 1 chiếc Bánh Cupcake có Kem màu Hồng và rắc đúng 2 quả dâu tây 🍓 nhé!",
@@ -1196,6 +1200,15 @@
 
         startConfetti();
         playSound('success');
+        TinyFairyProgress.showCompletionOverlay({
+            gameId: 'bakery',
+            levelId: `${gameState.mode}-${gameState.challengeIndex}-${Date.now()}`,
+            title: 'Mẻ bánh hoàn thành!',
+            message: 'Bé đã làm xong một chiếc bánh xinh xắn và nhận quà cho Luna.',
+            stars: 3,
+            coins: 8,
+            sticker: '🧁'
+        });
     }
 
     const canvas = document.getElementById('confettiCanvas');

@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bé Tập Tô Màu Kỳ Diệu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font Fredoka for cute playful text -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for cute icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            background-color: #FFF3F8;
+            background-image: radial-gradient(#FFDEEC 1.5px, transparent 1.5px), radial-gradient(#FFDEEC 1.5px, #FFF3F8 1.5px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            overflow: hidden;
+        }
+
+        /* Prevent scrolling on touch devices while drawing */
+        #coloringCanvas {
+            touch-action: none;
+        }
+
+        /* Bubble bounce animation */
+        .bubble-hover {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .bubble-hover:hover {
+            transform: scale(1.08) rotate(1.5deg);
+        }
+        .bubble-hover:active {
+            transform: scale(0.95);
+        }
+
+        /* Rainbow text */
+        .rainbow-text {
+            background-image: linear-gradient(to right, #FF4B4B, #FF9900, #FFCC00, #33CC33, #3399FF, #9900FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Cloud animation floating */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+        .cloud-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        /* Rainbow brush dynamic color transition */
+        @keyframes rainbow-bg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .rainbow-btn {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: rainbow-bg 5s ease infinite;
+        }
+
+        /* Custom scrollbar for mobile palettes */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Sparkle particles */
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            background: radial-gradient(circle, #FFF 20%, transparent 60%);
+            border-radius: 50%;
+            animation: sparkle-fade 0.8s ease-out forwards;
+        }
+
+        @keyframes sparkle-fade {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+        .world-back-link {
+            position: fixed;
+            top: max(12px, env(safe-area-inset-top));
+            left: max(12px, env(safe-area-inset-left));
+            z-index: 9999;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 42px;
+            padding: 0 14px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 143, 179, 0.45);
+            box-shadow: 0 8px 18px rgba(126, 80, 129, 0.18);
+            color: #9d2f61;
+            font-weight: 800;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between overflow-hidden relative text-gray-800">
+    <a class="world-back-link" href="index.html" aria-label="Quay về bản đồ">🏡 Bản đồ</a>
+
+    <script src="assets/progress.js"></script>
+    <script>
+        TinyFairyProgress.recordGameStart('drawing');
+
+        // Kid-friendly Web Audio Synthesizer
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+        }
+
+        function playSound(type) {
+            if (window.TinyFairyProgress && !TinyFairyProgress.load().settings.soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'pop') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(350, now);
+                osc.frequency.exponentialRampToValueAtTime(750, now + 0.08);
+                gainNode.gain.setValueAtTime(0.25, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'paint') {
+                // Đã tắt âm thanh "brum brum" khi vẽ theo yêu cầu của bạn để tránh khó chịu!
+                return;
+            } else if (type === 'success') {
+                const notes = [329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    const noteOsc = audioCtx.createOscillator();
+                    const noteGain = audioCtx.createGain();
+                    noteOsc.connect(noteGain);
+                    noteGain.connect(audioCtx.destination);
+                    
+                    noteOsc.type = 'sine';
+                    noteOsc.frequency.setValueAtTime(freq, now + idx * 0.07);
+                    noteGain.gain.setValueAtTime(0.12, now + idx * 0.07);
+                    noteGain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.07 + 0.18);
+                    
+                    noteOsc.start(now + idx * 0.07);
+                    noteOsc.stop(now + idx * 0.07 + 0.22);
+                });
+            } else if (type === 'clear') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(500, now);
+                osc.frequency.exponentialRampToValueAtTime(150, now + 0.2);
+                gainNode.gain.setValueAtTime(0.15, now);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        }
+    </script>
+
+    <!-- START SCREEN -->
+    <div id="startScreen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-b from-[#FFF0F5] to-[#E6F0FF] p-4 text-center">
+        <!-- Decorative Elements -->
+        <div class="absolute top-10 left-10 text-pink-300 text-6xl opacity-40 cloud-float"><i class="fa-solid fa-cloud"></i></div>
+        <div class="absolute top-20 right-16 text-blue-300 text-7xl opacity-40 cloud-float" style="animation-delay: 1.5s;"><i class="fa-solid fa-cloud"></i></div>
+        <div class="absolute bottom-16 left-20 text-yellow-300 text-5xl opacity-40 cloud-float" style="animation-delay: 2.5s;"><i class="fa-solid fa-star animate-pulse"></i></div>
+        
+        <div class="max-w-md w-full flex flex-col items-center">
+            <!-- Animated Title -->
+            <div class="relative mb-6">
+                <span class="absolute -top-12 -left-10 text-yellow-400 text-4xl transform -rotate-12 animate-bounce">🎨</span>
+                <h1 class="text-5xl md:text-6xl font-black tracking-wider drop-shadow-[0_4px_4px_rgba(0,0,0,0.1)] leading-tight">
+                    <span class="rainbow-text">BÉ TẬP</span> <br>
+                    <span class="text-pink-500">TÔ MÀU 🎨</span>
+                </h1>
+                <span class="absolute -bottom-6 -right-12 text-blue-400 text-4xl transform rotate-12 animate-pulse">✨</span>
+            </div>
+
+            <p class="text-gray-600 text-lg md:text-xl font-bold mb-12">Thỏa sức vẽ vời, dán sticker cực kỳ vui nhộn!</p>
+
+            <!-- Play Button -->
+            <button onclick="startGame()" class="bubble-hover cursor-pointer px-12 py-6 bg-gradient-to-r from-pink-500 to-yellow-500 text-white font-extrabold text-3xl rounded-full shadow-[0_10px_25px_-5px_rgba(244,63,94,0.4)] border-4 border-white flex items-center gap-3">
+                <span>CHƠI NGAY!</span>
+                <i class="fa-solid fa-play animate-pulse"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN GAME SCREEN -->
+    <div id="gameScreen" class="hidden flex-1 flex flex-col md:flex-row h-full w-full relative">
+        
+        <!-- LEFT TOOLBAR: Header & Options -->
+        <div class="w-full md:w-24 bg-white/80 backdrop-blur-md border-b-4 md:border-b-0 md:border-r-4 border-pink-200 flex md:flex-col items-center justify-between p-3 z-10 gap-3 shrink-0">
+            <!-- Back Button -->
+            <button onclick="backToGallery()" class="bubble-hover w-12 h-12 md:w-16 md:h-16 bg-pink-100 text-pink-600 hover:bg-pink-200 rounded-2xl flex items-center justify-center text-xl md:text-2xl border-2 border-pink-300 shadow-md">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+
+            <!-- Tool Selection (Brush, Bucket, Stickers) -->
+            <div class="flex md:flex-col gap-2 md:gap-4 flex-1 justify-center">
+                <!-- Paint Bucket Tool -->
+                <button id="btn-bucket" onclick="setTool('bucket')" class="bubble-hover w-12 h-12 md:w-16 md:h-16 rounded-2xl flex flex-col items-center justify-center border-2 shadow-md relative bg-yellow-400 border-yellow-500 text-white">
+                    <i class="fa-solid fa-fill-drip text-xl md:text-2xl"></i>
+                    <span class="hidden md:block text-[10px] font-bold mt-0.5">Tô Màu</span>
+                </button>
+
+                <!-- Brush Tool -->
+                <button id="btn-brush" onclick="setTool('brush')" class="bubble-hover w-12 h-12 md:w-16 md:h-16 rounded-2xl flex flex-col items-center justify-center border-2 shadow-md relative bg-white border-gray-200 text-gray-700">
+                    <i class="fa-solid fa-paint-brush text-xl md:text-2xl"></i>
+                    <span class="hidden md:block text-[10px] font-bold mt-0.5">Bút Vẽ</span>
+                </button>
+
+                <!-- Sticker Tool -->
+                <button id="btn-sticker" onclick="setTool('sticker')" class="bubble-hover w-12 h-12 md:w-16 md:h-16 rounded-2xl flex flex-col items-center justify-center border-2 shadow-md relative bg-white border-gray-200 text-gray-700">
+                    <i class="fa-solid fa-face-smile text-xl md:text-2xl animate-bounce"></i>
+                    <span class="hidden md:block text-[10px] font-bold mt-0.5">Nhãn Dán</span>
+                </button>
+
+                <!-- Eraser Tool -->
+                <button id="btn-eraser" onclick="setTool('eraser')" class="bubble-hover w-12 h-12 md:w-16 md:h-16 rounded-2xl flex flex-col items-center justify-center border-2 shadow-md relative bg-white border-gray-200 text-gray-700">
+                    <i class="fa-solid fa-eraser text-xl md:text-2xl"></i>
+                    <span class="hidden md:block text-[10px] font-bold mt-0.5">Tẩy</span>
+                </button>
+            </div>
+
+            <!-- Clear & Undo Buttons -->
+            <div class="flex md:flex-col gap-2">
+                <button onclick="clearCanvasPrompt()" class="bubble-hover w-12 h-12 md:w-16 md:h-16 bg-red-100 text-red-500 hover:bg-red-200 rounded-2xl flex items-center justify-center text-xl md:text-2xl border-2 border-red-200 shadow-md">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button onclick="undo()" class="bubble-hover w-12 h-12 md:w-16 md:h-16 bg-purple-100 text-purple-600 hover:bg-purple-200 rounded-2xl flex items-center justify-center text-xl md:text-2xl border-2 border-purple-200 shadow-md">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- CENTER AREA: Drawing Canvas & Interactive Tools -->
+        <div class="flex-1 flex flex-col items-center justify-center p-3 md:p-6 overflow-hidden relative">
+            
+            <!-- Stickers Sidebar Submenu (Visible when Tool = Sticker) -->
+            <div id="sticker-panel" class="hidden absolute top-2 right-4 z-20 bg-white/95 backdrop-blur-md rounded-2xl border-4 border-pink-300 p-3 shadow-xl flex flex-row md:flex-col gap-3 max-w-[90%] md:max-w-none overflow-x-auto no-scrollbar">
+                <div class="text-xs font-black text-pink-500 uppercase text-center hidden md:block border-b-2 border-pink-100 pb-1">Chọn Sticker</div>
+                <button onclick="selectSticker('⭐')" class="bubble-hover text-3xl p-1 bg-yellow-50 rounded-xl ring-4 ring-pink-400">⭐</button>
+                <button onclick="selectSticker('❤️')" class="bubble-hover text-3xl p-1 bg-pink-50 rounded-xl">❤️</button>
+                <button onclick="selectSticker('🌈')" class="bubble-hover text-3xl p-1 bg-purple-50 rounded-xl">🌈</button>
+                <button onclick="selectSticker('🍬')" class="bubble-hover text-3xl p-1 bg-orange-50 rounded-xl">🍬</button>
+                <button onclick="selectSticker('🎈')" class="bubble-hover text-3xl p-1 bg-red-50 rounded-xl">🎈</button>
+                <button onclick="selectSticker('👑')" class="bubble-hover text-3xl p-1 bg-amber-50 rounded-xl">👑</button>
+                <button onclick="selectSticker('✨')" class="bubble-hover text-3xl p-1 bg-blue-50 rounded-xl">✨</button>
+                <button onclick="selectSticker('🍀')" class="bubble-hover text-3xl p-1 bg-green-50 rounded-xl">🍀</button>
+                <button onclick="selectSticker('🍩')" class="bubble-hover text-3xl p-1 bg-yellow-100 rounded-xl">🍩</button>
+            </div>
+
+            <!-- Brush Size Panel (Visible when Tool = Brush or Eraser) -->
+            <div id="brush-panel" class="hidden absolute bottom-4 left-4 z-20 bg-white/90 backdrop-blur-md rounded-2xl border-4 border-pink-300 p-3 shadow-xl flex items-center gap-4">
+                <span class="text-sm font-bold text-pink-500">Cọ:</span>
+                <input type="range" id="brush-size" min="6" max="45" value="18" class="accent-pink-500 w-32 cursor-pointer">
+                <div id="brush-preview" class="w-5 h-5 bg-pink-500 rounded-full"></div>
+            </div>
+
+            <!-- Main Canvas Container -->
+            <div id="canvas-wrapper" class="w-full h-full max-w-[800px] max-h-[600px] aspect-[4/3] bg-white rounded-3xl border-8 border-pink-400 shadow-2xl overflow-hidden relative flex items-center justify-center">
+                <canvas id="coloringCanvas" class="w-full h-full block cursor-crosshair bg-white"></canvas>
+            </div>
+
+            <!-- Save & Complete Button Floating -->
+            <button onclick="completeDrawing()" class="bubble-hover absolute bottom-4 right-4 z-20 px-6 py-4 bg-green-500 hover:bg-green-600 text-white font-extrabold text-lg md:text-xl rounded-full shadow-lg border-4 border-white flex items-center gap-2">
+                <span>XONG RỒI!</span>
+                <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i>
+            </button>
+        </div>
+
+        <!-- RIGHT PALETTE: gorgeous candy color options -->
+        <div class="w-full md:w-40 bg-white/80 backdrop-blur-md border-t-4 md:border-t-0 md:border-l-4 border-pink-200 flex flex-row md:flex-col p-3 z-10 gap-3 justify-start overflow-x-auto md:overflow-y-auto no-scrollbar shrink-0">
+            <div class="text-sm font-black text-pink-500 uppercase text-center hidden md:block border-b-2 border-pink-100 pb-1 shrink-0">Bảng Màu</div>
+            
+            <div class="flex md:grid md:grid-cols-2 gap-3 flex-nowrap md:flex-wrap items-center justify-start py-1 px-2 md:p-0">
+                <!-- Special Rainbow Color Button -->
+                <button onclick="selectColor('rainbow')" id="color-rainbow" class="rainbow-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md relative shrink-0">
+                    <span class="absolute inset-0 flex items-center justify-center text-white text-[11px] font-black drop-shadow-md">7 Màu</span>
+                </button>
+                
+                <!-- Pure Solid Colors -->
+                <button onclick="selectColor('#FF3B30')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0 scale-110" style="background-color: #FF3B30; border-color: #4A5568;"></button>
+                <button onclick="selectColor('#FF9500')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #FF9500;"></button>
+                <button onclick="selectColor('#FFCC00')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #FFCC00;"></button>
+                <button onclick="selectColor('#4CD964')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #4CD964;"></button>
+                <button onclick="selectColor('#5AC8FA')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #5AC8FA;"></button>
+                <button onclick="selectColor('#007AFF')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #007AFF;"></button>
+                <button onclick="selectColor('#5856D6')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #5856D6;"></button>
+                <button onclick="selectColor('#FF2D55')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #FF2D55;"></button>
+                <button onclick="selectColor('#FF85A2')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #FF85A2;"></button>
+                <button onclick="selectColor('#9F7AEA')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #9F7AEA;"></button>
+                <button onclick="selectColor('#8B5A2B')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #8B5A2B;"></button>
+                <button onclick="selectColor('#000000')" class="color-btn bubble-hover w-12 h-12 md:w-14 md:h-14 rounded-full border-4 border-white shadow-md shrink-0" style="background-color: #000000;"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TEMPLATE CHOOSE SCREEN -->
+    <div id="templateScreen" class="hidden absolute inset-0 z-40 bg-gradient-to-b from-[#FFF0F5] to-[#E8F5FF] flex flex-col items-center justify-start p-6 overflow-y-auto">
+        <h2 class="text-4xl md:text-5xl font-black text-pink-600 mb-2 mt-4 text-center tracking-wide">CHỌN HÌNH BÉ THÍCH NHẤT!</h2>
+        <p class="text-gray-500 font-bold mb-8 text-center text-sm md:text-base">Có 24 mẫu tranh siêu ngộ nghĩnh, tô xong sẽ nhận Sao Vàng nhé!</p>
+
+        <!-- Dynamic Grid Container for 24 pictures -->
+        <div id="template-grid-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-6xl w-full px-4 mb-12">
+            <!-- Rendered Dynamically in JS -->
+        </div>
+    </div>
+
+    <!-- CELEBRATION / GALLERY MODAL -->
+    <div id="completeModal" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-[2.5rem] border-[10px] border-yellow-400 p-6 md:p-8 max-w-lg w-full text-center relative shadow-2xl transform scale-100 transition-transform duration-300">
+            <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 text-6xl animate-bounce">🏆</div>
+            <h3 class="text-3xl md:text-4xl font-extrabold text-pink-600 mb-2">WOW! BÉ TÔ ĐẸP QUÁ!</h3>
+            <p class="text-gray-500 font-bold mb-6">Tác phẩm xuất sắc đã được lưu vào bộ sưu tập!</p>
+            
+            <!-- Picture Frame Preview -->
+            <div class="bg-[#f0e4cf] border-[16px] border-[#cbb287] rounded-2xl shadow-inner p-4 mb-6 flex justify-center items-center overflow-hidden">
+                <img id="finalImage" class="max-h-[260px] object-contain rounded-md" alt="Tác phẩm của bé">
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button onclick="downloadImage()" class="bubble-hover py-3 px-6 bg-green-500 text-white font-black text-xl rounded-full border-4 border-white shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                    <span>Tải Về Máy</span>
+                </button>
+                <button onclick="restartDrawing()" class="bubble-hover py-3 px-6 bg-pink-500 text-white font-black text-xl rounded-full border-4 border-white shadow-md flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-paintbrush"></i>
+                    <span>Tô Hình Khác</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OUTLINE ARTWORKS DRAWING ALGORITHMS LIBRARY -->
+    <script>
+        // High Quality geometric outlines tailored for kids (supporting customizable stroke and fill colors)
+        
+        function drawCatOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Tail
+            ctx.beginPath();
+            ctx.moveTo(cx + 100, cy + 180);
+            ctx.bezierCurveTo(cx + 250, cy + 220, cx + 220, cy - 80, cx + 180, cy - 120);
+            ctx.bezierCurveTo(cx + 140, cy - 150, cx + 150, cy - 60, cx + 130, cy + 10);
+            ctx.stroke();
+
+            // Body
+            ctx.beginPath();
+            ctx.ellipse(cx, cy + 170, 110, 80, 0, 0, Math.PI * 2);
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Little Paws
+            ctx.beginPath(); ctx.arc(cx - 50, cy + 240, 20, Math.PI, 0); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 50, cy + 240, 20, Math.PI, 0); ctx.stroke();
+
+            // Head (circle)
+            ctx.beginPath();
+            ctx.arc(cx, cy - 20, 130, 0, Math.PI * 2);
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Ears
+            ctx.beginPath(); ctx.moveTo(cx - 100, cy - 100); ctx.lineTo(cx - 130, cy - 220); ctx.lineTo(cx - 30, cy - 145);
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            ctx.beginPath(); ctx.moveTo(cx + 100, cy - 100); ctx.lineTo(cx + 130, cy - 220); ctx.lineTo(cx + 30, cy - 145);
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Eyes
+            ctx.beginPath(); ctx.arc(cx - 50, cy - 40, 22, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 50, cy - 40, 22, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            if (!strokeOnly) {
+                ctx.beginPath(); ctx.arc(cx - 55, cy - 48, 8, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx + 45, cy - 48, 8, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+            }
+
+            // Nose & Mouth
+            ctx.beginPath(); ctx.moveTo(cx, cy - 15); ctx.lineTo(cx - 8, cy - 23); ctx.lineTo(cx + 8, cy - 23); ctx.closePath(); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx - 12, cy - 12, 12, 0, Math.PI, false); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 12, cy - 12, 12, 0, Math.PI, false); ctx.stroke();
+
+            // Whiskers
+            ctx.beginPath();
+            ctx.moveTo(cx - 110, cy - 20); ctx.lineTo(cx - 160, cy - 25);
+            ctx.moveTo(cx - 110, cy - 5); ctx.lineTo(cx - 170, cy - 5);
+            ctx.moveTo(cx - 110, cy + 10); ctx.lineTo(cx - 160, cy + 15);
+            ctx.moveTo(cx + 110, cy - 20); ctx.lineTo(cx + 160, cy - 25);
+            ctx.moveTo(cx + 110, cy - 5); ctx.lineTo(cx + 170, cy - 5);
+            ctx.moveTo(cx + 110, cy + 10); ctx.lineTo(cx + 160, cy + 15);
+            ctx.stroke();
+
+            // Heart pattern on tummy
+            ctx.beginPath(); ctx.moveTo(cx, cy + 160); ctx.bezierCurveTo(cx - 20, cy + 140, cx - 30, cy + 170, cx, cy + 200); ctx.bezierCurveTo(cx + 30, cy + 170, cx + 20, cy + 140, cx, cy + 160); ctx.stroke();
+        }
+
+        function drawDinoOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Spikes
+            ctx.beginPath(); ctx.moveTo(cx + 180, cy + 130); ctx.lineTo(cx + 210, cy + 100); ctx.lineTo(cx + 195, cy + 160); ctx.lineTo(cx + 240, cy + 140); ctx.lineTo(cx + 210, cy + 180); ctx.lineTo(cx + 260, cy + 180);
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Body
+            ctx.beginPath();
+            ctx.moveTo(cx - 80, cy - 120);
+            ctx.bezierCurveTo(cx - 5, cy - 120, cx - 10, cy - 40, cx - 10, cy);
+            ctx.bezierCurveTo(cx + 100, cy, cx + 180, cy + 60, cx + 180, cy + 160);
+            ctx.bezierCurveTo(cx + 240, cy + 200, cx + 150, cy + 240, cx + 110, cy + 200);
+            ctx.bezierCurveTo(cx + 10, cy + 220, cx - 110, cy + 220, cx - 120, cy + 140);
+            ctx.bezierCurveTo(cx - 130, cy + 80, cx - 150, cy - 120, cx - 80, cy - 120);
+            ctx.closePath();
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Eye
+            ctx.beginPath(); ctx.arc(cx - 80, cy - 50, 18, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            if (!strokeOnly) { ctx.beginPath(); ctx.arc(cx - 84, cy - 54, 6, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill(); }
+
+            // Face details
+            ctx.beginPath(); ctx.arc(cx - 105, cy - 10, 15, 0, Math.PI, false); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx - 70, cy - 15, 8, 0, Math.PI * 2); ctx.stroke();
+
+            // Tiny arms
+            ctx.beginPath(); ctx.moveTo(cx - 50, cy + 60); ctx.bezierCurveTo(cx - 20, cy + 60, cx - 20, cy + 80, cx - 50, cy + 85); ctx.stroke();
+
+            // Feet
+            ctx.beginPath(); ctx.arc(cx - 60, cy + 215, 25, Math.PI, 0); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 60, cy + 210, 25, Math.PI, 0); ctx.stroke();
+        }
+
+        function drawRocketOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Flames
+            ctx.beginPath(); ctx.moveTo(cx - 40, cy + 170); ctx.lineTo(cx - 60, cy + 250); ctx.lineTo(cx, cy + 210); ctx.lineTo(cx + 60, cy + 250); ctx.lineTo(cx + 40, cy + 170); ctx.closePath();
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Body
+            ctx.beginPath(); ctx.moveTo(cx - 70, cy + 170); ctx.lineTo(cx - 70, cy - 30); ctx.bezierCurveTo(cx - 70, cy - 180, cx + 70, cy - 180, cx + 70, cy - 30); ctx.lineTo(cx + 70, cy + 170); ctx.closePath();
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Wings
+            ctx.beginPath(); ctx.moveTo(cx - 70, cy + 70); ctx.bezierCurveTo(cx - 150, cy + 100, cx - 150, cy + 180, cx - 70, cy + 180); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx + 70, cy + 70); ctx.bezierCurveTo(cx + 150, cy + 100, cx + 150, cy + 180, cx + 70, cy + 180); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Cabin Window
+            ctx.beginPath(); ctx.arc(cx, cy + 40, 45, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy + 45, 25, Math.PI, 0); ctx.stroke();
+        }
+
+        function drawFishOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Tail
+            ctx.beginPath(); ctx.moveTo(cx + 120, cy); ctx.lineTo(cx + 220, cy - 80); ctx.lineTo(cx + 180, cy); ctx.lineTo(cx + 220, cy + 80); ctx.closePath();
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Main Body
+            ctx.beginPath(); ctx.ellipse(cx - 10, cy, 140, 100, 0, 0, Math.PI * 2);
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Fins
+            ctx.beginPath(); ctx.moveTo(cx - 30, cy - 95); ctx.bezierCurveTo(cx - 10, cy - 160, cx + 50, cy - 140, cx + 40, cy - 80); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx - 10, cy + 98); ctx.bezierCurveTo(cx, cy + 150, cx + 40, cy + 140, cx + 30, cy + 90); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Cute big eye
+            ctx.beginPath(); ctx.arc(cx - 80, cy - 25, 20, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#ffffff'; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx - 84, cy - 25, 12, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+
+            // Lips
+            ctx.beginPath(); ctx.arc(cx - 150, cy + 5, 12, -Math.PI/2, Math.PI/2, true); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx - 150, cy + 23, 12, -Math.PI/2, Math.PI/2, true); ctx.stroke();
+        }
+
+        function drawPandaOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Ears
+            ctx.beginPath(); ctx.arc(cx - 90, cy - 110, 35, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#2d3748'; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 90, cy - 110, 35, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#2d3748'; ctx.fill(); } ctx.stroke();
+
+            // Body
+            ctx.beginPath(); ctx.ellipse(cx, cy + 130, 110, 90, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx, cy + 135, 75, 55, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#ffffff'; ctx.fill(); } ctx.stroke();
+
+            // Arms
+            ctx.beginPath(); ctx.ellipse(cx - 85, cy + 90, 30, 45, Math.PI/6, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#2d3748'; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 85, cy + 90, 30, 45, -Math.PI/6, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#2d3748'; ctx.fill(); } ctx.stroke();
+
+            // Head
+            ctx.beginPath(); ctx.ellipse(cx, cy - 20, 120, 100, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Eyes patches
+            ctx.beginPath(); ctx.ellipse(cx - 45, cy - 25, 28, 38, Math.PI/12, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#2d3748'; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 45, cy - 25, 28, 38, -Math.PI/12, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#2d3748'; ctx.fill(); } ctx.stroke();
+
+            if (!strokeOnly) {
+                ctx.beginPath(); ctx.arc(cx - 40, cy - 25, 10, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx + 40, cy - 25, 10, 0, Math.PI * 2); ctx.fillStyle = '#ffffff'; ctx.fill();
+            }
+
+            // Nose & Mouth
+            ctx.beginPath(); ctx.ellipse(cx, cy + 10, 15, 10, 0, 0, Math.PI * 2); ctx.fillStyle = '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx - 10, cy + 20, 10, 0, Math.PI, false); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 10, cy + 20, 10, 0, Math.PI, false); ctx.stroke();
+        }
+
+        function drawRabbitOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Ears
+            ctx.beginPath(); ctx.ellipse(cx - 45, cy - 140, 25, 75, -Math.PI/18, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 45, cy - 140, 25, 75, Math.PI/18, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx - 45, cy - 140, 14, 55, -Math.PI/18, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#ffc0cb'; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 45, cy - 140, 14, 55, Math.PI/18, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#ffc0cb'; ctx.fill(); } ctx.stroke();
+
+            // Body
+            ctx.beginPath(); ctx.ellipse(cx, cy + 120, 90, 80, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Head
+            ctx.beginPath(); ctx.ellipse(cx, cy - 20, 100, 85, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Eyes & nose
+            ctx.beginPath(); ctx.arc(cx - 35, cy - 25, 12, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 35, cy - 25, 12, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx, cy - 5); ctx.lineTo(cx - 8, cy - 12); ctx.lineTo(cx + 8, cy - 12); ctx.closePath(); ctx.fillStyle = '#ff85a2'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+
+            // Whiskers
+            ctx.beginPath(); ctx.moveTo(cx - 70, cy - 5); ctx.lineTo(cx - 110, cy - 12); ctx.moveTo(cx + 70, cy - 5); ctx.lineTo(cx + 110, cy - 12); ctx.stroke();
+        }
+
+        function drawElephantOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Ears
+            ctx.beginPath(); ctx.ellipse(cx - 110, cy - 10, 65, 85, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 110, cy - 10, 65, 85, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Body
+            ctx.beginPath(); ctx.ellipse(cx, cy + 115, 110, 90, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Head
+            ctx.beginPath(); ctx.ellipse(cx, cy - 20, 95, 85, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Eyes
+            ctx.beginPath(); ctx.arc(cx - 35, cy - 25, 10, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 35, cy - 25, 10, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+
+            // Trunk
+            ctx.beginPath(); ctx.moveTo(cx, cy + 10); ctx.bezierCurveTo(cx - 40, cy + 30, cx - 50, cy + 120, cx - 10, cy + 115); ctx.bezierCurveTo(cx - 30, cy + 100, cx - 25, cy + 40, cx, cy + 35);
+            ctx.stroke();
+        }
+
+        function drawCrabOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Claws
+            ctx.beginPath(); ctx.arc(cx - 100, cy - 50, 35, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 100, cy - 50, 35, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Claw Arms
+            ctx.beginPath(); ctx.moveTo(cx - 80, cy + 50); ctx.quadraticCurveTo(cx - 110, cy + 10, cx - 100, cy - 15); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx + 80, cy + 50); ctx.quadraticCurveTo(cx + 110, cy + 10, cx + 100, cy - 15); ctx.stroke();
+
+            // Legs (3 pairs)
+            ctx.beginPath(); ctx.moveTo(cx - 80, cy + 90); ctx.lineTo(cx - 130, cy + 105); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx - 75, cy + 110); ctx.lineTo(cx - 120, cy + 135); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx + 80, cy + 90); ctx.lineTo(cx + 130, cy + 105); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx + 75, cy + 110); ctx.lineTo(cx + 120, cy + 135); ctx.stroke();
+
+            // Body
+            ctx.beginPath(); ctx.ellipse(cx, cy + 70, 110, 75, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Eyes stalks
+            ctx.beginPath(); ctx.moveTo(cx - 30, cy - 5); ctx.lineTo(cx - 30, cy - 40); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx + 30, cy - 5); ctx.lineTo(cx + 30, cy - 40); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx - 30, cy - 45, 15, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = '#ffffff'; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 30, cy - 45, 15, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = '#ffffff'; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx - 30, cy - 45, 7, 0, Math.PI*2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill();
+
+            // Big smile
+            ctx.beginPath(); ctx.arc(cx, cy + 70, 25, 0, Math.PI, false); ctx.stroke();
+        }
+
+        function drawButterflyOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Symmetrical wings
+            ctx.beginPath(); ctx.ellipse(cx - 75, cy - 50, 70, 60, -Math.PI/6, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 75, cy - 50, 70, 60, Math.PI/6, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx - 55, cy + 45, 50, 45, Math.PI/6, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 55, cy + 45, 50, 45, -Math.PI/6, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Body
+            ctx.beginPath(); ctx.ellipse(cx, cy, 20, 95, 0, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Antennae
+            ctx.beginPath(); ctx.moveTo(cx - 10, cy - 90); ctx.quadraticCurveTo(cx - 40, cy - 140, cx - 60, cy - 120); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx + 10, cy - 90); ctx.quadraticCurveTo(cx + 40, cy - 140, cx + 60, cy - 120); ctx.stroke();
+        }
+
+        function drawSunOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Ray triangles (8 rays)
+            const numRays = 8;
+            for(let i=0; i<numRays; i++) {
+                let angle = (i * Math.PI * 2) / numRays;
+                let x1 = cx + Math.cos(angle - 0.2) * 110;
+                let y1 = cy + Math.sin(angle - 0.2) * 110;
+                let x2 = cx + Math.cos(angle + 0.2) * 110;
+                let y2 = cy + Math.sin(angle + 0.2) * 110;
+                let tipX = cx + Math.cos(angle) * 175;
+                let tipY = cy + Math.sin(angle) * 175;
+
+                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(tipX, tipY); ctx.lineTo(x2, y2); ctx.closePath();
+                if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+                ctx.stroke();
+            }
+
+            // Core Sun Circle
+            ctx.beginPath(); ctx.arc(cx, cy, 110, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Cute Face
+            ctx.beginPath(); ctx.arc(cx - 35, cy - 15, 10, 0, Math.PI*2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 35, cy - 15, 10, 0, Math.PI*2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy + 20, 25, 0, Math.PI, false); ctx.stroke();
+        }
+
+        function drawFlowerOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Stem & leaves
+            ctx.beginPath(); ctx.moveTo(cx, cy + 10); ctx.bezierCurveTo(cx + 30, cy + 100, cx - 20, cy + 180, cx, cy + 240); ctx.lineWidth = 15; ctx.stroke(); ctx.lineWidth = 10;
+            ctx.beginPath(); ctx.ellipse(cx - 35, cy + 120, 35, 18, -Math.PI/6, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 35, cy + 160, 35, 18, Math.PI/6, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Flower petals (6 petals circular)
+            const numPetals = 6;
+            const r = 55;
+            for(let i=0; i<numPetals; i++) {
+                let angle = (i * Math.PI * 2) / numPetals;
+                let px = cx + Math.cos(angle) * r;
+                let py = (cy - 30) + Math.sin(angle) * r;
+                ctx.beginPath(); ctx.arc(px, py, 45, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            }
+
+            // Center bulb
+            ctx.beginPath(); ctx.arc(cx, cy - 30, 52, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+        }
+
+        function drawCarOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Wheels
+            ctx.beginPath(); ctx.arc(cx - 75, cy + 120, 35, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = '#2d3748'; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 75, cy + 120, 35, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = '#2d3748'; ctx.fill(); } ctx.stroke();
+
+            // Car Base
+            ctx.beginPath(); ctx.ellipse(cx, cy + 70, 150, 55, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Cabin Roof
+            ctx.beginPath(); ctx.ellipse(cx, cy + 20, 95, 55, 0, Math.PI, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Windows
+            ctx.beginPath(); ctx.moveTo(cx, cy - 35); ctx.lineTo(cx, cy + 15); ctx.stroke();
+        }
+
+        function drawHouseOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Base wall
+            ctx.beginPath(); ctx.rect(cx - 100, cy - 10, 200, 180); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Roof
+            ctx.beginPath(); ctx.moveTo(cx - 130, cy - 10); ctx.lineTo(cx, cy - 120); ctx.lineTo(cx + 130, cy - 10); ctx.closePath();
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Chimney
+            ctx.beginPath(); ctx.rect(cx + 50, cy - 90, 30, 50); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Window & Door
+            ctx.beginPath(); ctx.rect(cx - 60, cy + 60, 45, 110); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.rect(cx + 20, cy + 40, 50, 50); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx + 45, cy + 40); ctx.lineTo(cx + 45, cy + 90); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx + 20, cy + 65); ctx.lineTo(cx + 70, cy + 65); ctx.stroke();
+        }
+
+        function drawMushroomOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Stem
+            ctx.beginPath(); ctx.ellipse(cx, cy + 110, 45, 80, 0, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Cap
+            ctx.beginPath(); ctx.ellipse(cx, cy - 10, 140, 95, 0, Math.PI, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.lineTo(cx - 140, cy - 10); ctx.closePath(); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Spots
+            if (!strokeOnly) {
+                ctx.beginPath(); ctx.arc(cx - 60, cy - 40, 18, 0, Math.PI*2); ctx.fillStyle = '#ffffff'; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx + 60, cy - 50, 22, 0, Math.PI*2); ctx.fillStyle = '#ffffff'; ctx.fill();
+                ctx.beginPath(); ctx.arc(cx, cy - 70, 15, 0, Math.PI*2); ctx.fillStyle = '#ffffff'; ctx.fill();
+            }
+        }
+
+        function drawDuckOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Body
+            ctx.beginPath(); ctx.ellipse(cx + 30, cy + 60, 100, 70, 0, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Head & Neck
+            ctx.beginPath(); ctx.moveTo(cx + 10, cy + 10); ctx.quadraticCurveTo(cx - 50, cy - 10, cx - 50, cy - 40); ctx.arc(cx - 50, cy - 40, 42, Math.PI, Math.PI*2.5); ctx.quadraticCurveTo(cx + 10, cy + 20, cx + 50, cy + 10);
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Beak
+            ctx.beginPath(); ctx.moveTo(cx - 90, cy - 45); ctx.quadraticCurveTo(cx - 120, cy - 35, cx - 90, cy - 25); if (!strokeOnly) { ctx.fillStyle = '#ff9500'; ctx.fill(); } ctx.stroke();
+
+            // Cute Wing
+            ctx.beginPath(); ctx.ellipse(cx + 40, cy + 55, 45, 30, -Math.PI/12, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+        }
+
+        function drawFrogOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Bulging eyes
+            ctx.beginPath(); ctx.arc(cx - 60, cy - 95, 28, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 60, cy - 95, 28, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            ctx.beginPath(); ctx.arc(cx - 60, cy - 95, 10, 0, Math.PI*2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill();
+            ctx.beginPath(); ctx.arc(cx + 60, cy - 95, 10, 0, Math.PI*2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill();
+
+            // Body
+            ctx.beginPath(); ctx.ellipse(cx, cy + 120, 100, 80, 0, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Head
+            ctx.beginPath(); ctx.ellipse(cx, cy - 15, 120, 85, 0, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Giant mouth
+            ctx.beginPath(); ctx.arc(cx, cy - 5, 55, 0, Math.PI, false); ctx.stroke();
+        }
+
+        function drawIcecreamOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Cone waffle
+            ctx.beginPath(); ctx.moveTo(cx - 60, cy + 40); ctx.lineTo(cx + 60, cy + 40); ctx.lineTo(cx, cy + 220); ctx.closePath();
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Stacked Scoops
+            ctx.beginPath(); ctx.arc(cx - 35, cy + 10, 45, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 35, cy + 10, 45, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy - 40, 50, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy - 105, 40, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Cherry
+            ctx.beginPath(); ctx.arc(cx, cy - 155, 15, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = '#ff2d55'; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx, cy - 170); ctx.quadraticCurveTo(cx + 25, cy - 200, cx + 15, cy - 210); ctx.stroke();
+        }
+
+        function drawAppleOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Double lobes
+            ctx.beginPath(); ctx.ellipse(cx - 45, cy + 20, 75, 95, 0, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 45, cy + 20, 75, 95, 0, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Stem & leaf
+            ctx.beginPath(); ctx.moveTo(cx, cy - 60); ctx.quadraticCurveTo(cx + 15, cy - 100, cx + 5, cy - 120); ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 20, cy - 100, 35, 18, -Math.PI/6, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+        }
+
+        function drawSnailOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Slug Foot
+            ctx.beginPath(); ctx.moveTo(cx - 160, cy + 130); ctx.quadraticCurveTo(cx - 120, cy + 90, cx, cy + 120); ctx.lineTo(cx + 160, cy + 130); ctx.quadraticCurveTo(cx + 180, cy + 70, cx + 150, cy + 30);
+            ctx.stroke();
+
+            // Snail Shell
+            ctx.beginPath(); ctx.arc(cx, cy + 25, 95, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Spiral Line inside shell
+            ctx.beginPath(); ctx.arc(cx, cy + 25, 60, 0, Math.PI*1.5); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx, cy + 25, 30, 0, Math.PI*0.8); ctx.stroke();
+        }
+
+        function drawShipOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Boat body hull
+            ctx.beginPath(); ctx.moveTo(cx - 150, cy + 60); ctx.lineTo(cx + 110, cy + 60); ctx.lineTo(cx + 150, cy + 130); ctx.lineTo(cx - 120, cy + 130); ctx.closePath();
+            if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); }
+            ctx.stroke();
+
+            // Cabins
+            ctx.beginPath(); ctx.rect(cx - 80, cy - 20, 160, 80); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.rect(cx - 40, cy - 60, 80, 40); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Funnels Blowing Smoke
+            ctx.beginPath(); ctx.rect(cx - 20, cy - 100, 15, 40); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.rect(cx + 10, cy - 100, 15, 40); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+        }
+
+        function drawLionOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Giant Mane (Flower lobes)
+            const numLobes = 10;
+            for(let i=0; i<numLobes; i++) {
+                let angle = (i * Math.PI * 2) / numLobes;
+                let lx = cx + Math.cos(angle) * 90;
+                let ly = (cy - 10) + Math.sin(angle) * 90;
+                ctx.beginPath(); ctx.arc(lx, ly, 55, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            }
+
+            // Head Center
+            ctx.beginPath(); ctx.arc(cx, cy - 10, 95, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Cute Muzzle & Nose
+            ctx.beginPath(); ctx.arc(cx - 30, cy - 20, 10, 0, Math.PI*2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 30, cy - 20, 10, 0, Math.PI*2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx - 12, cy + 10, 14, 0, Math.PI, false); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 12, cy + 10, 14, 0, Math.PI, false); ctx.stroke();
+        }
+
+        function drawPenguinOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Body
+            ctx.beginPath(); ctx.ellipse(cx, cy + 40, 100, 140, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Belly Oval
+            ctx.beginPath(); ctx.ellipse(cx, cy + 50, 70, 100, 0, 0, Math.PI * 2); if (!strokeOnly) { ctx.fillStyle = '#ffffff'; ctx.fill(); } ctx.stroke();
+
+            // Flippers
+            ctx.beginPath(); ctx.ellipse(cx - 110, cy + 40, 25, 60, Math.PI/12, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 110, cy + 40, 25, 60, -Math.PI/12, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Eyes & beak
+            ctx.beginPath(); ctx.arc(cx - 25, cy - 30, 12, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 25, cy - 30, 12, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx, cy - 10); ctx.lineTo(cx - 15, cy - 20); ctx.lineTo(cx + 15, cy - 20); ctx.closePath(); ctx.fillStyle = '#ff9500'; if (!strokeOnly) ctx.fill(); ctx.stroke();
+        }
+
+        function drawMonkeyOutline(ctx, cx, cy, strokeOnly, fillColor) {
+            // Ears
+            ctx.beginPath(); ctx.arc(cx - 100, cy - 20, 35, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.arc(cx + 100, cy - 20, 35, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Head Center
+            ctx.beginPath(); ctx.arc(cx, cy - 20, 95, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = fillColor; ctx.fill(); } ctx.stroke();
+
+            // Face peach mask shape
+            ctx.beginPath(); ctx.ellipse(cx - 30, cy - 20, 45, 45, 0, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = '#ffe4e1'; ctx.fill(); } ctx.stroke();
+            ctx.beginPath(); ctx.ellipse(cx + 30, cy - 20, 45, 45, 0, 0, Math.PI*2); if (!strokeOnly) { ctx.fillStyle = '#ffe4e1'; ctx.fill(); } ctx.stroke();
+
+            // Eyes
+            ctx.beginPath(); ctx.arc(cx - 25, cy - 25, 10, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill();
+            ctx.beginPath(); ctx.arc(cx + 25, cy - 25, 10, 0, Math.PI * 2); ctx.fillStyle = strokeOnly ? 'transparent' : '#2d3748'; if (!strokeOnly) ctx.fill();
+
+            // Smile
+            ctx.beginPath(); ctx.arc(cx, cy, 25, 0, Math.PI, false); ctx.stroke();
+        }
+
+        // Central Router for drawing all templates
+        function drawTemplateOutline(type, ctx, w, h, strokeOnly, fillColor = '#ffffff', strokeColor = '#2d3748') {
+            ctx.save();
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            const cx = w / 2;
+            const cy = h / 2;
+
+            switch(type) {
+                case 'kitty': drawCatOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'dino': drawDinoOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'rocket': drawRocketOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'fish': drawFishOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'panda': drawPandaOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'rabbit': drawRabbitOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'elephant': drawElephantOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'crab': drawCrabOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'butterfly': drawButterflyOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'sun': drawSunOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'flower': drawFlowerOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'car': drawCarOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'house': drawHouseOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'mushroom': drawMushroomOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'duck': drawDuckOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'frog': drawFrogOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'icecream': drawIcecreamOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'apple': drawAppleOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'snail': drawSnailOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'ship': drawShipOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'lion': drawLionOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'penguin': drawPenguinOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+                case 'monkey': drawMonkeyOutline(ctx, cx, cy, strokeOnly, fillColor); break;
+            }
+
+            ctx.restore();
+        }
+    </script>
+
+    <!-- CORE APP LOGIC -->
+    <script>
+        // Array containing all 24 templates
+        const templatesData = [
+            { id: 'kitty', name: 'Mèo Con Đáng Yêu', emoji: '🐱', bg: 'bg-pink-50' },
+            { id: 'dino', name: 'Khủng Long Bé Nhỏ', emoji: '🦖', bg: 'bg-green-50' },
+            { id: 'rocket', name: 'Tên Lửa Vũ Trụ', emoji: '🚀', bg: 'bg-blue-50' },
+            { id: 'fish', name: 'Đại Dương Kỳ Diệu', emoji: '🐠', bg: 'bg-teal-50' },
+            { id: 'panda', name: 'Gấu Trúc Ham Ăn', emoji: '🐼', bg: 'bg-gray-100' },
+            { id: 'rabbit', name: 'Thỏ Bông Tai Dài', emoji: '🐰', bg: 'bg-rose-50' },
+            { id: 'elephant', name: 'Voi Con Tinh Nghịch', emoji: '🐘', bg: 'bg-indigo-50' },
+            { id: 'crab', name: 'Cua Đỏ Tinh Nghịch', emoji: '🦀', bg: 'bg-orange-50' },
+            { id: 'butterfly', name: 'Bướm Hoa Sặc Sỡ', emoji: '🦋', bg: 'bg-purple-50' },
+            { id: 'sun', name: 'Ông Mặt Trời Rực Rỡ', emoji: '☀️', bg: 'bg-yellow-50' },
+            { id: 'flower', name: 'Bông Hoa Tươi Thắm', emoji: '🌸', bg: 'bg-emerald-50' },
+            { id: 'car', name: 'Xe Hơi Siêu Tốc', emoji: '🚗', bg: 'bg-sky-50' },
+            { id: 'house', name: 'Ngôi Nhà Ấm Áp', emoji: '🏠', bg: 'bg-amber-50' },
+            { id: 'mushroom', name: 'Cây Nấm Kỳ Diệu', emoji: '🍄', bg: 'bg-rose-50' },
+            { id: 'duck', name: 'Vịt Con Lon Ton', emoji: '🦆', bg: 'bg-cyan-50' },
+            { id: 'frog', name: 'Chú Ếch Xanh', emoji: '🐸', bg: 'bg-lime-50' },
+            { id: 'icecream', name: 'Kem Mát Ngọt Ngào', emoji: '🍦', bg: 'bg-fuchsia-50' },
+            { id: 'apple', name: 'Quả Táo Đỏ Ngọt', emoji: '🍎', bg: 'bg-red-50' },
+            { id: 'snail', name: 'Ốc Sên Chậm Chạp', emoji: '🐌', bg: 'bg-orange-50' },
+            { id: 'ship', name: 'Tàu Thủy Đuôi Sóng', emoji: '🚢', bg: 'bg-blue-100' },
+            { id: 'lion', name: 'Sư Tử Dũng Mãnh', emoji: '🦁', bg: 'bg-yellow-100' },
+            { id: 'penguin', name: 'Cánh Cụt Đáng Yêu', emoji: '🐧', bg: 'bg-slate-100' },
+            { id: 'monkey', name: 'Khỉ Con Tinh Nghịch', emoji: '🐵', bg: 'bg-amber-100' },
+            { id: 'free', name: 'Tranh Vẽ Tự Do', emoji: '🎨', bg: 'bg-red-100' }
+        ];
+
+        // Core State
+        let currentTool = 'bucket'; 
+        let selectedColor = '#FF3B30'; 
+        let selectedStickerChar = '⭐';
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let activeTemplate = 'kitty';
+
+        // Undo History Stack
+        let canvasHistory = [];
+        const MAX_HISTORY = 12;
+
+        // Masking Elements for Intelligent Sticker Clipping
+        let maskCanvas = null;
+        let maskCtx = null;
+
+        // DOM references
+        const canvas = document.getElementById('coloringCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const startScreen = document.getElementById('startScreen');
+        const templateScreen = document.getElementById('templateScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const completeModal = document.getElementById('completeModal');
+        const finalImage = document.getElementById('finalImage');
+        const brushPanel = document.getElementById('brush-panel');
+        const stickerPanel = document.getElementById('sticker-panel');
+
+        const logicalWidth = 800;
+        const logicalHeight = 600;
+
+        // Completion Progress Persistence (using localStorage)
+        function isTemplateCompleted(id) {
+            try {
+                const completed = JSON.parse(localStorage.getItem('coloring_completed_list')) || [];
+                return completed.includes(id);
+            } catch(e) {
+                return false;
+            }
+        }
+
+        function markTemplateCompleted(id) {
+            try {
+                let completed = JSON.parse(localStorage.getItem('coloring_completed_list')) || [];
+                if (!completed.includes(id)) {
+                    completed.push(id);
+                    localStorage.setItem('coloring_completed_list', JSON.stringify(completed));
+                }
+            } catch(e) {}
+        }
+
+        function renderGallery() {
+            const container = document.getElementById('template-grid-container');
+            container.innerHTML = '';
+
+            templatesData.forEach(t => {
+                const completed = isTemplateCompleted(t.id);
+                const card = document.createElement('div');
+                card.onclick = () => selectTemplate(t.id);
+                card.className = "bubble-hover cursor-pointer bg-white rounded-3xl border-4 border-pink-300 p-4 shadow-xl flex flex-col items-center justify-between relative";
+                
+                let badgeHtml = '';
+                if (completed) {
+                    badgeHtml = `
+                        <div class="absolute -top-3 -right-3 bg-yellow-400 text-white font-extrabold text-[11px] px-2.5 py-1 rounded-full shadow-md border-2 border-white flex items-center gap-0.5 animate-pulse">
+                            <i class="fa-solid fa-star text-white"></i> Bé Xong!
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    ${badgeHtml}
+                    <div class="w-full aspect-square ${t.bg} rounded-2xl flex items-center justify-center p-4 relative overflow-hidden">
+                        <span class="text-6xl md:text-7xl select-none">${t.emoji}</span>
+                    </div>
+                    <h3 class="text-sm md:text-base font-black text-gray-700 mt-4 text-center leading-tight">${t.name}</h3>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function startGame() {
+            playSound('success');
+            startScreen.classList.add('hidden');
+            templateScreen.classList.remove('hidden');
+            renderGallery();
+        }
+
+        function backToGallery() {
+            playSound('pop');
+            gameScreen.classList.add('hidden');
+            templateScreen.classList.remove('hidden');
+            renderGallery();
+        }
+
+        function selectTemplate(templateKey) {
+            playSound('pop');
+            activeTemplate = templateKey;
+            templateScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            
+            canvasHistory = [];
+            setupCanvas();
+        }
+
+        function setupCanvas() {
+            canvas.width = logicalWidth;
+            canvas.height = logicalHeight;
+
+            // Reset background as pure white
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+
+            // Recreate Mask Silhouette Offscreen
+            updateMaskSilhouette();
+
+            // Draw clean outline with initial fills
+            drawCurrentTemplateOutline(false);
+            setTool('bucket'); 
+            saveState(); 
+        }
+
+        function drawCurrentTemplateOutline(strokeOnly = false) {
+            drawTemplateOutline(activeTemplate, ctx, logicalWidth, logicalHeight, strokeOnly, '#ffffff', '#2d3748');
+        }
+
+        function updateMaskSilhouette() {
+            if (!maskCanvas) {
+                maskCanvas = document.createElement('canvas');
+                maskCanvas.width = logicalWidth;
+                maskCanvas.height = logicalHeight;
+                maskCtx = maskCanvas.getContext('2d');
+            }
+            maskCtx.clearRect(0, 0, logicalWidth, logicalHeight);
+            
+            if (activeTemplate !== 'free') {
+                // Paint solid black silhouette to serve as mask boundary
+                drawTemplateOutline(activeTemplate, maskCtx, logicalWidth, logicalHeight, false, '#000000', '#000000');
+            }
+        }
+
+        function setTool(tool) {
+            playSound('pop');
+            currentTool = tool;
+
+            const tools = ['bucket', 'brush', 'sticker', 'eraser'];
+            tools.forEach(t => {
+                const btn = document.getElementById(`btn-${t}`);
+                if (btn) {
+                    if (t === tool) {
+                        btn.className = "bubble-hover w-12 h-12 md:w-16 md:h-16 rounded-2xl flex flex-col items-center justify-center border-2 shadow-md relative bg-pink-500 border-pink-600 text-white";
+                    } else {
+                        btn.className = "bubble-hover w-12 h-12 md:w-16 md:h-16 rounded-2xl flex flex-col items-center justify-center border-2 shadow-md relative bg-white border-gray-200 text-gray-700";
+                    }
+                }
+            });
+
+            brushPanel.classList.add('hidden');
+            stickerPanel.classList.add('hidden');
+
+            if (tool === 'brush' || tool === 'eraser') {
+                brushPanel.classList.remove('hidden');
+            } else if (tool === 'sticker') {
+                stickerPanel.classList.remove('hidden');
+            }
+        }
+
+        function selectColor(color) {
+            playSound('pop');
+            selectedColor = color;
+
+            const buttons = document.querySelectorAll('.color-btn');
+            buttons.forEach(btn => {
+                btn.style.transform = 'scale(1)';
+                btn.style.borderColor = 'white';
+            });
+            const rainbowBtn = document.getElementById('color-rainbow');
+            rainbowBtn.style.transform = 'scale(1)';
+
+            if (color === 'rainbow') {
+                rainbowBtn.style.transform = 'scale(1.15)';
+            } else {
+                const targetBtn = Array.from(buttons).find(btn => rgbToHex(btn.style.backgroundColor).toLowerCase() === color.toLowerCase());
+                if (targetBtn) {
+                    targetBtn.style.transform = 'scale(1.15)';
+                    targetBtn.style.borderColor = '#4A5568';
+                }
+            }
+        }
+
+        function selectSticker(char) {
+            playSound('pop');
+            selectedStickerChar = char;
+            const buttons = stickerPanel.querySelectorAll('button');
+            buttons.forEach(btn => {
+                if (btn.innerText === char) {
+                    btn.classList.add('ring-4', 'ring-pink-400');
+                } else {
+                    btn.classList.remove('ring-4', 'ring-pink-400');
+                }
+            });
+        }
+
+        // Color Converter Helpers
+        function colorToRgb(color) {
+            if (color.startsWith('hsl')) {
+                const match = color.match(/\d+/g);
+                if (match) {
+                    const h = parseInt(match[0]);
+                    const s = parseInt(match[1]) / 100;
+                    const l = parseInt(match[2]) / 100;
+                    return hslToRgb(h, s, l);
+                }
+            }
+            if (color.startsWith('rgb')) {
+                const parts = color.match(/\d+/g);
+                return { r: parseInt(parts[0]), g: parseInt(parts[1]), b: parseInt(parts[2]) };
+            }
+            const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+            let hex = color.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 255, g: 0, b: 0 };
+        }
+
+        function hslToRgb(h, s, l) {
+            let r, g, b;
+            if (s === 0) {
+                r = g = b = l; 
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h / 360 + 1/3);
+                g = hue2rgb(p, q, h / 360);
+                b = hue2rgb(p, q, h / 360 - 1/3);
+            }
+            return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+        }
+
+        function rgbToHex(rgbStr) {
+            if (rgbStr.startsWith('#')) return rgbStr;
+            const parts = rgbStr.match(/\d+/g);
+            if (!parts) return '#ffffff';
+            const r = parseInt(parts[0]).toString(16).padStart(2, '0');
+            const g = parseInt(parts[1]).toString(16).padStart(2, '0');
+            const b = parseInt(parts[2]).toString(16).padStart(2, '0');
+            return `#${r}${g}${b}`;
+        }
+
+        // Flood Fill Algorithm
+        function floodFill(canvas, startX, startY, fillRGB) {
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+
+            const targetIdx = (startY * width + startX) * 4;
+            const targetR = data[targetIdx];
+            const targetG = data[targetIdx + 1];
+            const targetB = data[targetIdx + 2];
+            const targetA = data[targetIdx + 3];
+
+            // Avoid overwriting outlines
+            if (targetR < 65 && targetG < 65 && targetB < 65 && targetA > 200) {
+                return;
+            }
+
+            if (targetR === fillRGB.r && targetG === fillRGB.g && targetB === fillRGB.b) {
+                return;
+            }
+
+            const queue = [startX, startY];
+            const tolerance = 60; 
+
+            const matchColor = (idx) => {
+                const r = data[idx];
+                const g = data[idx+1];
+                const b = data[idx+2];
+                const diff = Math.abs(r - targetR) + Math.abs(g - targetG) + Math.abs(b - targetB);
+                return diff <= tolerance;
+            };
+
+            while (queue.length > 0) {
+                const y = queue.pop();
+                const x = queue.pop();
+
+                let left = x;
+                while (left >= 0 && matchColor((y * width + left) * 4)) {
+                    left--;
+                }
+                left++;
+
+                let right = x;
+                while (right < width && matchColor((y * width + right) * 4)) {
+                    right++;
+                }
+                right--;
+
+                for (let i = left; i <= right; i++) {
+                    const idx = (y * width + i) * 4;
+                    data[idx] = fillRGB.r;
+                    data[idx+1] = fillRGB.g;
+                    data[idx+2] = fillRGB.b;
+                    data[idx+3] = 255; 
+
+                    if (y > 0) {
+                        const upIdx = ((y - 1) * width + i) * 4;
+                        if (matchColor(upIdx)) {
+                            queue.push(i, y - 1);
+                        }
+                    }
+                    if (y < height - 1) {
+                        const downIdx = ((y + 1) * width + i) * 4;
+                        if (matchColor(downIdx)) {
+                            queue.push(i, y + 1);
+                        }
+                    }
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+            playSound('success');
+        }
+
+        function getCanvasMouseCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            const x = Math.round(((clientX - rect.left) / rect.width) * logicalWidth);
+            const y = Math.round(((clientY - rect.top) / rect.height) * logicalHeight);
+            return { x, y };
+        }
+
+        let rainbowHue = 0;
+        function getBrushColor() {
+            if (selectedColor === 'rainbow') {
+                rainbowHue = (rainbowHue + 4) % 360;
+                return `hsl(${rainbowHue}, 100%, 60%)`;
+            }
+            return selectedColor;
+        }
+
+        function handleStart(e) {
+            e.preventDefault();
+            initAudio();
+            const coords = getCanvasMouseCoords(e);
+            
+            if (currentTool === 'bucket') {
+                saveState();
+                const colorHex = getBrushColor();
+                const rgb = colorToRgb(colorHex);
+                floodFill(canvas, coords.x, coords.y, rgb);
+                drawCurrentTemplateOutline(true);
+            } else if (currentTool === 'sticker') {
+                drawSticker(coords.x, coords.y);
+            } else {
+                saveState();
+                isDrawing = true;
+                lastX = coords.x;
+                lastY = coords.y;
+                drawBrushLine(coords.x, coords.y, true);
+            }
+        }
+
+        function handleMove(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const coords = getCanvasMouseCoords(e);
+            drawBrushLine(coords.x, coords.y, false);
+        }
+
+        function handleEnd() {
+            if (isDrawing) {
+                isDrawing = false;
+                drawCurrentTemplateOutline(true);
+            }
+        }
+
+        function drawBrushLine(x, y, isFirst) {
+            ctx.save();
+            ctx.beginPath();
+            
+            if (currentTool === 'eraser') {
+                ctx.strokeStyle = '#ffffff'; 
+                ctx.lineWidth = document.getElementById('brush-size').value * 1.5;
+            } else {
+                ctx.strokeStyle = getBrushColor();
+                ctx.lineWidth = document.getElementById('brush-size').value;
+            }
+
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            if (isFirst) {
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, y);
+            } else {
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+            }
+
+            ctx.stroke();
+            ctx.restore();
+
+            lastX = x;
+            lastY = y;
+
+            if (Math.random() < 0.25) {
+                createSparkle(x, y);
+            }
+        }
+
+        // ADVANCED CLIP-MASK STICKER ALGORITHM
+        function drawSticker(x, y) {
+            saveState();
+
+            // Check if user clicked inside the silhouette of the template (Alpha > 0)
+            let isInside = false;
+            if (x >= 0 && x < logicalWidth && y >= 0 && y < logicalHeight) {
+                const maskPixel = maskCtx.getImageData(x, y, 1, 1).data;
+                isInside = maskPixel[3] > 0;
+            }
+
+            if (isInside && activeTemplate !== 'free') {
+                // CLIP MODE: Only keep inside part, discard outside spilling parts
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = logicalWidth;
+                tempCanvas.height = logicalHeight;
+                const tempCtx = tempCanvas.getContext('2d');
+
+                tempCtx.save();
+                tempCtx.font = '55px "Fredoka", sans-serif';
+                tempCtx.textAlign = 'center';
+                tempCtx.textBaseline = 'middle';
+                tempCtx.fillText(selectedStickerChar, x, y);
+                tempCtx.restore();
+
+                // Apply Mask Intersection
+                tempCtx.globalCompositeOperation = 'destination-in';
+                tempCtx.drawImage(maskCanvas, 0, 0);
+
+                // Paint masked result onto the canvas
+                ctx.drawImage(tempCanvas, 0, 0);
+            } else {
+                // NORMAL FREE MODE: Paint full sticker (clicked completely outside or free canvas)
+                ctx.save();
+                ctx.font = '55px "Fredoka", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(selectedStickerChar, x, y);
+                ctx.restore();
+            }
+            
+            playSound('success');
+            createSparkle(x, y);
+
+            // Maintain crisp black border outlines over the stickers
+            drawCurrentTemplateOutline(true);
+        }
+
+        function saveState() {
+            if (canvasHistory.length >= MAX_HISTORY) {
+                canvasHistory.shift();
+            }
+            canvasHistory.push(ctx.getImageData(0, 0, logicalWidth, logicalHeight));
+        }
+
+        function undo() {
+            if (canvasHistory.length > 1) { 
+                playSound('clear');
+                canvasHistory.pop(); 
+                const prevState = canvasHistory[canvasHistory.length - 1];
+                ctx.putImageData(prevState, 0, 0);
+            } else if (canvasHistory.length === 1) {
+                playSound('clear');
+                ctx.putImageData(canvasHistory[0], 0, 0);
+            }
+        }
+
+        function clearCanvasPrompt() {
+            playSound('clear');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+            
+            drawCurrentTemplateOutline(false);
+            saveState();
+        }
+
+        function createSparkle(x, y) {
+            const wrapper = document.getElementById('canvas-wrapper');
+            const rect = canvas.getBoundingClientRect();
+            const screenX = (x / logicalWidth) * rect.width + rect.left - wrapper.getBoundingClientRect().left;
+            const screenY = (y / logicalHeight) * rect.height + rect.top - wrapper.getBoundingClientRect().top;
+
+            const particle = document.createElement('div');
+            particle.className = 'sparkle';
+            particle.style.left = `${screenX}px`;
+            particle.style.top = `${screenY}px`;
+            
+            const colors = ['#FFFF00', '#FF00FF', '#00FFFF', '#FF3B30', '#4CD964'];
+            particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            particle.style.width = `${Math.random() * 20 + 10}px`;
+            particle.style.height = particle.style.width;
+
+            wrapper.appendChild(particle);
+            setTimeout(() => {
+                particle.remove();
+            }, 800);
+        }
+
+        document.getElementById('brush-size').addEventListener('input', (e) => {
+            const size = e.target.value;
+            const preview = document.getElementById('brush-preview');
+            preview.style.width = `${size}px`;
+            preview.style.height = `${size}px`;
+        });
+
+        // Mouse Handlers
+        canvas.addEventListener('mousedown', handleStart);
+        canvas.addEventListener('mousemove', handleMove);
+        window.addEventListener('mouseup', handleEnd);
+
+        // Touch/Tablet Handlers
+        canvas.addEventListener('touchstart', handleStart);
+        canvas.addEventListener('touchmove', handleMove);
+        window.addEventListener('touchend', handleEnd);
+
+        function completeDrawing() {
+            playSound('success');
+            
+            // Register Completion Star Badge
+            markTemplateCompleted(activeTemplate);
+
+            const dataUrl = canvas.toDataURL('image/png');
+            finalImage.src = dataUrl;
+            completeModal.classList.remove('hidden');
+            
+            for (let i = 0; i < 45; i++) {
+                setTimeout(spawnCelebrationConfetti, i * 50);
+            }
+            TinyFairyProgress.showCompletionOverlay({
+                gameId: 'drawing',
+                levelId: `template-${activeTemplate}`,
+                title: 'Bức tranh hoàn thành!',
+                message: 'Bé đã tô màu xong một tác phẩm và mở sticker họa sĩ cho Luna.',
+                stars: 3,
+                coins: 8,
+                sticker: '🎨'
+            });
+        }
+
+        function spawnCelebrationConfetti() {
+            const confetti = document.createElement('div');
+            confetti.style.position = 'absolute';
+            confetti.style.zIndex = '99';
+            confetti.style.width = `${Math.random() * 10 + 8}px`;
+            confetti.style.height = `${Math.random() * 20 + 8}px`;
+            confetti.style.borderRadius = '3px';
+            
+            const colors = ['#FF2D55', '#FFCC00', '#4CD964', '#5AC8FA', '#5856D6', '#FF9500'];
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            confetti.style.left = `${Math.random() * 100}vw`;
+            confetti.style.top = `-20px`;
+            
+            document.body.appendChild(confetti);
+
+            const duration = Math.random() * 2 + 1.5;
+            confetti.animate([
+                { transform: `translateY(0px) rotate(0deg)`, opacity: 1 },
+                { transform: `translateY(110vh) translateX(${(Math.random() - 0.5) * 300}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+            ], {
+                duration: duration * 1000,
+                easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)',
+                fill: 'forwards'
+            });
+
+            setTimeout(() => {
+                confetti.remove();
+            }, duration * 1000);
+        }
+
+        function downloadImage() {
+            playSound('pop');
+            const link = document.createElement('a');
+            link.download = `tranh_to_mau_${activeTemplate}.png`;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function restartDrawing() {
+            playSound('pop');
+            completeModal.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            templateScreen.classList.remove('hidden');
+            renderGallery();
+        }
+
+        // Initialize First Render
+        window.onload = () => {
+            renderGallery();
+        };
+    </script>
+</body>
+</html>

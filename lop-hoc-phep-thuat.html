@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lớp Học Phép Thuật Nhỏ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Nunito", sans-serif;
+      color: #3e3152;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255, 217, 95, 0.5), transparent 22%),
+        radial-gradient(circle at 82% 14%, rgba(201, 180, 255, 0.75), transparent 28%),
+        linear-gradient(145deg, #f7f0ff, #fff8e8 52%, #eafcff);
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      user-select: none;
+    }
+    .world-back-link {
+      position: fixed; top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left));
+      z-index: 10; display: inline-flex; align-items: center; gap: 6px; min-height: 42px; padding: 0 14px;
+      border-radius: 999px; background: rgba(255,255,255,0.92); border: 2px solid rgba(153,122,225,0.45);
+      box-shadow: 0 8px 18px rgba(84,61,122,0.16); color: #6b45a8; font-weight: 900; text-decoration: none;
+    }
+    main {
+      width: min(100%, 920px);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: stretch;
+      margin-top: 42px;
+    }
+    .spell, .book {
+      border-radius: 30px;
+      background: rgba(255,255,255,0.78);
+      border: 4px solid rgba(255,255,255,0.82);
+      box-shadow: 0 22px 60px rgba(69, 47, 100, 0.17);
+      padding: clamp(18px, 4vw, 30px);
+    }
+    h1 {
+      margin: 0;
+      font-family: "Baloo 2", sans-serif;
+      font-size: clamp(2.8rem, 7vw, 5.4rem);
+      line-height: 0.9;
+      color: #7d5bd6;
+    }
+    .lead { margin: 14px 0 20px; color: #6f6380; font-size: 1.08rem; font-weight: 900; line-height: 1.42; }
+    .cauldron {
+      min-height: 330px;
+      display: grid;
+      place-items: center;
+      border-radius: 28px;
+      background: radial-gradient(circle at 50% 35%, #fff8c7, #d8c9ff 58%, #b59bed);
+      font-size: 7rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .chosen {
+      position: absolute;
+      inset: auto 0 22px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      min-height: 54px;
+      font-size: 2.8rem;
+    }
+    .recipe {
+      padding: 14px;
+      border-radius: 20px;
+      background: #fff;
+      color: #6b45a8;
+      font-weight: 900;
+      margin-bottom: 16px;
+    }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    button {
+      min-height: 96px;
+      border: 0;
+      border-radius: 22px;
+      background: #fff;
+      color: #3e3152;
+      font: inherit;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 0 #d7c9ff, 0 16px 22px rgba(84,61,122,0.12);
+      transition: transform 140ms ease;
+    }
+    button:active { transform: translateY(5px); box-shadow: 0 5px 0 #d7c9ff; }
+    .symbol { display: block; font-size: 3rem; margin-bottom: 5px; }
+    .mix {
+      width: 100%;
+      margin-top: 16px;
+      color: #fff;
+      background: linear-gradient(135deg, #8b6ee8, #d85aa7);
+      box-shadow: 0 10px 0 #6d4fc4;
+    }
+    @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <a class="world-back-link" href="index.html" aria-label="Quay về bản đồ">🏡 Bản đồ</a>
+  <main>
+    <section class="spell">
+      <h1>Lớp Học Phép Thuật</h1>
+      <p class="lead">Thầy cú đưa công thức. Bé chọn đúng biểu tượng rồi khuấy nồi phép để tạo cầu vồng nhỏ.</p>
+      <div class="cauldron">
+        🪄
+        <div class="chosen" id="chosen"></div>
+      </div>
+    </section>
+    <section class="book">
+      <div class="recipe">Công thức hôm nay: ⭐ Ngôi sao + 💧 Giọt nước + 🌸 Hoa nhỏ</div>
+      <div class="grid" id="symbols"></div>
+      <button class="mix" onclick="mixSpell()">Khuấy phép thuật</button>
+    </section>
+  </main>
+  <script src="assets/progress.js"></script>
+  <script>
+    TinyFairyProgress.recordGameStart("magic");
+    const options = [
+      { id: "star", emoji: "⭐", name: "Sao" },
+      { id: "water", emoji: "💧", name: "Nước" },
+      { id: "flower", emoji: "🌸", name: "Hoa" },
+      { id: "moon", emoji: "🌙", name: "Trăng" },
+      { id: "gem", emoji: "💎", name: "Pha lê" },
+      { id: "leaf", emoji: "🍃", name: "Lá" }
+    ];
+    const target = ["star", "water", "flower"];
+    const chosen = [];
+
+    function render() {
+      document.getElementById("symbols").innerHTML = options.map((item) => `
+        <button onclick="pick('${item.id}')"><span class="symbol">${item.emoji}</span>${item.name}</button>
+      `).join("");
+      document.getElementById("chosen").innerHTML = chosen.map((id) => options.find((item) => item.id === id).emoji).join("");
+    }
+
+    function pick(id) {
+      if (chosen.length >= 3) chosen.shift();
+      chosen.push(id);
+      render();
+    }
+
+    function mixSpell() {
+      const ok = target.every((id) => chosen.includes(id)) && chosen.length === target.length;
+      if (!ok) {
+        document.querySelector(".recipe").textContent = "Gần đúng rồi! Bé chọn ⭐ + 💧 + 🌸 nhé.";
+        return;
+      }
+      TinyFairyProgress.showCompletionOverlay({
+        gameId: "magic",
+        title: "Phép thuật thành công!",
+        message: "Bé đã ghép đúng công thức và tạo ra cầu vồng nhỏ lấp lánh.",
+        stars: 3,
+        coins: 8,
+        sticker: "✨"
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>

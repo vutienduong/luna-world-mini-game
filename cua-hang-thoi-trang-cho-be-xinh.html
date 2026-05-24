@@ -400,7 +400,10 @@
         </div>
     </div>
 
+    <script src="assets/progress.js"></script>
     <script>
+        TinyFairyProgress.recordGameStart('fashion');
+
         // Dữ liệu các món đồ thời trang (Dùng SVG vẽ trực tiếp cho nét và đẹp)
         const items = [
             // Danh mục Mũ / Phụ kiện tóc
@@ -552,6 +555,15 @@
             miniStage.appendChild(charClone);
 
             document.getElementById('win-overlay').classList.add('active');
+            TinyFairyProgress.showCompletionOverlay({
+                gameId: 'fashion',
+                levelId: `${gameMode}-${currentQuestIndex}-${Date.now()}`,
+                title: 'Sân khấu thời trang xong!',
+                message: 'Bé đã phối một bộ đồ xinh và giúp bạn Thỏ tự tin lên sân khấu.',
+                stars: 3,
+                coins: 7,
+                sticker: '🎀'
+            });
         }
 
         // Qua màn tiếp theo

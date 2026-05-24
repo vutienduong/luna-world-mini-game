@@ -100,6 +100,7 @@
 
         function playTone(freq, type, duration) {
             try {
+                if (window.TinyFairyProgress && !TinyFairyProgress.load().settings.soundEnabled) return;
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = type || 'sine';
@@ -311,7 +312,10 @@
     </footer>
 
     <!-- JAVASCRIPT LOGIC & STATE MANAGEMENT -->
+    <script src="assets/progress.js"></script>
     <script>
+        TinyFairyProgress.recordGameStart('clinic');
+
         // Database of Patients and Symptoms
         const patientsData = [
             {
@@ -1040,6 +1044,15 @@
                 document.getElementById('success-desc').innerText = `Bạn ${pet.name} đã khỏe mạnh, cười tươi và tràn đầy yêu thương trở lại rồi!`;
                 
                 speakText(`Bác sĩ thật là giỏi! Bạn ${pet.name} đã khỏe mạnh trở lại rồi! Chúc mừng bác sĩ nhí nhé!`);
+                TinyFairyProgress.showCompletionOverlay({
+                    gameId: 'clinic',
+                    levelId: `patient-${pet.id}`,
+                    title: 'Bạn thú khỏe lại rồi!',
+                    message: `Bé đã chăm sóc bạn ${pet.name} thật dịu dàng và cẩn thận.`,
+                    stars: 3,
+                    coins: 8,
+                    sticker: '🩺'
+                });
             }, 1000);
         }
 

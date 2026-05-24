@@ -10,12 +10,18 @@ Tên hiện dùng trong hub: **Tiny Fairy Playland**
 Repo này đang là một static site thuần HTML/CSS/JS, không cần build step.
 
 - `index.html`: bản đồ chính của thế giới game.
+- `assets/progress.js`: hệ thống tiến trình, phần thưởng, shop và completion overlay dùng chung.
 - `tiem-an-co-tich.html`: Tiệm Ăn Cổ Tích.
 - `vuong-hoa-cau-vong.html`: Vườn Hoa Cầu Vồng.
 - `phong-kham-thu-cung.html`: Phòng Khám Thú Cưng.
 - `time-banh-ngot-cua-be.html`: Tiệm Bánh Ngọt Của Bé.
 - `nha-tam-bong-bong.html`: Nhà Tắm Bong Bóng.
 - `cua-hang-thoi-trang-cho-be-xinh.html`: Cửa Hàng Thời Trang Bé Xinh.
+- `xuong-gau-bong.html`: Xưởng Gấu Bông.
+- `sieu-thi-mini.html`: Siêu Thị Mini.
+- `lop-hoc-phep-thuat.html`: Lớp Học Phép Thuật Nhỏ.
+- `trang-diem-cong-chua.html`: Trang Điểm Công Chúa.
+- `be-tap-ve-tranh.html`: Bé Tập Vẽ Tranh.
 - `PRD.md`: ý tưởng và định hướng sản phẩm ban đầu.
 
 Mỗi game có nút `🏡 Bản đồ` để quay lại `index.html`.
@@ -51,30 +57,42 @@ Vercel sẽ serve `index.html` ở trang chủ.
 
 ## Tiến Trình Trong Game
 
-`index.html` đang dùng `localStorage` với key:
+`index.html` và các game đang dùng `localStorage` với key:
 
 ```text
 tinyFairyPlaylandProgress
 ```
 
+Structure hiện tại được quản lý trong `assets/progress.js`, gồm:
+
+- `games`: tiến trình theo từng game, gồm `completed`, `completedLevels`, `stars`, `coins`, `plays`, `stickers`.
+- `stickers`: sticker đã mở toàn universe.
+- `coins`: xu nhỏ dùng cho shop trang trí.
+- `stars`: tổng sao đã nhận.
+- `decorations`: đồ trang trí đã mua cho bản đồ.
+- `settings`: parent mode, gồm âm thanh và gợi ý thời lượng chơi.
+
 Hiện có các phần thưởng nhẹ:
 
-- Mỗi khu đã ghé mở một sticker.
-- Mỗi khu đã ghé cộng sao và xu nhỏ.
+- Mỗi game tự báo hoàn thành khi bé xong nhiệm vụ hoặc màn.
+- Mỗi lần hoàn thành mở sticker, sao và xu nhỏ.
 - Nút `Nhận thưởng hôm nay` cộng thêm sao/xu một lần mỗi ngày.
 - Khi chơi đủ vài khu, mascot Luna có phụ kiện mới trên bản đồ.
+- Cửa hàng trang trí cho phép dùng xu mua `Cây kẹo`, `Ghế picnic`, `Cầu vồng nhỏ`, `Đèn sao`, `Nhà thỏ`, `Bảng tên của bé`.
+- Parent mode cho phép reset tiến trình, bật/tắt âm thanh, chọn thời lượng chơi gợi ý, xem game bé mở nhiều nhất.
 
 Lưu ý: tiến trình hiện tại là local theo từng browser/device, chưa có account hay backend.
 
 ## Hướng Phát Triển Tiếp
 
-### 1. Làm Tiến Trình Thật Hơn
+### 1. Làm Tiến Trình Sâu Hơn
 
-Hiện tại hub ghi nhận "đã ghé" khi bé bấm vào game. Bước tiếp theo nên là mỗi game tự báo hoàn thành màn:
+Hiện tại mỗi game đã tự báo hoàn thành màn. Bước tiếp theo nên là lưu chi tiết hơn theo nhiệm vụ:
 
-- Khi bé hoàn thành một nhiệm vụ, game gọi hàm lưu tiến trình.
-- Lưu `completedLevels`, `stars`, `coins`, `stickers` theo từng game.
-- Hub đọc dữ liệu đó để hiển thị trạng thái chính xác hơn.
+- Lưu tên nhiệm vụ cụ thể, ví dụ `serve-burger`, `heal-cat`, `make-cupcake-pink`.
+- Lưu ngày chơi và chuỗi ngày liên tiếp.
+- Hiển thị tiến trình từng game trên hub, ví dụ `3/7 ngày Tiệm Ăn`.
+- Cho mỗi game có bộ sticker riêng thay vì chỉ một sticker đại diện.
 
 Gợi ý structure:
 
@@ -90,27 +108,26 @@ Gợi ý structure:
 }
 ```
 
-### 2. Thêm Màn Kết Thúc Ngày
+### 2. Nâng Cấp Màn Kết Thúc Ngày
 
-Mỗi game có thể có một màn "Hoàn thành hôm nay":
+Mỗi game hiện đã có overlay "Hoàn thành hôm nay" dùng chung. Có thể nâng cấp:
 
-- Bé nhận sticker.
-- Nhận 1-3 sao.
-- Nhận xu nhỏ.
-- Có nút `Về bản đồ`.
+- Cho từng game có câu chúc riêng phong phú hơn.
+- Thêm animation sticker bay vào kho của Luna.
+- Thêm album ảnh kỷ niệm sau mỗi lần hoàn thành.
+- Thêm lựa chọn `Chơi màn kế tiếp` rõ hơn.
 
-Điều này giúp bé cảm thấy mỗi mini game là một chuyến đi có kết quả, không chỉ là mở trang khác.
+Điều này giúp mỗi mini game có cảm giác là một chuyến đi có kết quả, không chỉ là mở trang khác.
 
-### 3. Mở Cửa Hàng Trang Trí Bản Đồ
+### 3. Mở Rộng Cửa Hàng Trang Trí Bản Đồ
 
-Dùng xu để mua đồ trang trí cho `index.html`:
+Shop hiện đã có các món cơ bản. Có thể thêm:
 
-- Cây kẹo.
-- Ghế picnic.
-- Cầu vồng nhỏ.
-- Đèn sao.
-- Nhà thỏ.
-- Bảng tên của bé.
+- Nhiều vị trí trang trí hơn.
+- Chọn bật/tắt món đã mua.
+- Kéo thả trang trí trên bản đồ.
+- Theme theo mùa: Trung thu, Giáng sinh, sinh nhật.
+- Trang trí chỉ mở khóa khi hoàn thành một bộ game.
 
 Đây là cách tạo tiến trình dài hạn mà không cần gameplay phức tạp.
 
@@ -134,26 +151,37 @@ assets/
   sounds/
 ```
 
-### 5. Thêm 2-3 Game Mới
+### 5. Thêm Game Mới
 
-Các ý tưởng hợp với universe hiện tại:
+Đã thêm:
 
 - **Xưởng Gấu Bông**: nhồi bông, chọn vải, may nút, đóng hộp quà.
 - **Siêu Thị Mini**: chọn đồ theo danh sách, học đếm và phân loại.
 - **Lớp Học Phép Thuật Nhỏ**: ghép màu, hình, biểu tượng để tạo vật phẩm cute.
 
-Nếu thêm game mới, chỉ cần tạo file HTML mới và thêm một khu vực mới trong `index.html`.
+Các ý tưởng tiếp theo:
+
+- **Rạp Xiếc Bong Bóng**: sắp xếp tiết mục, học thứ tự trước/sau.
+- **Bưu Điện Cầu Vồng**: ghép tem, phân loại thư theo màu/hình.
+- **Lớp Nhạc Nhỏ**: nghe âm thanh, chọn nhạc cụ giống mẫu.
+
+Nếu thêm game mới, cần tạo file HTML mới, thêm khu vực trong `index.html`, rồi đăng ký game trong `assets/progress.js`.
 
 ### 6. Thêm Parent Mode Nhẹ
 
-Một màn nhỏ cho phụ huynh có thể hữu ích:
+Parent mode hiện đã có:
 
 - Reset tiến trình.
 - Bật/tắt âm thanh.
 - Chọn thời lượng chơi trong ngày.
 - Xem bé thích game nào nhất dựa trên số lượt chơi.
 
-Vẫn có thể làm toàn bộ bằng `localStorage`, chưa cần backend.
+Có thể phát triển tiếp:
+
+- PIN đơn giản để bé không tự reset.
+- Thống kê theo ngày.
+- Gợi ý hôm nay chơi game nào để cân bằng kỹ năng.
+- Xuất/nhập tiến trình bằng file JSON để chuyển thiết bị.
 
 ### 7. Làm Mobile-First Kỹ Hơn
 
@@ -194,4 +222,3 @@ Nên có nút bật/tắt âm thanh rõ ràng ở từng game.
 - Nếu có hoàn thành màn, cập nhật `localStorage`.
 - Test trên mobile width nhỏ.
 - Kiểm tra deploy Vercel không cần build.
-

@@ -256,7 +256,7 @@
 
     .map-wrap {
       position: relative;
-      min-height: 760px;
+      min-height: 1180px;
       border-radius: 34px;
       background:
         radial-gradient(circle at 50% 52%, rgba(255, 255, 255, 0.78), transparent 28%),
@@ -427,7 +427,7 @@
     .area {
       position: absolute;
       z-index: 4;
-      width: min(220px, 30vw);
+      width: min(188px, 28vw);
       min-height: 132px;
       padding: 14px;
       border-radius: 24px;
@@ -511,39 +511,154 @@
     }
 
     .area.food {
-      left: 6%;
-      top: 7%;
+      left: 5%;
+      top: 6%;
       --area-color: #ffd8a8;
     }
 
     .area.garden {
-      right: 6%;
-      top: 7%;
+      left: 36%;
+      top: 6%;
       --area-color: #c2f0d0;
     }
 
     .area.clinic {
-      left: 6%;
-      top: 36%;
+      right: 5%;
+      top: 6%;
       --area-color: #bfe7ff;
     }
 
     .area.bakery {
-      right: 6%;
-      bottom: 7%;
+      left: 5%;
+      top: 30%;
       --area-color: #ffe0a6;
     }
 
     .area.bath {
-      right: 6%;
-      top: 36%;
+      left: 36%;
+      top: 30%;
       --area-color: #c7edff;
     }
 
     .area.fashion {
-      left: 6%;
-      bottom: 7%;
+      right: 5%;
+      top: 30%;
       --area-color: #ffd5ea;
+    }
+
+    .area.plush {
+      left: 5%;
+      top: 54%;
+      --area-color: #f0d5bd;
+    }
+
+    .area.market {
+      left: 36%;
+      top: 54%;
+      --area-color: #d8f3c6;
+    }
+
+    .area.magic {
+      right: 5%;
+      top: 54%;
+      --area-color: #d9ccff;
+    }
+
+    .area.makeup {
+      left: 18%;
+      bottom: 6%;
+      --area-color: #ffd3df;
+    }
+
+    .area.drawing {
+      right: 18%;
+      bottom: 6%;
+      --area-color: #cde9ff;
+    }
+
+    .decor-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .map-decoration {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.76);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      box-shadow: var(--soft-shadow);
+      font-size: 2rem;
+    }
+
+    .decor-candyTree { left: 28%; top: 29%; }
+    .decor-picnicBench { right: 28%; top: 29%; }
+    .decor-miniRainbow { left: 22%; bottom: 31%; }
+    .decor-starLamp { right: 22%; bottom: 31%; }
+    .decor-bunnyHouse { left: 45%; bottom: 27%; }
+    .decor-nameSign { left: 45%; top: 26%; }
+
+    .shop-grid,
+    .parent-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .shop-item,
+    .parent-item {
+      padding: 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 18px rgba(126, 80, 129, 0.08);
+    }
+
+    .shop-item strong,
+    .parent-item strong {
+      display: block;
+      font-family: "Baloo 2", "Nunito", sans-serif;
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    .shop-item span,
+    .parent-item span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 800;
+    }
+
+    .shop-item button,
+    .parent-item button,
+    .parent-item select {
+      width: 100%;
+      min-height: 40px;
+      margin-top: 10px;
+      border-radius: 999px;
+      border: 0;
+      padding: 0 12px;
+      color: #53374f;
+      background: #fff;
+      font: inherit;
+      font-weight: 900;
+      box-shadow: 0 8px 16px rgba(126, 80, 129, 0.1);
+      cursor: pointer;
+    }
+
+    .shop-item button:disabled {
+      cursor: default;
+      color: #9b879c;
+      background: rgba(255, 255, 255, 0.58);
+      box-shadow: none;
     }
 
     .reward-panel {
@@ -698,47 +813,36 @@
       }
 
       .map-wrap {
-        min-height: 820px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        min-height: auto;
+        padding: 28px;
+        overflow: visible;
       }
 
       .area {
-        width: min(265px, calc(50% - 20px));
-      }
-
-      .area.food {
-        left: 5%;
-        top: 8%;
-      }
-
-      .area.garden {
-        right: 5%;
-        top: 12%;
-      }
-
-      .area.clinic {
-        left: 5%;
-        top: 35%;
-      }
-
-      .area.bath {
-        right: 5%;
-        top: 39%;
-        bottom: auto;
-      }
-
-      .area.fashion {
-        left: 5%;
-        bottom: 9%;
-      }
-
-      .area.bakery {
-        right: 5%;
+        position: relative;
         left: auto;
-        bottom: 7%;
+        right: auto;
+        top: auto;
+        bottom: auto;
+        width: 100%;
+        min-height: 172px;
+      }
+
+      .area:hover,
+      .area:focus-visible {
+        transform: translateY(-4px);
       }
 
       .mascot {
-        top: 57%;
+        position: relative;
+        left: auto;
+        top: auto;
+        grid-column: 1 / -1;
+        justify-self: center;
+        transform: none;
       }
 
       .castle {
@@ -776,7 +880,10 @@
       }
 
       .map-wrap {
-        min-height: 1180px;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        min-height: auto;
+        padding: 18px 12px 22px;
         border-radius: 28px;
       }
 
@@ -784,67 +891,49 @@
       .path,
       .rainbow,
       .mountain,
-      .lake {
-        opacity: 0.62;
+      .lake,
+      .castle,
+      .decor-layer {
+        display: none;
       }
 
       .area {
-        left: 50% !important;
+        position: relative;
+        left: auto !important;
         right: auto !important;
+        top: auto !important;
+        bottom: auto !important;
         width: min(92%, 330px);
+        justify-self: center;
         min-height: 124px;
-        transform: translateX(-50%);
+        transform: none;
       }
 
       .area:hover,
       .area:focus-visible {
-        transform: translateX(-50%) translateY(-4px);
-      }
-
-      .area.food {
-        top: 40px;
-      }
-
-      .area.garden {
-        top: 204px;
-      }
-
-      .area.clinic {
-        top: 368px;
-      }
-
-      .area.bakery {
-        top: 532px;
-        bottom: auto;
-      }
-
-      .area.bath {
-        top: 696px;
-      }
-
-      .area.fashion {
-        top: 860px;
-        bottom: auto;
+        transform: translateY(-4px);
       }
 
       .mascot {
+        position: relative;
+        left: auto;
         top: auto;
-        bottom: 28px;
+        bottom: auto;
         width: 96px;
         height: 96px;
         font-size: 3.2rem;
-      }
-
-      .castle {
-        left: -18px;
-        top: auto;
-        bottom: 8px;
-        transform: scale(0.78);
+        margin: 4px auto 0;
+        transform: none;
       }
 
       .reward-panel {
         grid-template-columns: 1fr;
         text-align: center;
+      }
+
+      .shop-grid,
+      .parent-grid {
+        grid-template-columns: 1fr;
       }
 
       .reward-button {
@@ -880,7 +969,7 @@
       <div class="intro">
         <p class="kicker"><span class="mascot-dot">🐰</span> Bé Gái Cổ Tích</p>
         <h1>Tiny Fairy<br>Playland</h1>
-        <p class="subtitle">Một bản đồ nhỏ gom 6 mini game thành thế giới pastel có sao, sticker, xu và phụ kiện cho Luna.</p>
+        <p class="subtitle">Một bản đồ nhỏ gom 11 mini game thành thế giới pastel có sao, sticker, xu và phụ kiện cho Luna.</p>
         <div class="hero-actions">
           <a class="primary-action" href="#world-map">Vào bản đồ</a>
           <button class="quiet-action" type="button" id="reset-progress">Làm mới tiến trình</button>
@@ -895,7 +984,7 @@
             <span>Xu nhỏ</span>
           </div>
           <div class="stat">
-            <strong id="done-count">0/6</strong>
+            <strong id="done-count">0/11</strong>
             <span>Khu đã chơi</span>
           </div>
         </div>
@@ -911,6 +1000,7 @@
           <div class="keep"></div>
           <div class="tower right"></div>
         </div>
+        <div class="decor-layer" id="decor-layer" aria-hidden="true"></div>
 
         <a class="area food" data-game-id="food" data-sticker="🍳" href="tiem-an-co-tich.html">
           <span class="area-icon">🍽️</span>
@@ -954,6 +1044,41 @@
           <span class="area-footer"><span data-status>Chưa ghé</span><span class="play-chip">Chơi</span></span>
         </a>
 
+        <a class="area plush" data-game-id="plush" data-sticker="🧸" href="xuong-gau-bong.html">
+          <span class="area-icon">🧵</span>
+          <h2>Xưởng Gấu Bông</h2>
+          <p>Khu đồ chơi mềm, bé nhồi bông, may nút và gói quà.</p>
+          <span class="area-footer"><span data-status>Chưa ghé</span><span class="play-chip">Chơi</span></span>
+        </a>
+
+        <a class="area market" data-game-id="market" data-sticker="🛒" href="sieu-thi-mini.html">
+          <span class="area-icon">🍎</span>
+          <h2>Siêu Thị Mini</h2>
+          <p>Bé tìm đồ theo danh sách, học đếm và phân loại.</p>
+          <span class="area-footer"><span data-status>Chưa ghé</span><span class="play-chip">Chơi</span></span>
+        </a>
+
+        <a class="area magic" data-game-id="magic" data-sticker="✨" href="lop-hoc-phep-thuat.html">
+          <span class="area-icon">🔮</span>
+          <h2>Lớp Học Phép Thuật</h2>
+          <p>Ghép màu, hình và biểu tượng để tạo vật phẩm cute.</p>
+          <span class="area-footer"><span data-status>Chưa ghé</span><span class="play-chip">Chơi</span></span>
+        </a>
+
+        <a class="area makeup" data-game-id="makeup" data-sticker="💄" href="trang-diem-cong-chua.html">
+          <span class="area-icon">👑</span>
+          <h2>Trang Điểm Công Chúa</h2>
+          <p>Vương quốc làm đẹp, bé chọn tóc, váy, phụ kiện và chụp ảnh.</p>
+          <span class="area-footer"><span data-status>Chưa ghé</span><span class="play-chip">Chơi</span></span>
+        </a>
+
+        <a class="area drawing" data-game-id="drawing" data-sticker="🎨" href="be-tap-ve-tranh.html">
+          <span class="area-icon">🖍️</span>
+          <h2>Bé Tập Vẽ Tranh</h2>
+          <p>Góc tô màu kỳ diệu, bé chọn tranh, tô màu và lưu tác phẩm.</p>
+          <span class="area-footer"><span data-status>Chưa ghé</span><span class="play-chip">Chơi</span></span>
+        </a>
+
         <div class="mascot" id="luna" aria-label="Mascot Luna">
           🐰
           <span class="accessory" id="mascot-accessory">🎀</span>
@@ -964,17 +1089,54 @@
     <section class="reward-panel" aria-label="Kho phần thưởng">
       <div>
         <h2>Kho sticker của Luna</h2>
-        <p>Mỗi khu vực đã ghé sẽ mở một sticker. Chơi đủ 3 khu, Luna có phụ kiện mới trên bản đồ.</p>
+        <p>Mỗi nhiệm vụ hoàn thành sẽ mở sticker, sao và xu. Chơi đủ nhiều khu, Luna có phụ kiện mới trên bản đồ.</p>
         <div class="sticker-row" id="sticker-row" aria-label="Sticker đã mở"></div>
       </div>
       <button class="reward-button" type="button" id="reward-button">Nhận thưởng hôm nay</button>
+    </section>
+
+    <section class="reward-panel" aria-label="Cửa hàng trang trí">
+      <div>
+        <h2>Cửa hàng trang trí</h2>
+        <p>Dùng xu nhỏ để mua đồ đặt lên bản đồ của Luna.</p>
+        <div class="shop-grid" id="shop-grid"></div>
+      </div>
+    </section>
+
+    <section class="reward-panel" aria-label="Parent mode">
+      <div>
+        <h2>Parent mode</h2>
+        <p>Cài đặt nhẹ cho phụ huynh: âm thanh, thời lượng chơi, reset và game bé hay mở nhất.</p>
+        <div class="parent-grid">
+          <div class="parent-item">
+            <strong>Âm thanh</strong>
+            <span id="sound-status">Đang bật</span>
+            <button type="button" id="toggle-sound">Bật/tắt âm thanh</button>
+          </div>
+          <div class="parent-item">
+            <strong>Thời lượng</strong>
+            <span>Gợi ý chơi mỗi ngày</span>
+            <select id="daily-limit">
+              <option value="10">10 phút</option>
+              <option value="15">15 phút</option>
+              <option value="20">20 phút</option>
+              <option value="30">30 phút</option>
+            </select>
+          </div>
+          <div class="parent-item">
+            <strong>Hay chơi nhất</strong>
+            <span id="favorite-game">Chưa có dữ liệu</span>
+            <button type="button" id="parent-reset">Reset tiến trình</button>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="assets/progress.js"></script>
   <script>
-    const STORAGE_KEY = "tinyFairyPlaylandProgress";
     const areaNodes = Array.from(document.querySelectorAll(".area"));
     const stickerRow = document.getElementById("sticker-row");
     const starCount = document.getElementById("star-count");
@@ -982,33 +1144,19 @@
     const doneCount = document.getElementById("done-count");
     const rewardButton = document.getElementById("reward-button");
     const resetButton = document.getElementById("reset-progress");
+    const parentResetButton = document.getElementById("parent-reset");
+    const toggleSoundButton = document.getElementById("toggle-sound");
+    const soundStatus = document.getElementById("sound-status");
+    const dailyLimit = document.getElementById("daily-limit");
+    const favoriteGame = document.getElementById("favorite-game");
+    const shopGrid = document.getElementById("shop-grid");
+    const decorLayer = document.getElementById("decor-layer");
     const mascot = document.getElementById("luna");
     const mascotAccessory = document.getElementById("mascot-accessory");
     const toast = document.getElementById("toast");
-
-    const defaultProgress = {
-      visited: [],
-      rewards: 0,
-      lastRewardDate: ""
-    };
-
-    const accessories = ["🎀", "👑", "🌟", "🌸", "🧁", "💖"];
-
-    function todayKey() {
-      return new Date().toISOString().slice(0, 10);
-    }
-
-    function loadProgress() {
-      try {
-        return { ...defaultProgress, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
-      } catch {
-        return { ...defaultProgress };
-      }
-    }
-
-    function saveProgress(progress) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-    }
+    const progressApi = window.TinyFairyProgress;
+    const gameTotal = Object.keys(progressApi.GAME_CATALOG).length;
+    const accessoryByProgress = ["🎀", "👑", "🌟", "🌸", "🧁", "💖"];
 
     function showToast(message) {
       toast.textContent = message;
@@ -1018,78 +1166,133 @@
     }
 
     function updateView() {
-      const progress = loadProgress();
-      const visitedSet = new Set(progress.visited);
-      const visitedCount = visitedSet.size;
-      const stars = visitedCount * 2 + progress.rewards;
-      const coins = visitedCount * 5 + progress.rewards * 3;
+      const progress = progressApi.load();
+      const completedIds = Object.keys(progressApi.GAME_CATALOG).filter((gameId) => {
+        return (progress.games[gameId]?.completed || 0) > 0;
+      });
 
-      starCount.textContent = stars;
-      coinCount.textContent = coins;
-      doneCount.textContent = `${visitedCount}/6`;
+      starCount.textContent = progress.stars;
+      coinCount.textContent = progress.coins;
+      doneCount.textContent = `${completedIds.length}/${gameTotal}`;
 
       stickerRow.innerHTML = "";
       areaNodes.forEach((area) => {
         const gameId = area.dataset.gameId;
-        const isVisited = visitedSet.has(gameId);
+        const game = progress.games[gameId] || {};
+        const isDone = (game.completed || 0) > 0;
         const status = area.querySelector("[data-status]");
-        area.classList.toggle("visited", isVisited);
-        area.classList.toggle("done", isVisited);
-        status.textContent = isVisited ? `Đã mở ${area.dataset.sticker}` : "Chưa ghé";
-
-        if (isVisited) {
-          const sticker = document.createElement("span");
-          sticker.className = "sticker";
-          sticker.textContent = area.dataset.sticker;
-          stickerRow.appendChild(sticker);
-        }
+        area.classList.toggle("visited", (game.plays || 0) > 0);
+        area.classList.toggle("done", isDone);
+        status.textContent = isDone ? `Xong ${game.completed} lần` : ((game.plays || 0) > 0 ? "Đã ghé" : "Chưa ghé");
       });
 
-      if (!visitedCount) {
+      if (!progress.stickers.length) {
         const empty = document.createElement("span");
         empty.className = "sticker";
         empty.textContent = "✨";
         empty.title = "Sticker đầu tiên đang chờ bé";
         stickerRow.appendChild(empty);
+      } else {
+        progress.stickers.forEach((emoji) => {
+          const sticker = document.createElement("span");
+          sticker.className = "sticker";
+          sticker.textContent = emoji;
+          stickerRow.appendChild(sticker);
+        });
       }
 
-      const accessoryIndex = Math.min(accessories.length - 1, Math.floor(visitedCount / 2));
-      mascotAccessory.textContent = accessories[accessoryIndex];
-      mascot.classList.toggle("has-accessory", visitedCount >= 3 || progress.rewards > 0);
+      const accessoryIndex = Math.min(accessoryByProgress.length - 1, Math.floor(progress.stickers.length / 2));
+      mascotAccessory.textContent = accessoryByProgress[accessoryIndex];
+      mascot.classList.toggle("has-accessory", progress.accessories.length > 0 || progress.stickers.length >= 3);
 
-      const claimedToday = progress.lastRewardDate === todayKey();
-      rewardButton.disabled = claimedToday;
-      rewardButton.textContent = claimedToday ? "Đã nhận hôm nay" : "Nhận thưởng hôm nay";
+      const today = new Date().toISOString().slice(0, 10);
+      rewardButton.disabled = Boolean(progress.dailyRewards[today]);
+      rewardButton.textContent = progress.dailyRewards[today] ? "Đã nhận hôm nay" : "Nhận thưởng hôm nay";
+
+      renderDecorations(progress);
+      renderShop(progress);
+      renderParentMode(progress);
+    }
+
+    function renderDecorations(progress) {
+      decorLayer.innerHTML = "";
+      progress.decorations.forEach((itemId) => {
+        const item = progressApi.SHOP_ITEMS[itemId];
+        if (!item) return;
+        const node = document.createElement("span");
+        node.className = `map-decoration decor-${itemId}`;
+        node.textContent = item.emoji;
+        node.title = item.name;
+        decorLayer.appendChild(node);
+      });
+    }
+
+    function renderShop(progress) {
+      shopGrid.innerHTML = "";
+      Object.entries(progressApi.SHOP_ITEMS).forEach(([itemId, item]) => {
+        const owned = progress.decorations.includes(itemId);
+        const node = document.createElement("div");
+        node.className = "shop-item";
+        node.innerHTML = `
+          <strong>${item.emoji} ${item.name}</strong>
+          <span>${owned ? "Đã đặt trên bản đồ" : `Giá ${item.cost} xu`}</span>
+          <button type="button" data-buy="${itemId}" ${owned ? "disabled" : ""}>${owned ? "Đã mua" : "Mua"}</button>
+        `;
+        shopGrid.appendChild(node);
+      });
+    }
+
+    function renderParentMode(progress) {
+      soundStatus.textContent = progress.settings.soundEnabled ? "Đang bật" : "Đang tắt";
+      dailyLimit.value = String(progress.settings.dailyLimitMinutes || 20);
+      const favorite = Object.entries(progress.games).sort((a, b) => (b[1].plays || 0) - (a[1].plays || 0))[0];
+      favoriteGame.textContent = favorite && favorite[1].plays
+        ? `${progressApi.GAME_CATALOG[favorite[0]].name} (${favorite[1].plays} lượt)`
+        : "Chưa có dữ liệu";
     }
 
     areaNodes.forEach((area) => {
       area.addEventListener("click", () => {
-        const progress = loadProgress();
-        if (!progress.visited.includes(area.dataset.gameId)) {
-          progress.visited.push(area.dataset.gameId);
-          saveProgress(progress);
-        }
+        progressApi.recordGameStart(area.dataset.gameId);
       });
     });
 
-    rewardButton.addEventListener("click", () => {
-      const progress = loadProgress();
-      if (progress.lastRewardDate === todayKey()) {
-        showToast("Luna đã nhận quà hôm nay rồi.");
-        return;
-      }
-
-      progress.rewards += 1;
-      progress.lastRewardDate = todayKey();
-      saveProgress(progress);
+    shopGrid.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-buy]");
+      if (!button) return;
+      const result = progressApi.buyDecoration(button.dataset.buy);
       updateView();
-      showToast("Luna nhận thêm 1 ngôi sao và 3 xu nhỏ!");
+      showToast(result.message);
+    });
+
+    rewardButton.addEventListener("click", () => {
+      const result = progressApi.claimDailyReward();
+      updateView();
+      showToast(result.message);
     });
 
     resetButton.addEventListener("click", () => {
-      localStorage.removeItem(STORAGE_KEY);
+      progressApi.reset();
       updateView();
       showToast("Tiến trình đã được làm mới.");
+    });
+
+    parentResetButton.addEventListener("click", () => {
+      progressApi.reset();
+      updateView();
+      showToast("Parent mode đã reset tiến trình.");
+    });
+
+    toggleSoundButton.addEventListener("click", () => {
+      const progress = progressApi.load();
+      progressApi.updateSettings({ soundEnabled: !progress.settings.soundEnabled });
+      updateView();
+    });
+
+    dailyLimit.addEventListener("change", () => {
+      progressApi.updateSettings({ dailyLimitMinutes: Number(dailyLimit.value) });
+      updateView();
+      showToast(`Đã đặt gợi ý ${dailyLimit.value} phút mỗi ngày.`);
     });
 
     updateView();

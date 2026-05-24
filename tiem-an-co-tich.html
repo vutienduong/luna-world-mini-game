@@ -136,6 +136,7 @@
 
         function playSound(type) {
             try {
+                if (window.TinyFairyProgress && !TinyFairyProgress.load().settings.soundEnabled) return;
                 if (audioCtx.state === 'suspended') {
                     audioCtx.resume();
                 }
@@ -602,7 +603,10 @@
         </div>
     </div>
 
+    <script src="assets/progress.js"></script>
     <script>
+        TinyFairyProgress.recordGameStart('food');
+
         // Cấu trúc Công Thức nấu ăn
         const RECIPES = {
             burger: {
@@ -1252,6 +1256,16 @@
                 <i class="fa-solid fa-star animate-bounce" style="animation-delay: 0.15s"></i>
                 <i class="fa-solid fa-star animate-bounce" style="animation-delay: 0.3s"></i>
             `;
+
+            TinyFairyProgress.showCompletionOverlay({
+                gameId: 'food',
+                levelId: `day-${gameState.day}`,
+                title: 'Một ngày bán hàng xong!',
+                message: 'Bé đã phục vụ các bạn thú, rửa chén sạch và đóng cửa tiệm thật ngoan.',
+                stars: 3,
+                coins: 10,
+                sticker: '🍳'
+            });
         }
 
         function startNextDay() {

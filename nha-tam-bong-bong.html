@@ -112,6 +112,7 @@
         // Fun procedurally generated synthesised sound effects
         function playSynthSound(type) {
             try {
+                if (window.TinyFairyProgress && !TinyFairyProgress.load().settings.soundEnabled) return;
                 initAudio();
                 if (!audioCtx) return;
 
@@ -389,7 +390,10 @@
     <div id="flash-effect" class="fixed inset-0 bg-white z-50 pointer-events-none opacity-0 transition-opacity duration-150"></div>
 
     <!-- Core Game Controller Script -->
+    <script src="assets/progress.js"></script>
     <script>
+        TinyFairyProgress.recordGameStart('bath');
+
         const PET_EMOJIS = {
             '🐶': { normal: '🐶', happy: '🐕', bubble: '🧼🐶🧼', wet: '🐶', clean: '🐩' },
             '🐱': { normal: '🐱', happy: '🐈', bubble: '🧼🐱🧼', wet: '🐱', clean: '🐈' }
@@ -814,6 +818,16 @@
             for (let i = 0; i < 20; i++) {
                 setTimeout(spawnFloatingBubble, i * 200);
             }
+
+            TinyFairyProgress.showCompletionOverlay({
+                gameId: 'bath',
+                levelId: `bath-${selectedPet}-${Date.now()}`,
+                title: 'Tắm xong sạch thơm!',
+                message: 'Thú cưng đã sạch bong, mềm mượt và có phụ kiện thật xinh.',
+                stars: 3,
+                coins: 7,
+                sticker: '🫧'
+            });
         }
 
         // Take screen snap representation

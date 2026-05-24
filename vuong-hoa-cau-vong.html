@@ -413,7 +413,10 @@
         </div>
     </div>
 
+    <script src="assets/progress.js"></script>
     <script>
+        TinyFairyProgress.recordGameStart('garden');
+
         // Game Audio Synth using Tone.js
         let synth;
         let isMuted = false;
@@ -434,6 +437,7 @@
 
         // Play cute bubble/magical sounds
         function playSound(type) {
+            if (window.TinyFairyProgress && !TinyFairyProgress.load().settings.soundEnabled) return;
             if (isMuted) return;
             initSynth();
             try {
@@ -1054,6 +1058,16 @@
             }
 
             modal.classList.remove('hidden');
+
+            TinyFairyProgress.showCompletionOverlay({
+                gameId: 'garden',
+                levelId: `mission-${currentMission}`,
+                title: 'Nhiệm vụ vườn hoa xong!',
+                message: 'Bé đã chăm khu vườn và nhận thêm sticker hoa cầu vồng cho Luna.',
+                stars: 3,
+                coins: 7,
+                sticker: '🌸'
+            });
         }
 
         function closeModal() {
