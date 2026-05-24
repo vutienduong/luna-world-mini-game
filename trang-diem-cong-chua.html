@@ -87,6 +87,190 @@
             text-decoration: none;
             backdrop-filter: blur(10px);
         }
+
+        @media (max-width: 1023px) {
+            body {
+                min-height: 100svh;
+            }
+
+            .world-back-link {
+                min-height: 36px;
+                padding: 0 11px;
+                font-size: 13px;
+            }
+
+            .mobile-game-shell {
+                display: grid !important;
+                grid-template-rows: auto minmax(0, 1fr) !important;
+                height: calc(100svh - 82px) !important;
+                padding: 10px 10px 12px;
+                gap: 10px;
+                overflow: hidden !important;
+            }
+
+            .princess-preview-card {
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 30 !important;
+                min-height: 0 !important;
+                max-height: 43svh !important;
+                padding: 10px;
+                border-radius: 24px;
+            }
+
+            #doll-canvas-container {
+                min-height: 0 !important;
+                height: clamp(245px, 34svh, 340px);
+                flex-grow: 0;
+            }
+
+            #princess-svg {
+                max-height: 100% !important;
+            }
+
+            #nail-salon-overlay {
+                display: grid !important;
+                grid-template-rows: auto minmax(0, 1fr) auto;
+                gap: 6px;
+                padding: 10px;
+            }
+
+            #nail-salon-overlay .w-80 {
+                width: min(66vw, 230px);
+                height: min(66vw, 230px);
+            }
+
+            #nail-salon-overlay .text-center p {
+                margin-top: 4px;
+                font-size: 11px;
+                line-height: 1.25;
+            }
+
+            .nail-action-row {
+                position: relative;
+                z-index: 35;
+                margin-top: -2px;
+                padding: 6px 8px 0;
+                border-radius: 18px;
+                background: rgba(255, 241, 242, 0.88);
+                box-shadow: 0 -8px 22px rgba(190, 18, 60, 0.08);
+            }
+
+            .nail-action-row button {
+                min-height: 42px;
+                padding: 8px 12px;
+            }
+
+            .princess-preview-card .mt-3 {
+                margin-top: 8px;
+                padding: 8px 10px;
+            }
+
+            .princess-preview-card #princess-tips {
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+
+            .nails-active .princess-preview-card > .mt-3 {
+                display: none !important;
+            }
+
+            .princess-controls-card {
+                min-height: 0 !important;
+                overflow: hidden !important;
+                border-radius: 24px;
+            }
+
+            .princess-selector-row {
+                padding: 9px;
+                flex-shrink: 0;
+            }
+
+            .princess-selector-row .flex {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 4px;
+                scrollbar-width: none;
+            }
+
+            .princess-selector-row .flex::-webkit-scrollbar {
+                display: none;
+            }
+
+            .princess-selector-row button {
+                flex: 0 0 auto;
+                min-height: 42px;
+            }
+
+            .princess-tabs {
+                flex-shrink: 0;
+                overflow-x: auto;
+                grid-template-columns: repeat(5, minmax(82px, 1fr));
+                scrollbar-width: none;
+            }
+
+            .princess-tabs::-webkit-scrollbar {
+                display: none;
+            }
+
+            .princess-tabs button {
+                min-height: 66px;
+                padding-block: 8px;
+            }
+
+            .princess-options-scroll {
+                max-height: none !important;
+                min-height: 0 !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch;
+                padding: 14px;
+            }
+
+            footer {
+                display: none;
+            }
+        }
+
+        @media (max-width: 430px) {
+            .mobile-game-shell {
+                height: calc(100svh - 74px) !important;
+                padding: 8px;
+            }
+
+            .princess-preview-card {
+                max-height: 40svh !important;
+            }
+
+            #doll-canvas-container {
+                height: clamp(230px, 32svh, 305px);
+            }
+
+            #nail-salon-overlay .w-80 {
+                width: min(62vw, 220px);
+                height: min(62vw, 220px);
+            }
+
+            #nail-salon-overlay .shimmer {
+                font-size: 10px;
+                padding-inline: 10px;
+            }
+
+            .nail-action-row {
+                padding-inline: 6px;
+            }
+
+            .nail-action-row button {
+                min-height: 38px;
+                padding: 7px 10px;
+                font-size: 11px;
+            }
+
+            .princess-options-scroll {
+                padding: 12px;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between selection:bg-rose-200">
@@ -150,10 +334,10 @@
     </header>
 
     <!-- Main Playground Workspace -->
-    <main class="flex-grow flex flex-col lg:flex-row p-4 md:p-6 gap-6 max-w-7xl w-full mx-auto justify-center items-stretch overflow-hidden">
+    <main class="mobile-game-shell flex-grow flex flex-col lg:flex-row p-4 md:p-6 gap-6 max-w-7xl w-full mx-auto justify-center items-stretch overflow-hidden">
         
         <!-- Left Side: Princess Doll & Hand Zoom Preview -->
-        <div class="w-full lg:w-[46%] flex flex-col justify-between bg-white/40 backdrop-blur-md rounded-3xl p-4 border border-white/60 shadow-xl relative min-h-[500px] md:min-h-[600px]">
+        <div class="princess-preview-card w-full lg:w-[46%] flex flex-col justify-between bg-white/40 backdrop-blur-md rounded-3xl p-4 border border-white/60 shadow-xl relative min-h-[500px] md:min-h-[600px]">
             
             <!-- Doll Canvas Container -->
             <div id="doll-canvas-container" class="relative w-full flex-grow rounded-2xl overflow-hidden shadow-inner border border-rose-100 transition-all duration-500 min-h-[380px]" style="background: #fff5f5;">
@@ -341,7 +525,7 @@
                     </div>
 
                     <!-- Nail Quick Action buttons -->
-                    <div class="flex space-x-3 w-full justify-center">
+                    <div class="nail-action-row flex space-x-3 w-full justify-center">
                         <button onclick="paintAllNails()" class="px-4 py-2 bg-rose-600 text-white rounded-full text-xs font-bold shadow hover:bg-rose-700 btn-magic flex items-center gap-1.5">
                             <i class="fas fa-magic"></i> Sơn cả bàn tay
                         </button>
@@ -362,10 +546,10 @@
         </div>
 
         <!-- Right Side: Control options panel -->
-        <div class="w-full lg:w-[54%] flex flex-col bg-white rounded-3xl border border-rose-100 shadow-xl overflow-hidden min-h-[500px] md:min-h-[600px]">
+        <div class="princess-controls-card w-full lg:w-[54%] flex flex-col bg-white rounded-3xl border border-rose-100 shadow-xl overflow-hidden min-h-[500px] md:min-h-[600px]">
             
             <!-- NEW PRINCESS SELECTOR ROW -->
-            <div class="bg-rose-100/50 p-3 border-b border-rose-100">
+            <div class="princess-selector-row bg-rose-100/50 p-3 border-b border-rose-100">
                 <p class="text-[10px] text-rose-700 font-bold uppercase tracking-wider mb-2 text-center">👑 Chọn 1 trong 5 Công Chúa Gốc 👑</p>
                 <div class="flex justify-center space-x-2">
                     <button onclick="selectPrincess(1)" id="p-btn-1" class="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-rose-700 border-2 border-rose-400 shadow-sm transition-all flex items-center gap-1">👸 Aurora</button>
@@ -377,7 +561,7 @@
             </div>
 
             <!-- Dynamic Navigation Tabs -->
-            <div class="grid grid-cols-5 bg-rose-50/70 border-b border-rose-100 text-[10px] font-bold text-center">
+            <div class="princess-tabs grid grid-cols-5 bg-rose-50/70 border-b border-rose-100 text-[10px] font-bold text-center">
                 <button onclick="switchTab('hair')" id="tab-hair" class="py-3 text-rose-600 bg-white border-r border-rose-100 flex flex-col items-center justify-center transition-all">
                     <span class="text-xl mb-0.5">💇‍♀️</span>
                     <span>TÓC ĐẸP</span>
@@ -401,7 +585,7 @@
             </div>
 
             <!-- Content Area of Panel -->
-            <div class="flex-grow p-4 md:p-6 overflow-y-auto custom-scrollbar bg-gradient-to-b from-white to-rose-50/10 max-h-[400px] md:max-h-[440px]">
+            <div class="princess-options-scroll flex-grow p-4 md:p-6 overflow-y-auto custom-scrollbar bg-gradient-to-b from-white to-rose-50/10 max-h-[400px] md:max-h-[440px]">
                 
                 <!-- 1. HAIR PANEL (10 Hairstyles & Radiant Gradient Dyes) -->
                 <div id="panel-hair" class="space-y-6">
@@ -1502,9 +1686,11 @@
             const nailOverlay = document.getElementById('nail-salon-overlay');
             if (tabName === 'nails') {
                 nailOverlay.classList.remove('translate-x-full');
+                document.body.classList.add('nails-active');
                 updateTips("Chào mừng đến tiệm móng phóng to hoàng triều! Chạm lên từng móng để đính sticker phép thuật nhé!");
             } else {
                 nailOverlay.classList.add('translate-x-full');
+                document.body.classList.remove('nails-active');
             }
         }
 
